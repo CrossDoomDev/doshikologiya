@@ -3,7 +3,7 @@
     "title": "Связь с сервером установлена 🍜",
     "text": "Если ты видишь этот текст в приложении, значит app.json успешно загрузился с GitHub Pages. Теперь рецепты можно обновлять без пересборки интерфейса."
   },
-  "donateUrl": "#donate-placeholder",
+  "donateUrl": "https://pay.cloudtips.ru/p/c096e867",
   "recipes": [
     {
       "id": "carbonara-2049",
