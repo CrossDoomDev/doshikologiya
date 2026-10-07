@@ -226,8 +226,8 @@
     .cook-chip{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);font-size:12px}
     .cook-progress{height:8px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden;margin-bottom:18px}
     .cook-progress span{display:block;height:100%;background:linear-gradient(90deg,var(--amber),var(--orange));border-radius:99px;transition:width .24s ease}
-    .cook-stage{display:grid;grid-template-columns:220px 1fr;gap:18px;align-items:stretch}
-    .cook-photo-card{position:relative;overflow:hidden;border-radius:22px;min-height:260px;background:var(--surface-2);border:1px solid rgba(255,255,255,.08)}
+    .cook-stage{display:flex;flex-direction:column;gap:18px;align-items:stretch}
+    .cook-photo-card{position:relative;overflow:hidden;border-radius:22px;height:clamp(210px,34vh,320px);background:var(--surface-2);border:1px solid rgba(255,255,255,.08)}
     .cook-photo-card img{width:100%;height:100%;object-fit:cover;display:block}
     .cook-photo-card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(0,0,0,.7))}
     .cook-photo-label{position:absolute;left:14px;right:14px;bottom:14px;z-index:1;text-align:left;color:#fff;font-weight:700;font-size:13px}
@@ -239,6 +239,30 @@
     .cook-dots span{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.12);transition:transform .18s ease,background .18s ease}
     .cook-dots span.active{background:var(--amber);transform:scale(1.2);box-shadow:0 0 14px rgba(255,178,41,.45)}
     .cook-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}
+    .cook-success{position:fixed;inset:0;z-index:190;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(8,6,4,.76);backdrop-filter:blur(14px);overflow:hidden}
+    .cook-success.open{display:flex;animation:successFade .28s ease both}
+    .success-card{position:relative;width:min(520px,100%);overflow:hidden;border-radius:30px;padding:34px 28px 28px;text-align:center;background:linear-gradient(180deg,rgba(39,28,18,.98),rgba(19,14,10,.99));border:1px solid rgba(255,200,82,.28);box-shadow:0 34px 100px rgba(0,0,0,.62),0 0 70px rgba(255,166,0,.12);transform-origin:center;animation:successPop .56s cubic-bezier(.18,.89,.32,1.28) both}
+    .success-card::before{content:"";position:absolute;inset:-45% -20% auto;height:260px;background:radial-gradient(circle,rgba(255,188,54,.28),transparent 66%);pointer-events:none;animation:successGlow 2.2s ease-in-out infinite alternate}
+    .success-rays{position:absolute;inset:-70px;opacity:.22;background:repeating-conic-gradient(from 0deg,rgba(255,184,45,.24) 0deg 7deg,transparent 7deg 18deg);animation:successSpin 22s linear infinite;pointer-events:none}
+    .success-emblem{position:relative;z-index:2;width:104px;height:104px;margin:0 auto 18px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 28%,#ffd978 0 12%,#ffb229 38%,#e97612 74%,#9b3e08 100%);border:5px solid rgba(255,238,184,.78);box-shadow:0 0 0 8px rgba(255,178,41,.08),0 14px 38px rgba(255,130,0,.34);font-size:48px;animation:emblemBounce .75s .12s cubic-bezier(.2,.9,.3,1.35) both}
+    .success-stamp{position:relative;z-index:2;display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:rgba(255,178,41,.11);border:1px solid rgba(255,178,41,.24);color:var(--amber);font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase}
+    .success-title{position:relative;z-index:2;margin:14px 0 8px;font-family:"Arial Black",Inter,sans-serif;font-size:clamp(30px,7vw,46px);line-height:1;color:var(--cream);letter-spacing:-.04em;text-wrap:balance}
+    .success-recipe{position:relative;z-index:2;color:#ffd98b;font-weight:800;font-size:16px;margin-bottom:10px}
+    .success-copy{position:relative;z-index:2;margin:0 auto 22px;max-width:410px;color:var(--muted);font-size:15px;line-height:1.6}
+    .success-badge{position:relative;z-index:2;display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;text-align:left;margin:0 auto 22px;padding:14px 16px;border-radius:18px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08)}
+    .success-badge-icon{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:rgba(255,178,41,.14);font-size:22px}
+    .success-badge strong{display:block;color:var(--cream);font-size:14px;margin-bottom:3px}
+    .success-badge span{color:var(--muted);font-size:12px}
+    .success-actions{position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .success-confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+    .success-confetti i{position:absolute;top:-12%;left:var(--x);width:8px;height:16px;border-radius:3px;background:var(--c);opacity:.95;transform:rotate(var(--r));animation:confettiFall var(--d) var(--delay) cubic-bezier(.2,.7,.3,1) forwards}
+    @keyframes successFade{from{opacity:0}to{opacity:1}}
+    @keyframes successPop{0%{opacity:0;transform:scale(.72) translateY(24px)}65%{opacity:1;transform:scale(1.035) translateY(-4px)}100%{transform:scale(1) translateY(0)}}
+    @keyframes successGlow{from{transform:translateY(-8px) scale(.95);opacity:.7}to{transform:translateY(8px) scale(1.05);opacity:1}}
+    @keyframes successSpin{to{transform:rotate(360deg)}}
+    @keyframes emblemBounce{0%{opacity:0;transform:scale(.35) rotate(-22deg)}70%{opacity:1;transform:scale(1.12) rotate(6deg)}100%{transform:scale(1) rotate(0)}}
+    @keyframes confettiFall{0%{transform:translate3d(0,-20px,0) rotate(var(--r));opacity:0}12%{opacity:1}100%{transform:translate3d(var(--drift),760px,0) rotate(calc(var(--r) + 680deg));opacity:0}}
+    @media(prefers-reduced-motion:reduce){.cook-success.open,.success-card,.success-emblem,.success-rays,.success-card::before,.success-confetti i{animation:none!important}}
 
     @media(max-width:900px){
       .desktop-nav{display:none}
@@ -281,10 +305,13 @@
       .row-actions .btn{width:100%}
       .cook-overlay{padding:18px}
       .cook-box{padding:18px}
-      .cook-stage{grid-template-columns:1fr}
-      .cook-photo-card{min-height:180px}
+      .cook-stage{display:flex;flex-direction:column}
+      .cook-photo-card{height:190px}
       .cook-step{min-height:120px;font-size:clamp(24px,8vw,36px)}
       .cook-title-wrap{align-items:center;text-align:center}
+      .success-card{padding:28px 18px 20px;border-radius:24px}
+      .success-actions{grid-template-columns:1fr}
+      .success-emblem{width:88px;height:88px;font-size:42px}
     }
   </style>
 </head>
@@ -528,6 +555,29 @@
     </div>
   </div>
 
+  <div class="cook-success" id="cookSuccess" aria-hidden="true">
+    <div class="success-card" role="dialog" aria-modal="true" aria-labelledby="successTitle">
+      <div class="success-rays"></div>
+      <div class="success-confetti" id="successConfetti" aria-hidden="true"></div>
+      <div class="success-emblem" aria-hidden="true">🍜</div>
+      <div class="success-stamp">Протокол выполнен</div>
+      <h2 class="success-title" id="successTitle">Эксперимент удался!</h2>
+      <div class="success-recipe" id="successRecipeTitle">Блюдо готово</div>
+      <p class="success-copy">Лаборатория подтверждает: ты прошёл весь протокол до конца. Можно сервировать результат и сделать вид, что всё именно так и планировалось.</p>
+      <div class="success-badge">
+        <div class="success-badge-icon">✓</div>
+        <div>
+          <strong>Статус: съедобно и официально завершено</strong>
+          <span id="successBadgeText">Все этапы приготовления выполнены.</span>
+        </div>
+      </div>
+      <div class="success-actions">
+        <button class="btn secondary" id="successBackBtn">Вернуться к рецепту</button>
+        <button class="btn primary" id="successDoneBtn">Отлично! ✨</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const REMOTE_DATA_URL = "app.json?v=20";
     const fallbackData = {"banner":{"title":"Институт дошикологии докладывает","text":"Мы превращаем лапшу быстрого приготовления в дисциплину, где у каждого эксперимента есть протокол, легенда и шанс пережить конец месяца."},"donateUrl":"#donate-placeholder","recipes":[{"id":"carbonara-2049","title":"Доширак Карбонара 2049","description":"Когда Италия далеко, зарплата ещё дальше, а сыр уже подозрительно давно лежит в холодильнике.","time":"9 минут","difficulty":"Легко","cost":"Дёшево","ingredients":["1 пачка лапши быстрого приготовления","1 яйцо","30–40 г твёрдого сыра","2 ломтика бекона или колбасы","Чёрный перец","Немного воды от лапши"],"steps":["Завари лапшу, но не выливай всю воду.","Обжарь бекон или колбасу до состояния «уже можно есть».","Смешай яйцо, тёртый сыр и пару ложек горячей воды от лапши.","Добавь лапшу к бекону и сними с огня.","Влей сырно-яичную смесь и быстро перемешай, чтобы получилось кремово, а не яичница.","Посыпь перцем и сделай вид, что так и было задумано."],"story":"Легенда гласит, что блюдо родилось в общежитии после того, как студент увидел видео про карбонару, проверил баланс карты и принял стратегическое решение: заменить почти всё.","categories":["После зарплаты","Сытное"]},{"id":"student-ramen","title":"Рамен стипендиата","description":"Богатый вкус при бюджете, который официально считается слухом.","time":"12 минут","difficulty":"Легко","cost":"Очень дёшево","ingredients":["1 пачка лапши","1 варёное или жареное яйцо","Немного зелёного лука","1 ч. л. соевого соуса","Щепотка кунжута","Любые остатки курицы — по возможности"],"steps":["Свари лапшу вместе с частью приправы.","Добавь соевый соус.","Переложи в глубокую миску.","Сверху положи половинки яйца.","Добавь зелёный лук, кунжут и курицу, если экономическая ситуация позволяет.","Ешь медленно: визуально порция так живёт дольше."],"story":"Появился в тот момент, когда кто-то впервые выложил яйцо поверх доширака и понял: теперь это не бедность, а подача.","categories":["До зарплаты","Быстро"]},{"id":"shawarma-noodles","title":"Шаурма без шаурмы","description":"Лапша, овощи и соус объединяются в блюдо, которому санитарная инспекция пока не придумала название.","time":"15 минут","difficulty":"Нормально","cost":"Дёшево","ingredients":["1 пачка лапши","Лаваш","Немного капусты","Огурец","Кетчуп","Майонез","Курица или сосиска"],"steps":["Приготовь лапшу и дай ей немного остыть.","Нарежь овощи и мясную часть.","Смешай кетчуп и майонез — соус высокой кухни готов.","Разложи всё на лаваше.","Заверни максимально уверенно.","Подрумянь на сухой сковороде с двух сторон."],"story":"Рецепт появился после философского вопроса: если положить доширак в лаваш, перестаёт ли он быть дошираком? Эксперимент продолжается.","categories":["После зарплаты","На вынос"]},{"id":"hangover-soup","title":"Суп «Вчера было зря»","description":"Острый спасательный круг для утра, которое началось слишком громко.","time":"10 минут","difficulty":"Легко","cost":"Дёшево","ingredients":["1 пачка острой лапши","500 мл воды","1 яйцо","Немного томатной пасты","Зелень","Пара ломтиков солёного огурца"],"steps":["Доведи воду до кипения и добавь томатную пасту.","Положи лапшу и половину пакетика специй.","Разбей яйцо прямо в бульон.","Добавь нарезанный солёный огурец.","Провари ещё пару минут.","Посыпь зеленью и пересмотри жизненные решения."],"story":"По неподтверждённым данным, первое испытание прошло в воскресенье в 11:47. Испытуемый выжил и даже смог включить чайник второй раз.","categories":["Похмельное","Острое"]},{"id":"boss-level","title":"Доширак уровня «Босс»","description":"Версия для тех, кто однажды сказал: «А что будет, если добавить вообще всё?»","time":"20 минут","difficulty":"Опасно вкусно","cost":"Уже не доширак","ingredients":["2 пачки лапши","150 г курицы","1 яйцо","Грибы","Сыр","Зелёный лук","Соевый соус","Чеснок","Острый соус"],"steps":["Обжарь курицу, грибы и чеснок.","Отдельно приготовь лапшу.","Добавь лапшу в сковороду и влей немного соевого соуса.","Сделай сверху яичницу или яйцо-пашот.","Добавь сыр, зелёный лук и острый соус.","Сфотографируй. Теперь уже можно есть."],"story":"Блюдо возникло в конце месяца сразу после зарплаты, когда бывший стипендиат решил отомстить всем бедным ужинам прошлого. Через три дня бюджет снова вернулся к базовой лапше.","categories":["После зарплаты","Сытное"]},{"id":"navy-noodles","title":"Лапша по-флотски","description":"Макароны по-флотски ушли в отпуск, поэтому их смену приняла лапша быстрого приготовления.","time":"14 минут","difficulty":"Легко","cost":"Дёшево","ingredients":["1 пачка лапши","120 г мясного фарша","Половина небольшой луковицы","1 ч. л. растительного масла","Чёрный перец","Половина пакетика приправы"],"steps":["Мелко нарежь лук и обжарь его на небольшом количестве масла.","Добавь фарш и готовь до полной готовности мяса.","Лапшу завари отдельно и хорошо слей воду.","Добавь лапшу к фаршу.","Всыпь часть приправы, поперчи и перемешай.","Прогрей всё вместе около минуты и подавай."],"story":"По легенде, рецепт придумал человек, который хотел макароны по-флотски, но обнаружил дома только фарш и одинокую пачку лапши. Отступать было поздно: сковорода уже нагрелась.","categories":["До зарплаты","Сытное"]},{"id":"pan-noodle-pizza","title":"Доши-пицца на сковороде","description":"Если теста нет, это ещё не повод отменять пиццу. По крайней мере так утверждает дошикология.","time":"18 минут","difficulty":"Нормально","cost":"Дёшево","ingredients":["1 пачка лапши","2 яйца","50 г сыра","2 ст. л. томатного соуса","Колбаса или ветчина","Немного растительного масла"],"steps":["Завари лапшу и полностью слей воду.","Смешай лапшу с яйцами.","Выложи смесь на слегка смазанную сковороду и разровняй.","Готовь под крышкой несколько минут на небольшом огне.","Смажь основу томатным соусом, добавь колбасу и сыр.","Накрой крышкой и готовь, пока сыр не расплавится."],"story":"Пицца появилась после того, как доставка показала слишком длинное время ожидания. Создатель посмотрел на лапшу, лапша посмотрела на него, и дальше события развивались стремительно.","categories":["До зарплаты","На сковороде"]},{"id":"noodle-omelette","title":"Омлет «Три минуты славы»","description":"Завтрак, который выглядит так, будто у тебя был план с самого начала.","time":"11 минут","difficulty":"Легко","cost":"Очень дёшево","ingredients":["Половина пачки лапши","2 яйца","2 ст. л. молока или воды","Немного сыра","Зелень","Щепотка приправы"],"steps":["Завари половину пачки лапши и слей воду.","Взбей яйца с молоком или водой.","Добавь немного приправы.","Выложи лапшу на сковороду и залей яйцами.","Посыпь сыром и готовь под крышкой до готовности яиц.","Добавь зелень перед подачей."],"story":"История блюда началась с остатков вчерашней лапши и решительного нежелания выбрасывать еду. Через десять минут остатки получили новое имя и повысили социальный статус.","categories":["Завтрак","До зарплаты"]},{"id":"crispy-noodle-salad","title":"Хрустящий салат дошиколога","description":"Когда хочется салат, но организм подозревает, что его пытаются обмануть овощами.","time":"10 минут","difficulty":"Легко","cost":"Дёшево","ingredients":["Половина пачки сухой лапши","Капуста","Морковь","Свежий огурец","1 ст. л. майонеза или йогурта","Немного соевого соуса"],"steps":["Мелко нашинкуй капусту и морковь.","Нарежь огурец.","Смешай овощи с майонезом или йогуртом и каплей соевого соуса.","Разломай сухую лапшу на небольшие кусочки.","Добавь лапшу в салат непосредственно перед подачей.","Перемешай и ешь, пока хруст не перешёл в воспоминания."],"story":"Рецепт возник во время попытки вести здоровый образ жизни. Овощи уже лежали в миске, но рядом случайно оказался доширак. Компромисс был подписан без участия диетолога.","categories":["До зарплаты","Хрустящее"]},{"id":"red-alert-noodles","title":"Красная тревога","description":"Острая лапша для людей, которые считают предупреждения на упаковке личным вызовом.","time":"13 минут","difficulty":"Остро","cost":"Дёшево","ingredients":["1 пачка лапши","1 ч. л. острого соуса","1 яйцо","Немного зелёного лука","1 ч. л. соевого соуса","Сыр по желанию"],"steps":["Приготовь лапшу и оставь пару ложек воды.","Добавь соевый и острый соусы.","Хорошо перемешай лапшу на слабом огне.","Сверху положи приготовленное яйцо.","Добавь зелёный лук.","Если переоценил себя, добавь немного сыра и не рассказывай никому."],"story":"Первый дегустатор уверенно заявил, что любит острое. Через минуту он уже молча смотрел в стену и переосмысливал значение слова «люблю». Так блюдо и получило название.","categories":["Острое","Красный уровень"]}],"comments":[{"name":"Сергей Кипятков","amount":"300 рублей","text":"На научные исследования. Требую сравнительный тест приправ!","date":"сегодня"},{"name":"Анонимный Дошиколог","amount":"100 рублей","text":"Пусть лапша не заканчивается, а вода всегда кипит.","date":"вчера"},{"name":"Лена","amount":"500 рублей","text":"Жду рубрику «рецепты после зарплаты» и «рецепты за три дня до зарплаты».","date":"2 дня назад"},{"name":"Игорь","amount":"250 рублей","text":"Оракул сказал донатить. Я человек суеверный.","date":"3 дня назад"},{"name":"Доши-Мэн","amount":"1000 рублей","text":"На сервер. И отдельно двадцать рублей на зелёный лук.","date":"неделю назад"}],"featuredRecipeId":"carbonara-2049","version":"2.0"};
@@ -718,6 +768,38 @@
       dots.innerHTML=steps.map((_,i)=>`<span class="${i===cookStepIndex?"active":""}" aria-hidden="true"></span>`).join("");
     }
 
+    function buildSuccessConfetti(){
+      const box=document.getElementById("successConfetti");
+      const palette=["#ffb229","#ff7a18","#ffe086","#ffffff","#d85b10"];
+      box.innerHTML=Array.from({length:28},(_,i)=>{
+        const x=3+((i*37)%94);
+        const c=palette[i%palette.length];
+        const r=((i*47)%180)-90;
+        const d=(1.7+(i%7)*.12).toFixed(2)+"s";
+        const delay=((i%9)*.035).toFixed(3)+"s";
+        const drift=(((i*53)%140)-70)+"px";
+        return `<i style="--x:${x}%;--c:${c};--r:${r}deg;--d:${d};--delay:${delay};--drift:${drift}"></i>`;
+      }).join("");
+    }
+    function showCookSuccess(){
+      if(!currentRecipe)return;
+      document.getElementById("successRecipeTitle").textContent=currentRecipe.title;
+      document.getElementById("successBadgeText").textContent=`${currentRecipe.steps.length} из ${currentRecipe.steps.length} этапов завершены. Протокол закрыт.`;
+      buildSuccessConfetti();
+      const success=document.getElementById("cookSuccess");
+      success.classList.remove("open");
+      void success.offsetWidth;
+      success.classList.add("open");
+      success.setAttribute("aria-hidden","false");
+    }
+    function closeCookSuccess({returnToRecipe=false}={}){
+      const success=document.getElementById("cookSuccess");
+      success.classList.remove("open");
+      success.setAttribute("aria-hidden","true");
+      closeCookMode();
+      if(!returnToRecipe) closeRecipe();
+    }
+
     function deterministicDaily(){
       const d=new Date(); const seed=Number(`${d.getFullYear()}${d.getMonth()+1}${d.getDate()}`);
       const idx=55+(seed*17)%41; document.getElementById("dailyIndex").textContent=idx;
@@ -746,8 +828,11 @@
     document.getElementById("cookStartBtn").addEventListener("click",openCookMode);
     document.getElementById("cookCloseBtn").addEventListener("click",closeCookMode);
     document.getElementById("cookPrevBtn").addEventListener("click",()=>{if(cookStepIndex>0){cookStepIndex--;renderCookStep();}});
-    document.getElementById("cookNextBtn").addEventListener("click",()=>{if(!currentRecipe)return;if(cookStepIndex<currentRecipe.steps.length-1){cookStepIndex++;renderCookStep();}else closeCookMode();});
-    document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeCookMode();closeRecipe();}});
+    document.getElementById("cookNextBtn").addEventListener("click",()=>{if(!currentRecipe)return;if(cookStepIndex<currentRecipe.steps.length-1){cookStepIndex++;renderCookStep();}else showCookSuccess();});
+    document.getElementById("successBackBtn").addEventListener("click",()=>closeCookSuccess({returnToRecipe:true}));
+    document.getElementById("successDoneBtn").addEventListener("click",()=>closeCookSuccess({returnToRecipe:false}));
+    document.getElementById("cookSuccess").addEventListener("click",e=>{if(e.target.id==="cookSuccess")closeCookSuccess({returnToRecipe:true});});
+    document.addEventListener("keydown",e=>{if(e.key==="Escape"){const success=document.getElementById("cookSuccess");if(success.classList.contains("open")){closeCookSuccess({returnToRecipe:true});return;}closeCookMode();closeRecipe();}});
     document.addEventListener("error",e=>{const img=e.target;if(img instanceof HTMLImageElement){img.style.opacity=.25;}},true);
 
     renderAll();
