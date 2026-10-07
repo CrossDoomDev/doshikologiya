@@ -212,6 +212,29 @@
     li+li{margin-top:7px}
     .archive{margin-top:16px;padding:18px 20px;border-radius:18px;border-left:3px solid var(--amber);background:linear-gradient(90deg,rgba(255,178,41,.07),transparent),var(--surface);color:#d9c8b2;line-height:1.65}
 
+    .mascot-sticker{display:block;object-fit:contain;filter:drop-shadow(0 10px 16px rgba(0,0,0,.24));user-select:none;-webkit-user-drag:none}
+    .hero-mascot-sticker{position:absolute;z-index:3;right:22px;top:22px;width:112px;transform:rotate(5deg);animation:mascotFloat 4.6s ease-in-out infinite}
+    .note-mark.sticker-host{width:58px;height:58px;padding:0;background:transparent;border:0;overflow:visible}
+    .note-mark.sticker-host img{width:66px;height:66px;margin:-4px}
+    .oracle-sticker{width:150px;max-width:70%;height:auto;filter:drop-shadow(0 18px 24px rgba(0,0,0,.3));animation:mascotFloat 4.8s ease-in-out infinite}
+    .support-sticker-host{width:112px!important;height:112px!important;background:transparent!important;border:0!important;margin:0 auto 12px!important}
+    .support-sticker-host img{width:112px;height:112px}
+    .recipe-donate-icon{width:58px!important;height:58px!important;padding:0!important;background:transparent!important;overflow:visible}
+    .recipe-donate-icon img{width:66px;height:66px;margin:-4px}
+    .success-emblem{background:transparent!important;border:0!important;box-shadow:none!important;width:128px!important;height:128px!important}
+    .success-emblem img{width:128px;height:128px;filter:drop-shadow(0 18px 28px rgba(255,130,0,.3))}
+    .cook-photo-mascot{position:absolute;z-index:3;right:12px;bottom:10px;width:92px;filter:drop-shadow(0 12px 18px rgba(0,0,0,.28));transform:rotate(4deg)}
+    .section-mascot{flex:0 0 auto;width:104px;height:104px;align-self:center;transform:rotate(-4deg)}
+    @keyframes mascotFloat{0%,100%{transform:translateY(0) rotate(4deg)}50%{transform:translateY(-8px) rotate(1deg)}}
+    @media(max-width:620px){
+      .hero-mascot-sticker{width:82px;right:14px;top:14px}
+      .section-mascot{width:82px;height:82px;position:absolute;right:2px;top:-4px;opacity:.92}
+      #view-recipes .section-head{position:relative;padding-right:74px}
+      .oracle-sticker{width:124px}
+      .cook-photo-mascot{width:76px}
+      .support-sticker-host,.support-sticker-host img{width:96px!important;height:96px!important}
+    }
+    @media(prefers-reduced-motion:reduce){.hero-mascot-sticker,.oracle-sticker{animation:none!important}}
     .recipe-donate-end{margin-top:18px;padding:18px;border-radius:22px;background:linear-gradient(135deg,rgba(255,178,41,.11),rgba(255,122,24,.05));border:1px solid rgba(255,178,41,.2);display:flex;align-items:center;justify-content:space-between;gap:16px}
     .recipe-donate-copy{display:flex;align-items:center;gap:12px;min-width:0}
     .recipe-donate-icon{flex:0 0 auto;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:rgba(255,178,41,.14);color:var(--amber);font-size:22px;box-shadow:inset 0 0 0 1px rgba(255,178,41,.14)}
@@ -346,6 +369,7 @@
       <section id="view-home" class="view">
         <article class="hero" id="dailyHero">
           <img class="hero-image" id="featuredImage" alt="Эксперимент дня">
+          <img class="mascot-sticker hero-mascot-sticker" src="images/stickers/sticker-wave.svg" alt="" aria-hidden="true">
           <div class="hero-content">
             <div class="lab-label">Эксперимент дня</div>
             <h1 id="featuredTitle">Загружаем лабораторный протокол…</h1>
@@ -359,7 +383,7 @@
         </article>
 
         <aside class="institute-note">
-          <div class="note-mark">🧪</div>
+          <div class="note-mark sticker-host"><img class="mascot-sticker" src="images/stickers/sticker-home-chef.svg" alt="" aria-hidden="true"></div>
           <div>
             <strong id="bannerTitle">Институт дошикологии докладывает</strong>
             <p id="bannerText">Исследовательская сводка загружается…</p>
@@ -411,6 +435,7 @@
             <h2>Лабораторные протоколы</h2>
             <p>Ищи по названию или выбирай кафедру. Избранные рецепты сохраняются прямо на устройстве.</p>
           </div>
+          <img class="mascot-sticker section-mascot" src="images/stickers/sticker-chopsticks.svg" alt="" aria-hidden="true">
         </div>
         <div class="tools-row">
           <label class="search-box">
@@ -436,7 +461,7 @@
           <article class="oracle-machine">
             <div>
               <div class="lab-label">Центральный оракул</div>
-              <div class="oracle-orb"><span class="oracle-symbol">🍜</span></div>
+              <div class="oracle-orb"><img class="mascot-sticker oracle-sticker" src="images/stickers/sticker-wow.svg" alt="" aria-hidden="true"></div>
               <div class="oracle-result" id="oracleResult">Сформулируй вопрос мысленно. Лаборатория уже прогревает воду.</div>
             </div>
             <button class="btn primary" id="oracleBtn">Запустить расчёт судьбы</button>
@@ -461,7 +486,7 @@
         </div>
         <div class="wall-layout">
           <aside class="support-card">
-            <div class="mark">♥</div>
+            <div class="mark support-sticker-host"><img class="mascot-sticker" src="images/stickers/sticker-heart.svg" alt="" aria-hidden="true"></div>
             <h2>Поддержать НИИ лапши</h2>
             <p>Не обязательно спасать мир. Иногда достаточно помочь сделать следующий рецепт, экран или эксперимент чуть лучше.</p>
             <button class="btn primary" id="wallDonateBtn">Поддержать проект</button>
@@ -527,7 +552,7 @@
         <div class="archive"><strong>Архив института:</strong> <span id="modalStory"></span></div>
         <div class="recipe-donate-end">
           <div class="recipe-donate-copy">
-            <span class="recipe-donate-icon">♥</span>
+            <span class="recipe-donate-icon"><img class="mascot-sticker" src="images/stickers/sticker-heart.svg" alt="" aria-hidden="true"></span>
             <div>
               <strong>Поддержать Институт дошикологии</strong>
               <span>Если эксперимент удался — можно помочь лаборатории выпускать новые протоколы.</span>
@@ -558,6 +583,7 @@
         <div class="cook-photo-card">
           <img id="cookImage" alt="Изображение блюда">
           <div class="cook-photo-label" id="cookPhotoLabel">Экспериментальный образец</div>
+          <img class="mascot-sticker cook-photo-mascot" src="images/stickers/sticker-chef.svg" alt="" aria-hidden="true">
         </div>
         <div class="cook-main">
           <div class="cook-step-number" id="cookStepNumber">Шаг 1</div>
@@ -577,7 +603,7 @@
     <div class="success-card" role="dialog" aria-modal="true" aria-labelledby="successTitle">
       <div class="success-rays"></div>
       <div class="success-confetti" id="successConfetti" aria-hidden="true"></div>
-      <div class="success-emblem" aria-hidden="true">🍜</div>
+      <div class="success-emblem" aria-hidden="true"><img class="mascot-sticker" src="images/stickers/sticker-party.svg" alt=""></div>
       <div class="success-stamp">Протокол выполнен</div>
       <h2 class="success-title" id="successTitle">Эксперимент удался!</h2>
       <div class="success-recipe" id="successRecipeTitle">Блюдо готово</div>
