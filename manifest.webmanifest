@@ -1,0 +1,18 @@
+{
+  "name": "Дошикология — Институт лапши быстрого приготовления",
+  "short_name": "Дошикология",
+  "description": "Домашняя лаборатория рецептов и экспериментов с лапшой быстрого приготовления.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#100c09",
+  "theme_color": "#ffb229",
+  "icons": [
+    {
+      "src": "images/ui/doshikologiya-mark.svg?v=20261008-mascot",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
