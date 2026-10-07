@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Дошикология">
+  <defs><linearGradient id="g" x1="8" y1="6" x2="58" y2="60" gradientUnits="userSpaceOnUse"><stop stop-color="#ffd46e"/><stop offset=".48" stop-color="#ffb229"/><stop offset="1" stop-color="#ff6a2a"/></linearGradient></defs>
+  <rect x="2" y="2" width="60" height="60" rx="18" fill="#1c1510" stroke="#3a2a1d"/>
+  <path d="M14 32h36c-1.4 11.2-7.7 17-18 17S15.4 43.2 14 32Z" fill="url(#g)"/>
+  <path d="M19 36h26" stroke="#5a2d0d" stroke-width="2.4" stroke-linecap="round" opacity=".55"/>
+  <path d="M23 27c-4-5 4-6 0-11M32 27c-4-5 4-6 0-11M41 27c-4-5 4-6 0-11" fill="none" stroke="#ffd46e" stroke-width="2.6" stroke-linecap="round"/>
+  <circle cx="32" cy="19" r="2.2" fill="#fff2c8"/>
+  <path d="M16 49h32" stroke="#ffb229" stroke-width="2.6" stroke-linecap="round"/>
+</svg>
