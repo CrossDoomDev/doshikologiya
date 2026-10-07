@@ -90,7 +90,7 @@
         "Подрумянь на сухой сковороде с двух сторон."
       ],
       "story": "Рецепт появился после философского вопроса: если положить доширак в лаваш, перестаёт ли он быть дошираком? Эксперимент продолжается.",
-      "image": "https://crossdoomdev.github.io/doshikologiya-data/images/recipes/shawarma-noodles.svg?v=20261007-hires",
+      "image": "https://crossdoomdev.github.io/doshikologiya-data/images/recipes/shawarma-noodles.svg?v=20261007-shawarma-fix",
       "categories": [
         "После зарплаты",
         "На вынос"
@@ -343,5 +343,5 @@
     }
   ],
   "featuredRecipeId": "carbonara-2049",
-  "version": "2.1"
+  "version": "2.1.1"
 }
