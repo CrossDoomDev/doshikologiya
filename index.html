@@ -212,15 +212,33 @@
     li+li{margin-top:7px}
     .archive{margin-top:16px;padding:18px 20px;border-radius:18px;border-left:3px solid var(--amber);background:linear-gradient(90deg,rgba(255,178,41,.07),transparent),var(--surface);color:#d9c8b2;line-height:1.65}
 
-    .cook-overlay{position:fixed;inset:0;z-index:150;display:none;background:#0f0b08;padding:20px;align-items:center;justify-content:center}
+    .cook-overlay{position:fixed;inset:0;z-index:150;display:none;padding:20px;align-items:center;justify-content:center;background:#0f0b08;overflow:auto}
     .cook-overlay.open{display:flex}
-    .cook-box{width:min(720px,100%);text-align:center}
-    .cook-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:28px;color:var(--muted);font-size:13px}
-    .cook-progress{height:6px;background:var(--surface-3);border-radius:99px;overflow:hidden;margin-bottom:32px}
-    .cook-progress span{display:block;height:100%;background:var(--amber);border-radius:99px;transition:width .2s ease}
+    .cook-backdrop{position:absolute;inset:0;background-position:center;background-size:cover;filter:blur(16px) saturate(1.05);transform:scale(1.08);opacity:.38}
+    .cook-backdrop::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at top,rgba(255,178,41,.18),transparent 32%),linear-gradient(180deg,rgba(15,11,8,.34),rgba(15,11,8,.92) 72%)}
+    .cook-box{position:relative;z-index:1;width:min(780px,100%);text-align:center;background:linear-gradient(180deg,rgba(29,21,16,.88),rgba(18,13,9,.94));border:1px solid rgba(255,212,110,.14);box-shadow:0 22px 80px rgba(0,0,0,.44);border-radius:28px;padding:24px;backdrop-filter:blur(14px)}
+    .cook-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px;color:var(--muted);font-size:13px}
+    .cook-kicker{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:rgba(255,178,41,.14);border:1px solid rgba(255,178,41,.2);color:var(--amber);font-weight:800;letter-spacing:.04em;text-transform:uppercase;font-size:11px}
+    .cook-kicker .dot{width:8px;height:8px;border-radius:50%;background:var(--amber);box-shadow:0 0 16px rgba(255,178,41,.6)}
+    .cook-title-wrap{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:10px;flex:1}
+    .cook-title{font-size:clamp(24px,3vw,34px);line-height:1.08;color:var(--cream);font-family:"Arial Black",Inter,sans-serif;letter-spacing:-.03em}
+    .cook-meta{display:flex;flex-wrap:wrap;gap:8px;color:var(--muted)}
+    .cook-chip{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);font-size:12px}
+    .cook-progress{height:8px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden;margin-bottom:18px}
+    .cook-progress span{display:block;height:100%;background:linear-gradient(90deg,var(--amber),var(--orange));border-radius:99px;transition:width .24s ease}
+    .cook-stage{display:grid;grid-template-columns:220px 1fr;gap:18px;align-items:stretch}
+    .cook-photo-card{position:relative;overflow:hidden;border-radius:22px;min-height:260px;background:var(--surface-2);border:1px solid rgba(255,255,255,.08)}
+    .cook-photo-card img{width:100%;height:100%;object-fit:cover;display:block}
+    .cook-photo-card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(0,0,0,.7))}
+    .cook-photo-label{position:absolute;left:14px;right:14px;bottom:14px;z-index:1;text-align:left;color:#fff;font-weight:700;font-size:13px}
+    .cook-main{border-radius:22px;padding:22px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;justify-content:center}
     .cook-step-number{color:var(--amber);font-weight:900;letter-spacing:1.6px;text-transform:uppercase;font-size:11px;margin-bottom:14px}
-    .cook-step{font-family:"Arial Black",Inter,sans-serif;font-size:clamp(28px,6vw,48px);line-height:1.14;letter-spacing:-.025em;color:var(--cream);min-height:180px;display:flex;align-items:center;justify-content:center}
-    .cook-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:28px}
+    .cook-step{font-family:"Arial Black",Inter,sans-serif;font-size:clamp(28px,5.2vw,46px);line-height:1.12;letter-spacing:-.025em;color:var(--cream);min-height:180px;display:flex;align-items:center;justify-content:center;text-wrap:balance}
+    .cook-subnote{margin-top:12px;color:var(--muted);font-size:14px;line-height:1.5}
+    .cook-dots{display:flex;gap:8px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+    .cook-dots span{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.12);transition:transform .18s ease,background .18s ease}
+    .cook-dots span.active{background:var(--amber);transform:scale(1.2);box-shadow:0 0 14px rgba(255,178,41,.45)}
+    .cook-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}
 
     @media(max-width:900px){
       .desktop-nav{display:none}
@@ -262,6 +280,11 @@
       .sheet-hero-copy,.sheet-content{padding:20px}
       .row-actions .btn{width:100%}
       .cook-overlay{padding:18px}
+      .cook-box{padding:18px}
+      .cook-stage{grid-template-columns:1fr}
+      .cook-photo-card{min-height:180px}
+      .cook-step{min-height:120px;font-size:clamp(24px,8vw,36px)}
+      .cook-title-wrap{align-items:center;text-align:center}
     }
   </style>
 </head>
@@ -472,11 +495,32 @@
   </div>
 
   <div class="cook-overlay" id="cookOverlay" aria-hidden="true">
+    <div class="cook-backdrop" id="cookBackdrop"></div>
     <div class="cook-box">
-      <div class="cook-top"><span id="cookTitle">Режим готовки</span><button class="btn ghost" id="cookCloseBtn">Закрыть</button></div>
+      <div class="cook-top">
+        <div class="cook-title-wrap">
+          <div class="cook-kicker"><span class="dot"></span>Режим готовки</div>
+          <div class="cook-title" id="cookTitle">Режим готовки</div>
+          <div class="cook-meta">
+            <span class="cook-chip" id="cookMetaServing">🍜 Эксперимент запущен</span>
+            <span class="cook-chip" id="cookMetaSteps">Шагов: 0</span>
+          </div>
+        </div>
+        <button class="btn ghost" id="cookCloseBtn">Закрыть</button>
+      </div>
       <div class="cook-progress"><span id="cookProgress"></span></div>
-      <div class="cook-step-number" id="cookStepNumber">Шаг 1</div>
-      <div class="cook-step" id="cookStepText"></div>
+      <div class="cook-stage">
+        <div class="cook-photo-card">
+          <img id="cookImage" alt="Изображение блюда">
+          <div class="cook-photo-label" id="cookPhotoLabel">Экспериментальный образец</div>
+        </div>
+        <div class="cook-main">
+          <div class="cook-step-number" id="cookStepNumber">Шаг 1</div>
+          <div class="cook-step" id="cookStepText"></div>
+          <div class="cook-subnote" id="cookSubnote">Двигайся по шагам спокойно — кухня любит уверенных исследователей.</div>
+          <div class="cook-dots" id="cookDots"></div>
+        </div>
+      </div>
       <div class="cook-actions">
         <button class="btn secondary" id="cookPrevBtn">← Назад</button>
         <button class="btn primary" id="cookNextBtn">Дальше →</button>
@@ -635,9 +679,44 @@
 
     function openDonate(){const url=appData.donateUrl||"";if(url)window.open(url,"_blank","noopener,noreferrer");}
 
-    function openCookMode(){if(!currentRecipe)return;cookStepIndex=0;document.getElementById("cookTitle").textContent=currentRecipe.title;document.getElementById("cookOverlay").classList.add("open");document.getElementById("cookOverlay").setAttribute("aria-hidden","false");renderCookStep();}
+    function openCookMode(){
+      if(!currentRecipe)return;
+      cookStepIndex=0;
+      document.getElementById("cookTitle").textContent=currentRecipe.title;
+      document.getElementById("cookMetaSteps").textContent=`Шагов: ${currentRecipe.steps.length}`;
+      document.getElementById("cookMetaServing").textContent=`🍜 ${currentRecipe.categories?.[0] || "Лабораторный протокол"}`;
+      document.getElementById("cookPhotoLabel").textContent=`${currentRecipe.ingredients.length} ингредиентов · ${currentRecipe.steps.length} шагов`;
+      const img=document.getElementById("cookImage");
+      const backdrop=document.getElementById("cookBackdrop");
+      if(currentRecipe.image){
+        img.src=currentRecipe.image;
+        img.alt=currentRecipe.title;
+        backdrop.style.backgroundImage=`url('${currentRecipe.image}')`;
+      }else{
+        img.removeAttribute("src");
+        img.alt="";
+        backdrop.style.backgroundImage="none";
+      }
+      document.getElementById("cookOverlay").classList.add("open");
+      document.getElementById("cookOverlay").setAttribute("aria-hidden","false");
+      renderCookStep();
+    }
     function closeCookMode(){document.getElementById("cookOverlay").classList.remove("open");document.getElementById("cookOverlay").setAttribute("aria-hidden","true");}
-    function renderCookStep(){if(!currentRecipe)return;const steps=currentRecipe.steps;const total=steps.length;document.getElementById("cookStepNumber").textContent=`Шаг ${cookStepIndex+1} из ${total}`;document.getElementById("cookStepText").textContent=steps[cookStepIndex];document.getElementById("cookProgress").style.width=`${((cookStepIndex+1)/total)*100}%`;document.getElementById("cookPrevBtn").disabled=cookStepIndex===0;document.getElementById("cookNextBtn").textContent=cookStepIndex===total-1?"Готово ✓":"Дальше →";}
+    function renderCookStep(){
+      if(!currentRecipe)return;
+      const steps=currentRecipe.steps;
+      const total=steps.length;
+      document.getElementById("cookStepNumber").textContent=`Шаг ${cookStepIndex+1} из ${total}`;
+      document.getElementById("cookStepText").textContent=steps[cookStepIndex];
+      document.getElementById("cookSubnote").textContent=cookStepIndex===total-1
+        ?"Финишный этап. Доведи блюдо до победного хруста и подавай горячим."
+        :`Подготовь всё для следующего шага: впереди этап ${Math.min(cookStepIndex+2,total)} из ${total}.`;
+      document.getElementById("cookProgress").style.width=`${((cookStepIndex+1)/total)*100}%`;
+      document.getElementById("cookPrevBtn").disabled=cookStepIndex===0;
+      document.getElementById("cookNextBtn").textContent=cookStepIndex===total-1?"Готово ✓":"Дальше →";
+      const dots=document.getElementById("cookDots");
+      dots.innerHTML=steps.map((_,i)=>`<span class="${i===cookStepIndex?"active":""}" aria-hidden="true"></span>`).join("");
+    }
 
     function deterministicDaily(){
       const d=new Date(); const seed=Number(`${d.getFullYear()}${d.getMonth()+1}${d.getDate()}`);
