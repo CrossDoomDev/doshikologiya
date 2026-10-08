@@ -74,7 +74,7 @@
       box-shadow:none;
     }
     .brand{display:flex;align-items:center;justify-content:center;width:100%;min-width:0}
-    .brand-logo{width:min(320px,78vw);height:auto;object-fit:contain;display:block;filter:drop-shadow(0 16px 34px rgba(255,178,41,.24))}
+    .brand-logo{width:min(320px,78vw);height:auto;object-fit:contain;display:block;filter:contrast(1.28) saturate(1.12) brightness(1.03) drop-shadow(0 7px 12px rgba(255,178,41,.18));image-rendering:-webkit-optimize-contrast;transform:translateZ(0)}
     .desktop-nav{display:flex;justify-content:center;gap:4px}
     .nav-btn{
       border:0;background:transparent;color:var(--muted);
@@ -254,12 +254,12 @@
     .cook-chip{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);font-size:12px}
     .cook-progress{height:8px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden;margin-bottom:18px}
     .cook-progress span{display:block;height:100%;background:linear-gradient(90deg,var(--amber),var(--orange));border-radius:99px;transition:width .24s ease}
-    .cook-stage{display:flex;flex-direction:column;gap:18px;align-items:stretch}
+    .cook-stage{display:flex;flex-direction:column;gap:18px;align-items:stretch;perspective:1200px;touch-action:pan-y}
     .cook-photo-card{position:relative;overflow:hidden;border-radius:22px;height:clamp(210px,34vh,320px);background:var(--surface-2);border:1px solid rgba(255,255,255,.08)}
     .cook-photo-card img{width:100%;height:100%;object-fit:cover;display:block}
     .cook-photo-card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(0,0,0,.7))}
     .cook-photo-label{position:absolute;left:14px;right:14px;bottom:14px;z-index:1;text-align:left;color:#fff;font-weight:700;font-size:13px}
-    .cook-main{border-radius:22px;padding:22px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;justify-content:center}
+    .cook-main{border-radius:22px;padding:22px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;justify-content:center;transform-style:preserve-3d;backface-visibility:hidden;will-change:transform,opacity}
     .cook-step-number{color:var(--amber);font-weight:900;letter-spacing:1.6px;text-transform:uppercase;font-size:11px;margin-bottom:14px}
     .cook-step{font-family:"Arial Black",Inter,sans-serif;font-size:clamp(28px,5.2vw,46px);line-height:1.12;letter-spacing:-.025em;color:var(--cream);min-height:180px;display:flex;align-items:center;justify-content:center;text-wrap:balance}
     .cook-subnote{margin-top:12px;color:var(--muted);font-size:14px;line-height:1.5}
@@ -311,9 +311,10 @@
       .feature-grid,.oracle-layout,.wall-layout,.protocol-grid{grid-template-columns:1fr}
       .support-card{position:static}
       .mobile-tabs{
-        display:flex;position:fixed;left:12px;right:12px;bottom:var(--safe-bottom);z-index:95;
-        padding:7px;gap:5px;border:1px solid var(--line);border-radius:20px;
-        background:rgba(20,15,11,.92);backdrop-filter:blur(18px);box-shadow:0 14px 48px rgba(0,0,0,.42)
+        display:flex;position:fixed;left:0;right:0;bottom:0;z-index:95;
+        padding:7px 7px calc(7px + env(safe-area-inset-bottom));gap:5px;
+        border:1px solid var(--line);border-left:0;border-right:0;border-bottom:0;border-radius:20px 20px 0 0;
+        background:rgba(20,15,11,.96);backdrop-filter:blur(18px);box-shadow:0 -10px 34px rgba(0,0,0,.36)
       }
       .mobile-tabs .nav-btn{flex:1;min-height:56px;padding:0;display:flex;align-items:center;justify-content:center;color:#8f8170}
       .mobile-tabs .nav-btn.active{color:#241607;background:var(--amber)}
@@ -593,7 +594,7 @@
         <button class="btn ghost" id="cookCloseBtn">Закрыть</button>
       </div>
       <div class="cook-progress"><span id="cookProgress"></span></div>
-      <div class="cook-stage">
+      <div class="cook-stage" id="cookStage">
         <div class="cook-photo-card">
           <img id="cookImage" alt="Изображение блюда">
           <div class="cook-photo-label" id="cookPhotoLabel">Экспериментальный образец</div>
@@ -842,6 +843,61 @@
       dots.innerHTML=steps.map((_,i)=>`<span class="${i===cookStepIndex?"active":""}" aria-hidden="true"></span>`).join("");
     }
 
+    let cookStepAnimating=false;
+    function navigateCookStep(direction){
+      if(!currentRecipe || cookStepAnimating)return;
+      const total=currentRecipe.steps.length;
+      const target=cookStepIndex+direction;
+      if(target<0)return;
+      if(target>=total){
+        if(direction>0)showCookSuccess();
+        return;
+      }
+
+      const panel=document.querySelector(".cook-main");
+      const reduceMotion=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if(!panel || reduceMotion){
+        cookStepIndex=target;
+        renderCookStep();
+        return;
+      }
+
+      cookStepAnimating=true;
+      const goingNext=direction>0;
+      const outFrames=goingNext
+        ?[
+          {transform:"translateX(0) rotateY(0deg) scale(1)",opacity:1},
+          {transform:"translateX(-22%) rotateY(16deg) scale(.97)",opacity:0}
+        ]
+        :[
+          {transform:"translateX(0) rotateY(0deg) scale(1)",opacity:1},
+          {transform:"translateX(22%) rotateY(-16deg) scale(.97)",opacity:0}
+        ];
+      const inFrames=goingNext
+        ?[
+          {transform:"translateX(22%) rotateY(-16deg) scale(.97)",opacity:0},
+          {transform:"translateX(0) rotateY(0deg) scale(1)",opacity:1}
+        ]
+        :[
+          {transform:"translateX(-22%) rotateY(16deg) scale(.97)",opacity:0},
+          {transform:"translateX(0) rotateY(0deg) scale(1)",opacity:1}
+        ];
+
+      const outAnim=panel.animate(outFrames,{duration:170,easing:"cubic-bezier(.4,0,.7,.2)",fill:"forwards"});
+      outAnim.onfinish=()=>{
+        cookStepIndex=target;
+        renderCookStep();
+        const inAnim=panel.animate(inFrames,{duration:240,easing:"cubic-bezier(.16,.84,.32,1)",fill:"forwards"});
+        inAnim.onfinish=()=>{
+          panel.style.transform="";
+          panel.style.opacity="";
+          cookStepAnimating=false;
+        };
+        inAnim.oncancel=()=>{cookStepAnimating=false;};
+      };
+      outAnim.oncancel=()=>{cookStepAnimating=false;};
+    }
+
     function buildSuccessConfetti(){
       const box=document.getElementById("successConfetti");
       const palette=["#ffb229","#ff7a18","#ffe086","#ffffff","#d85b10"];
@@ -901,8 +957,27 @@
     document.getElementById("modalFavoriteBtn").addEventListener("click",()=>currentRecipe&&toggleFavorite(currentRecipe.id));
     document.getElementById("cookStartBtn").addEventListener("click",openCookMode);
     document.getElementById("cookCloseBtn").addEventListener("click",closeCookMode);
-    document.getElementById("cookPrevBtn").addEventListener("click",()=>{if(cookStepIndex>0){cookStepIndex--;renderCookStep();}});
-    document.getElementById("cookNextBtn").addEventListener("click",()=>{if(!currentRecipe)return;if(cookStepIndex<currentRecipe.steps.length-1){cookStepIndex++;renderCookStep();}else showCookSuccess();});
+    document.getElementById("cookPrevBtn").addEventListener("click",()=>navigateCookStep(-1));
+    document.getElementById("cookNextBtn").addEventListener("click",()=>navigateCookStep(1));
+
+    const cookStage=document.getElementById("cookStage");
+    let cookSwipeX=0;
+    let cookSwipeY=0;
+    cookStage.addEventListener("pointerdown",e=>{
+      if(e.pointerType==="mouse" && e.button!==0)return;
+      cookSwipeX=e.clientX;
+      cookSwipeY=e.clientY;
+    });
+    cookStage.addEventListener("pointerup",e=>{
+      const dx=e.clientX-cookSwipeX;
+      const dy=e.clientY-cookSwipeY;
+      cookSwipeX=0;
+      cookSwipeY=0;
+      if(Math.abs(dx)<52 || Math.abs(dx)<=Math.abs(dy)*1.2)return;
+      navigateCookStep(dx<0?1:-1);
+    });
+    cookStage.addEventListener("pointercancel",()=>{cookSwipeX=0;cookSwipeY=0;});
+
     document.getElementById("successBackBtn").addEventListener("click",()=>closeCookSuccess({returnToRecipe:true}));
     document.getElementById("successDoneBtn").addEventListener("click",()=>closeCookSuccess({returnToRecipe:false}));
     document.getElementById("cookSuccess").addEventListener("click",e=>{if(e.target.id==="cookSuccess")closeCookSuccess({returnToRecipe:true});});
