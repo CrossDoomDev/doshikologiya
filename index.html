@@ -74,7 +74,8 @@
       box-shadow:none;
     }
     .brand{display:flex;align-items:center;justify-content:center;width:100%;min-width:0}
-    .brand-logo{width:min(320px,78vw);height:auto;object-fit:contain;display:block;filter:contrast(1.28) saturate(1.12) brightness(1.03) drop-shadow(0 7px 12px rgba(255,178,41,.18));image-rendering:-webkit-optimize-contrast;transform:translateZ(0)}
+    .brand-logo{width:min(320px,78vw);height:auto;object-fit:contain;display:block;filter:contrast(1.38) saturate(1.16) brightness(1.04) drop-shadow(0 4px 8px rgba(255,178,41,.14));image-rendering:auto}
+    .topbar.logo-hidden .brand{display:none}
     .desktop-nav{display:flex;justify-content:center;gap:4px}
     .nav-btn{
       border:0;background:transparent;color:var(--muted);
@@ -254,7 +255,7 @@
     .cook-chip{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);font-size:12px}
     .cook-progress{height:8px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden;margin-bottom:18px}
     .cook-progress span{display:block;height:100%;background:linear-gradient(90deg,var(--amber),var(--orange));border-radius:99px;transition:width .24s ease}
-    .cook-stage{display:flex;flex-direction:column;gap:18px;align-items:stretch;touch-action:pan-y}
+    .cook-stage{display:flex;flex-direction:column;gap:18px;align-items:stretch}
     .cook-photo-card{position:relative;overflow:hidden;border-radius:22px;height:clamp(210px,34vh,320px);background:var(--surface-2);border:1px solid rgba(255,255,255,.08);isolation:isolate;contain:paint;transform:translateZ(0);backface-visibility:hidden}
     .cook-photo-card img{width:100%;height:100%;object-fit:cover;display:block;transform:translateZ(0);backface-visibility:hidden}
     .cook-photo-card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(0,0,0,.7));transform:translateZ(0);pointer-events:none}
@@ -305,6 +306,7 @@
     @media(prefers-reduced-motion:reduce){.cook-success.open,.success-card,.success-emblem,.success-rays,.success-card::before,.success-confetti i{animation:none!important}}
 
     @media(max-width:900px){
+      .topbar.logo-hidden{display:none}
       .desktop-nav{display:none}
       .brand small{display:none}
       .grid{grid-template-columns:repeat(2,1fr)}
@@ -370,7 +372,7 @@
   <div class="app-shell">
     <header class="topbar">
       <a class="brand" href="#home" data-route="home" aria-label="Дошикология — на главную">
-        <img class="brand-logo" src="images/ui/doshikologiya-mark.svg?v=20261008-logo4" alt="Дошикология">
+        <img class="brand-logo" src="images/ui/doshikologiya-mark.svg?v=20261008-logo5" alt="Дошикология">
       </a>
       <nav class="desktop-nav" aria-label="Навигация">
         <button class="nav-btn active" data-route="home">Главная</button>
@@ -941,7 +943,7 @@
     function randomRecipe(){if(!appData.recipes.length)return;const r=appData.recipes[Math.floor(Math.random()*appData.recipes.length)];openRecipe(r.id);}
 
     const routes=["home","recipes","oracle","wall"];
-    function goTo(route){if(!routes.includes(route))route="home";routes.forEach(name=>document.getElementById(`view-${name}`).classList.toggle("hidden",name!==route));document.querySelectorAll("[data-route]").forEach(el=>el.classList.toggle("active",el.dataset.route===route&&el.classList.contains("nav-btn")));history.replaceState(null,"",`#${route}`);window.scrollTo({top:0,behavior:"smooth"});}
+    function goTo(route){if(!routes.includes(route))route="home";routes.forEach(name=>document.getElementById(`view-${name}`).classList.toggle("hidden",name!==route));document.querySelector(".topbar")?.classList.toggle("logo-hidden",route!=="home");document.querySelectorAll("[data-route]").forEach(el=>el.classList.toggle("active",el.dataset.route===route&&el.classList.contains("nav-btn")));history.replaceState(null,"",`#${route}`);window.scrollTo({top:0,behavior:"smooth"});}
 
     function renderAll(){renderBanner();renderFeatured();renderChips();renderRecipes();renderComments();deterministicDaily();}
 
@@ -959,24 +961,6 @@
     document.getElementById("cookCloseBtn").addEventListener("click",closeCookMode);
     document.getElementById("cookPrevBtn").addEventListener("click",()=>navigateCookStep(-1));
     document.getElementById("cookNextBtn").addEventListener("click",()=>navigateCookStep(1));
-
-    const cookStage=document.getElementById("cookStage");
-    let cookSwipeX=0;
-    let cookSwipeY=0;
-    cookStage.addEventListener("pointerdown",e=>{
-      if(e.pointerType==="mouse" && e.button!==0)return;
-      cookSwipeX=e.clientX;
-      cookSwipeY=e.clientY;
-    });
-    cookStage.addEventListener("pointerup",e=>{
-      const dx=e.clientX-cookSwipeX;
-      const dy=e.clientY-cookSwipeY;
-      cookSwipeX=0;
-      cookSwipeY=0;
-      if(Math.abs(dx)<52 || Math.abs(dx)<=Math.abs(dy)*1.2)return;
-      navigateCookStep(dx<0?1:-1);
-    });
-    cookStage.addEventListener("pointercancel",()=>{cookSwipeX=0;cookSwipeY=0;});
 
     document.getElementById("successBackBtn").addEventListener("click",()=>closeCookSuccess({returnToRecipe:true}));
     document.getElementById("successDoneBtn").addEventListener("click",()=>closeCookSuccess({returnToRecipe:false}));
