@@ -254,12 +254,12 @@
     .cook-chip{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);font-size:12px}
     .cook-progress{height:8px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden;margin-bottom:18px}
     .cook-progress span{display:block;height:100%;background:linear-gradient(90deg,var(--amber),var(--orange));border-radius:99px;transition:width .24s ease}
-    .cook-stage{display:flex;flex-direction:column;gap:18px;align-items:stretch;perspective:1200px;touch-action:pan-y}
-    .cook-photo-card{position:relative;overflow:hidden;border-radius:22px;height:clamp(210px,34vh,320px);background:var(--surface-2);border:1px solid rgba(255,255,255,.08)}
-    .cook-photo-card img{width:100%;height:100%;object-fit:cover;display:block}
-    .cook-photo-card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(0,0,0,.7))}
+    .cook-stage{display:flex;flex-direction:column;gap:18px;align-items:stretch;touch-action:pan-y}
+    .cook-photo-card{position:relative;overflow:hidden;border-radius:22px;height:clamp(210px,34vh,320px);background:var(--surface-2);border:1px solid rgba(255,255,255,.08);isolation:isolate;contain:paint;transform:translateZ(0);backface-visibility:hidden}
+    .cook-photo-card img{width:100%;height:100%;object-fit:cover;display:block;transform:translateZ(0);backface-visibility:hidden}
+    .cook-photo-card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(0,0,0,.7));transform:translateZ(0);pointer-events:none}
     .cook-photo-label{position:absolute;left:14px;right:14px;bottom:14px;z-index:1;text-align:left;color:#fff;font-weight:700;font-size:13px}
-    .cook-main{border-radius:22px;padding:22px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;justify-content:center;transform-style:preserve-3d;backface-visibility:hidden;will-change:transform,opacity}
+    .cook-main{border-radius:22px;padding:22px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;justify-content:center;backface-visibility:hidden;will-change:transform,opacity;contain:paint;isolation:isolate;transform-origin:50% 50%}
     .cook-step-number{color:var(--amber);font-weight:900;letter-spacing:1.6px;text-transform:uppercase;font-size:11px;margin-bottom:14px}
     .cook-step{font-family:"Arial Black",Inter,sans-serif;font-size:clamp(28px,5.2vw,46px);line-height:1.12;letter-spacing:-.025em;color:var(--cream);min-height:180px;display:flex;align-items:center;justify-content:center;text-wrap:balance}
     .cook-subnote{margin-top:12px;color:var(--muted);font-size:14px;line-height:1.5}
@@ -866,21 +866,21 @@
       const goingNext=direction>0;
       const outFrames=goingNext
         ?[
-          {transform:"translateX(0) rotateY(0deg) scale(1)",opacity:1},
-          {transform:"translateX(-22%) rotateY(16deg) scale(.97)",opacity:0}
+          {transform:"translateX(0) rotate(0deg) scale(1)",opacity:1},
+          {transform:"translateX(-18%) rotate(-2.2deg) scale(.985)",opacity:0}
         ]
         :[
-          {transform:"translateX(0) rotateY(0deg) scale(1)",opacity:1},
-          {transform:"translateX(22%) rotateY(-16deg) scale(.97)",opacity:0}
+          {transform:"translateX(0) rotate(0deg) scale(1)",opacity:1},
+          {transform:"translateX(18%) rotate(2.2deg) scale(.985)",opacity:0}
         ];
       const inFrames=goingNext
         ?[
-          {transform:"translateX(22%) rotateY(-16deg) scale(.97)",opacity:0},
-          {transform:"translateX(0) rotateY(0deg) scale(1)",opacity:1}
+          {transform:"translateX(18%) rotate(2.2deg) scale(.985)",opacity:0},
+          {transform:"translateX(0) rotate(0deg) scale(1)",opacity:1}
         ]
         :[
-          {transform:"translateX(-22%) rotateY(16deg) scale(.97)",opacity:0},
-          {transform:"translateX(0) rotateY(0deg) scale(1)",opacity:1}
+          {transform:"translateX(-18%) rotate(-2.2deg) scale(.985)",opacity:0},
+          {transform:"translateX(0) rotate(0deg) scale(1)",opacity:1}
         ];
 
       const outAnim=panel.animate(outFrames,{duration:170,easing:"cubic-bezier(.4,0,.7,.2)",fill:"forwards"});
