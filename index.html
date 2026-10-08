@@ -248,12 +248,12 @@
     .recipe-donate-copy strong{display:block;color:var(--cream);font-size:14px;margin-bottom:4px}
     .recipe-donate-copy span{display:block;color:var(--muted);font-size:12px;line-height:1.45}
     .recipe-donate-btn{flex:0 0 auto;white-space:nowrap}
-    .cook-overlay{position:fixed;inset:0;z-index:150;display:none;padding:calc(20px + var(--safe-top)) 20px calc(20px + env(safe-area-inset-bottom));align-items:flex-start;justify-content:center;background:#0f0b08;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;touch-action:pan-y pinch-zoom}
+    .cook-overlay{--cook-top-height:146px;position:fixed;inset:0;z-index:150;display:none;padding:calc(var(--cook-top-height) + 16px) 20px calc(20px + env(safe-area-inset-bottom));align-items:flex-start;justify-content:center;background:#0f0b08;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;touch-action:pan-y pinch-zoom}
     .cook-overlay.open{display:flex}
     .cook-backdrop{position:absolute;inset:-5%;background-position:center;background-size:cover;filter:blur(16px) saturate(1.05);opacity:.38;pointer-events:none}
     .cook-backdrop::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at top,rgba(255,178,41,.18),transparent 32%),linear-gradient(180deg,rgba(15,11,8,.34),rgba(15,11,8,.92) 72%)}
-    .cook-box{position:relative;z-index:1;width:min(780px,100%);max-width:100%;margin-block:auto;text-align:center;background:linear-gradient(180deg,rgba(29,21,16,.88),rgba(18,13,9,.94));border:1px solid rgba(255,212,110,.14);box-shadow:0 22px 80px rgba(0,0,0,.44);border-radius:28px;padding:24px;backdrop-filter:blur(14px);touch-action:pan-y pinch-zoom}
-    .cook-top{position:sticky;top:0;z-index:6;display:flex;justify-content:space-between;align-items:center;gap:12px;margin:-4px 0 14px;padding:8px 0 10px;color:var(--muted);font-size:13px;background:linear-gradient(180deg,rgba(29,21,16,.98) 0%,rgba(29,21,16,.94) 72%,rgba(29,21,16,0) 100%)}
+    .cook-box{position:relative;z-index:1;width:min(780px,100%);max-width:100%;margin-block:0 auto;text-align:center;background:linear-gradient(180deg,rgba(29,21,16,.88),rgba(18,13,9,.94));border:1px solid rgba(255,212,110,.14);box-shadow:0 22px 80px rgba(0,0,0,.44);border-radius:28px;padding:24px;backdrop-filter:blur(14px);touch-action:pan-y pinch-zoom}
+    .cook-top{position:fixed;top:0;left:0;right:0;z-index:170;display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0;padding:calc(10px + var(--safe-top)) max(20px,env(safe-area-inset-right)) 12px max(20px,env(safe-area-inset-left));color:var(--muted);font-size:13px;background:rgba(24,17,12,.985);border-bottom:1px solid rgba(255,212,110,.14);box-shadow:0 10px 28px rgba(0,0,0,.38);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
     .cook-exit-btn{flex:0 0 auto;min-width:96px;border-color:rgba(255,255,255,.14);background:rgba(10,8,6,.48);color:#f3e6d5}
     .cook-exit-btn:hover{border-color:rgba(255,178,41,.35);background:rgba(255,178,41,.08);color:var(--cream)}
     .cook-kicker{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:rgba(255,178,41,.14);border:1px solid rgba(255,178,41,.2);color:var(--amber);font-weight:800;letter-spacing:.04em;text-transform:uppercase;font-size:11px}
@@ -360,9 +360,9 @@
       .row-actions .btn{width:100%}
       .recipe-donate-end{flex-direction:column;align-items:stretch}
       .recipe-donate-btn{width:100%}
-      .cook-overlay{padding:calc(12px + var(--safe-top)) 18px calc(18px + env(safe-area-inset-bottom))}
+      .cook-overlay{padding:calc(var(--cook-top-height) + 12px) 18px calc(18px + env(safe-area-inset-bottom))}
       .cook-box{padding:18px;margin-block:0 auto}
-      .cook-top{align-items:flex-start}
+      .cook-top{align-items:flex-start;padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right));padding-bottom:10px}
       .cook-exit-btn{min-width:auto;padding:10px 12px}
       .cook-stage{display:flex;flex-direction:column}
       .cook-photo-card{height:190px}
@@ -594,18 +594,18 @@
 
   <div class="cook-overlay" id="cookOverlay" aria-hidden="true">
     <div class="cook-backdrop" id="cookBackdrop"></div>
-    <div class="cook-box">
-      <div class="cook-top">
-        <div class="cook-title-wrap">
-          <div class="cook-kicker"><span class="dot"></span>Режим готовки</div>
-          <div class="cook-title" id="cookTitle">Режим готовки</div>
-          <div class="cook-meta">
-            <span class="cook-chip" id="cookMetaServing">🍜 Эксперимент запущен</span>
-            <span class="cook-chip" id="cookMetaSteps">Шагов: 0</span>
-          </div>
+    <div class="cook-top" id="cookTop">
+      <div class="cook-title-wrap">
+        <div class="cook-kicker"><span class="dot"></span>Режим готовки</div>
+        <div class="cook-title" id="cookTitle">Режим готовки</div>
+        <div class="cook-meta">
+          <span class="cook-chip" id="cookMetaServing">🍜 Эксперимент запущен</span>
+          <span class="cook-chip" id="cookMetaSteps">Шагов: 0</span>
         </div>
-        <button class="btn ghost cook-exit-btn" id="cookCloseBtn" aria-label="Выйти из режима готовки">✕ Выйти</button>
       </div>
+      <button class="btn ghost cook-exit-btn" id="cookCloseBtn" aria-label="Выйти из режима готовки">✕ Выйти</button>
+    </div>
+    <div class="cook-box">
       <div class="cook-progress"><span id="cookProgress"></span></div>
       <div class="cook-stage">
         <div class="cook-photo-card">
@@ -834,10 +834,22 @@
         img.alt="";
         backdrop.style.backgroundImage="none";
       }
-      document.getElementById("cookOverlay").classList.add("open");
-      document.getElementById("cookOverlay").setAttribute("aria-hidden","false");
+      const cookOverlay=document.getElementById("cookOverlay");
+      cookOverlay.classList.add("open");
+      cookOverlay.setAttribute("aria-hidden","false");
       renderCookStep();
+      requestAnimationFrame(syncCookTopHeight);
     }
+    function syncCookTopHeight(){
+      const overlay=document.getElementById("cookOverlay");
+      const top=document.getElementById("cookTop");
+      if(!overlay || !top)return;
+      overlay.style.setProperty("--cook-top-height",`${Math.ceil(top.getBoundingClientRect().height)}px`);
+    }
+    if("ResizeObserver" in window){
+      new ResizeObserver(syncCookTopHeight).observe(document.getElementById("cookTop"));
+    }
+    window.addEventListener("resize",syncCookTopHeight,{passive:true});
     function closeCookMode(){document.getElementById("cookOverlay").classList.remove("open");document.getElementById("cookOverlay").setAttribute("aria-hidden","true");}
     function renderCookStep(){
       if(!currentRecipe)return;
