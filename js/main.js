@@ -8,6 +8,8 @@ import { openRecipe, closeRecipe, toggleFavorite } from "./features/recipe-modal
 import { openDonation } from "./features/donations.js";
 import { initCookingLayout, openCookMode, closeCookMode, navigateCookStep, closeCookSuccess } from "./features/cooking.js";
 import { renderDailyIndex, runOracle } from "./features/oracle.js";
+import { initSplash, hideSplash } from "./features/splash.js";
+import { initPressFeedback } from "./features/press-feedback.js";
 
 function renderAll() {
   renderBanner();
@@ -92,6 +94,8 @@ function bindEvents() {
 }
 
 async function boot() {
+  initSplash();
+  initPressFeedback();
   bindEvents();
   initCookingLayout();
   goTo(location.hash.replace("#", "") || "home");
@@ -99,9 +103,11 @@ async function boot() {
   const catalog = await loadCatalog();
   applyCatalog(catalog);
   renderAll();
+  hideSplash();
 }
 
 boot().catch(error => {
   console.error("Не удалось запустить Дошикологию:", error);
   renderAll();
+  hideSplash();
 });

@@ -11,9 +11,15 @@
   <link rel="manifest" href="manifest.webmanifest?v=2">
   <meta name="application-name" content="Дошикология">
   <meta name="apple-mobile-web-app-title" content="Дошикология">
-  <link rel="stylesheet" href="css/styles.css?v=20261009-architecture2">
+  <link rel="stylesheet" href="css/styles.css?v=20261009-motion1">
 </head>
 <body>
+  <div class="app-splash" id="appSplash" role="status" aria-live="polite" aria-label="Дошикология загружается">
+    <div class="app-splash-inner">
+      <img class="app-splash-logo" src="images/ui/doshikologiya-mark.svg?v=20261008-logo-hd768" alt="Дошикология">
+      <div class="app-splash-status">Лаборатория запускается<span class="app-splash-dots" aria-hidden="true"><i></i><i></i><i></i></span></div>
+    </div>
+  </div>
   <div class="app-shell">
     <header class="topbar">
       <a class="brand" href="#home" data-route="home" aria-label="Дошикология — на главную">
@@ -292,6 +298,6 @@
       </div>
     </div>
   </div>
-  <script type="module" src="js/main.js?v=20261009-architecture2"></script>
+  <script type="module" src="js/main.js?v=20261009-motion1"></script>
 </body>
 </html>

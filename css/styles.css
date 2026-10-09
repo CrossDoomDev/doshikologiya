@@ -389,3 +389,177 @@
       .success-actions{grid-template-columns:1fr}
       .success-emblem{width:88px;height:88px;font-size:42px}
     }
+
+/* Motion system: быстрый тактильный отклик без вибрации */
+:where(button,[data-route],[data-open-recipe],[data-favorite]){
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+button:focus-visible,
+[data-route]:focus-visible,
+[data-open-recipe]:focus-visible,
+[data-favorite]:focus-visible{
+  outline:2px solid var(--amber-soft);
+  outline-offset:3px;
+}
+.btn,.nav-btn,.chip,.favorite-btn,.sheet-close{
+  will-change:transform,filter;
+}
+.btn.is-pressing,
+.nav-btn.is-pressing,
+.chip.is-pressing,
+.favorite-btn.is-pressing,
+.sheet-close.is-pressing,
+.btn:active,
+.nav-btn:active,
+.chip:active,
+.favorite-btn:active,
+.sheet-close:active{
+  transform:translateY(1px) scale(.965);
+  filter:brightness(.92);
+}
+.mobile-tabs .nav-btn.is-pressing,
+.mobile-tabs .nav-btn:active{
+  transform:scale(.88);
+}
+.recipe-card{
+  transform-origin:center;
+}
+.recipe-card:has(.card-open.is-pressing){
+  transform:translateY(0) scale(.99);
+  border-color:rgba(255,178,41,.28);
+}
+.recipe-card:has(.favorite-btn.is-pressing) .recipe-image,
+.recipe-card:has(.card-open.is-pressing) .recipe-image{
+  transform:scale(1.012);
+}
+.sheet-backdrop.open{
+  animation:modalBackdropIn .18s ease-out both;
+}
+.sheet-backdrop.open .recipe-sheet{
+  animation:modalSheetIn .28s cubic-bezier(.16,.84,.32,1) both;
+}
+.cook-overlay.open{
+  animation:cookOverlayIn .2s ease-out both;
+}
+.cook-overlay.open .cook-box{
+  animation:cookPanelIn .3s cubic-bezier(.16,.84,.32,1) both;
+}
+@keyframes modalBackdropIn{
+  from{opacity:0}
+  to{opacity:1}
+}
+@keyframes modalSheetIn{
+  from{opacity:.3;transform:translateY(26px) scale(.985)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+@keyframes cookOverlayIn{
+  from{opacity:0}
+  to{opacity:1}
+}
+@keyframes cookPanelIn{
+  from{opacity:.25;transform:translateY(18px) scale(.99)}
+  to{opacity:1;transform:none}
+}
+
+/* Короткая фирменная заставка. В Android её позже заменит/подхватит нативный splash. */
+.app-splash{
+  position:fixed;
+  inset:0;
+  z-index:1000;
+  display:grid;
+  place-items:center;
+  padding:24px;
+  background:
+    radial-gradient(circle at 50% 42%,rgba(255,178,41,.13),transparent 34%),
+    linear-gradient(180deg,#120e0a 0%,#0d0a08 100%);
+  opacity:1;
+  visibility:visible;
+  transition:opacity .28s ease,visibility .28s ease;
+}
+.app-splash::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:.14;
+  background-image:radial-gradient(rgba(255,255,255,.14) .65px,transparent .65px);
+  background-size:18px 18px;
+  mask-image:radial-gradient(circle at center,black,transparent 70%);
+}
+.app-splash.is-hiding{
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+}
+.app-splash-inner{
+  position:relative;
+  width:min(390px,88vw);
+  display:grid;
+  justify-items:center;
+  gap:12px;
+  text-align:center;
+}
+.app-splash-logo{
+  width:min(360px,84vw);
+  height:auto;
+  display:block;
+  filter:contrast(1.18) saturate(1.08) brightness(1.04) drop-shadow(0 14px 34px rgba(255,151,31,.18));
+  animation:splashLogoIn .52s cubic-bezier(.16,.84,.32,1) both;
+}
+.app-splash-status{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  min-height:20px;
+  color:#b9a68e;
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  animation:splashStatusIn .35s .18s ease both;
+}
+.app-splash-dots{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+}
+.app-splash-dots i{
+  width:4px;
+  height:4px;
+  border-radius:50%;
+  background:var(--amber);
+  animation:splashDot 1s ease-in-out infinite;
+}
+.app-splash-dots i:nth-child(2){animation-delay:.14s}
+.app-splash-dots i:nth-child(3){animation-delay:.28s}
+@keyframes splashLogoIn{
+  from{opacity:0;transform:translateY(8px) scale(.965)}
+  to{opacity:1;transform:none}
+}
+@keyframes splashStatusIn{
+  from{opacity:0;transform:translateY(4px)}
+  to{opacity:1;transform:none}
+}
+@keyframes splashDot{
+  0%,70%,100%{opacity:.28;transform:translateY(0)}
+  35%{opacity:1;transform:translateY(-3px)}
+}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .view,
+  .app-splash-logo,
+  .app-splash-status,
+  .app-splash-dots i,
+  .sheet-backdrop.open,
+  .sheet-backdrop.open .recipe-sheet,
+  .cook-overlay.open,
+  .cook-overlay.open .cook-box{
+    animation:none!important;
+  }
+  .btn,.nav-btn,.chip,.favorite-btn,.sheet-close,.recipe-card{
+    transition-duration:.01ms!important;
+  }
+}
+
