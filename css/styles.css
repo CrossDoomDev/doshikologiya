@@ -179,7 +179,15 @@
     .oracle-result{min-height:104px;padding:17px;border-radius:17px;background:rgba(0,0,0,.20);border:1px solid var(--line);color:#f1e0c8;line-height:1.55;font-size:17px;transition:opacity .22s ease,transform .22s ease}
     .oracle-machine.consulting .oracle-orb{animation:oracleConsult 1s cubic-bezier(.4,0,.2,1) infinite}
     .oracle-machine.consulting .oracle-sticker{animation:oracleStickerConsult .62s ease-in-out infinite alternate}
-    .oracle-machine.consulting .oracle-result{opacity:.45;transform:scale(.985)}
+    .oracle-machine.consulting .oracle-result{opacity:1;transform:none;position:relative;overflow:hidden;padding-bottom:24px;border-color:rgba(255,178,41,.32);background:rgba(45,27,12,.56)}
+    .oracle-machine.consulting .oracle-result::after{content:"";position:absolute;bottom:0;left:0;width:100%;height:5px;background:linear-gradient(90deg,#d87c23,#ffc95b);transform:scaleX(0);transform-origin:left;animation:oracleChronicleProgress 3s linear both}
+    .oracle-result.oracle-revealed{animation:oracleAnswerReveal .36s ease-out both}
+    @keyframes oracleChronicleProgress{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+    @keyframes oracleAnswerReveal{from{opacity:.4;transform:translateY(7px)}to{opacity:1;transform:none}}
+    @media(prefers-reduced-motion:reduce){
+      .oracle-machine.consulting .oracle-result::after,.oracle-result.oracle-revealed{animation:none!important}
+      .oracle-machine.consulting .oracle-result::after{transform:scaleX(.5)}
+    }
     .oracle-machine.consulting #oracleBtn{pointer-events:none;opacity:.7}
     .oracle-choice{display:grid;grid-template-columns:92px minmax(0,1fr);gap:15px;align-items:center;text-align:left}
     .oracle-choice-image{width:92px;height:92px;border-radius:16px;object-fit:cover;border:1px solid rgba(255,212,110,.18);box-shadow:0 9px 28px rgba(0,0,0,.28)}
