@@ -208,6 +208,9 @@
     .wall-layout{display:grid;grid-template-columns:.85fr 1.15fr;gap:16px}
     .support-card{padding:26px;border:1px solid var(--line-hot);border-radius:var(--radius-xl);background:linear-gradient(145deg,rgba(255,178,41,.08),rgba(255,106,42,.03)),var(--surface);height:max-content;position:sticky;top:96px}
     .support-card .mark{width:62px;height:62px;border-radius:20px;display:grid;place-items:center;background:var(--amber);color:#241607;font-size:28px;margin-bottom:18px}
+    .donor-legacy{margin:18px 0 14px;padding:15px 16px;border-radius:17px;background:rgba(255,178,41,.08);border:1px dashed rgba(255,178,41,.28);color:#d8c6af;line-height:1.5;font-size:13px}
+    .donor-legacy strong{display:block;margin-bottom:5px;color:var(--amber-soft);font-size:14px}
+    .donor-legacy-note{display:block;margin-top:8px;color:var(--muted);font-size:11px;line-height:1.45}
     .comments{display:grid;gap:12px}
     .comment{padding:18px;border:1px solid var(--line);border-radius:18px;background:var(--surface)}
     .comment-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
@@ -466,7 +469,7 @@
             <div class="big-icon">❤️</div>
             <div class="section-overline">Фонд исследований</div>
             <h3>Поддержать лабораторию</h3>
-            <p>Донаты идут на развитие приложения, новые рецепты и моральную компенсацию испытуемым.</p>
+            <p>Донаты идут на развитие приложения, новые рецепты и моральную компенсацию испытуемым. А удачное сообщение после модерации может поселиться на Стене меценатов.</p>
             <button class="btn secondary" id="homeDonateBtn">Поддержать проект</button>
           </article>
         </div>
@@ -533,7 +536,12 @@
             <div class="mark support-sticker-host"><img class="mascot-sticker" src="images/stickers/sticker-heart.svg?v=20261008-clean" alt="" aria-hidden="true"></div>
             <h2>Поддержать НИИ лапши</h2>
             <p>Не обязательно спасать мир. Иногда достаточно помочь сделать следующий рецепт, экран или эксперимент чуть лучше.</p>
-            <button class="btn primary" id="wallDonateBtn">Поддержать проект</button>
+            <div class="donor-legacy">
+              <strong>🏛️ Оставь след в истории Дошикологии</strong>
+              Поддержи институт — и твоё сообщение после модерации может попасть на Стену меценатов. Через годы потомки спросят: «Кто этот человек?» — и мы с гордостью ответим: «Он верил в лапшу раньше всех».
+              <span class="donor-legacy-note">Публикация не гарантируется: сообщения проходят модерацию. Но шанс на цифровое бессмертие официально существует.</span>
+            </div>
+            <button class="btn primary" id="wallDonateBtn">Поддержать и войти в историю</button>
           </aside>
           <div class="comments" id="commentsList"></div>
         </div>
