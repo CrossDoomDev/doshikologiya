@@ -231,7 +231,7 @@
     .sheet-hero-copy h2{font-size:clamp(30px,6vw,50px);margin:10px 0}
     .sheet-content{padding:26px}
     .sheet-intro{font-size:16px;max-width:760px}
-    .protocol-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:16px;margin-top:18px}
+    .protocol-grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:18px}
     .protocol-card{padding:20px;border:1px solid var(--line);border-radius:18px;background:var(--surface)}
     .protocol-card h3{display:flex;align-items:center;gap:8px}
     ul,ol{padding-left:22px;color:#eadbc8;line-height:1.68}
@@ -588,10 +588,6 @@
             <h3>🧪 Материалы эксперимента</h3>
             <ul id="modalIngredients"></ul>
           </section>
-          <section class="protocol-card">
-            <h3>📋 Протокол приготовления</h3>
-            <ol id="modalSteps"></ol>
-          </section>
         </div>
         <div class="archive"><strong>Архив института:</strong> <span id="modalStory"></span></div>
         <div class="recipe-donate-end">
@@ -822,7 +818,6 @@
       document.getElementById("modalDescription").textContent=r.description;
       document.getElementById("modalMeta").innerHTML=`<span class="tag">⏱ ${escapeHtml(r.time)}</span><span class="tag">🔥 ${escapeHtml(r.difficulty)}</span><span class="tag">💸 ${escapeHtml(r.cost)}</span>`;
       document.getElementById("modalIngredients").innerHTML=r.ingredients.map(x=>`<li>${escapeHtml(x)}</li>`).join("");
-      document.getElementById("modalSteps").innerHTML=r.steps.map(x=>`<li>${escapeHtml(x)}</li>`).join("");
       document.getElementById("modalStory").textContent=r.story;
       updateModalFavorite();
       const modal=document.getElementById("recipeModal");modal.classList.add("open");modal.setAttribute("aria-hidden","false");document.body.style.overflow="hidden";
