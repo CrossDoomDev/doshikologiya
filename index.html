@@ -181,10 +181,27 @@
 
     .oracle-layout{display:grid;grid-template-columns:1.05fr .95fr;gap:16px}
     .oracle-machine{min-height:520px;display:flex;flex-direction:column;justify-content:space-between;padding:30px;border:1px solid var(--line);border-radius:var(--radius-xl);background:radial-gradient(circle at 50% 35%,rgba(255,178,41,.12),transparent 36%),linear-gradient(155deg,#23180f,#15100c 64%);box-shadow:var(--shadow);overflow:hidden;position:relative}
-    .oracle-orb{width:150px;height:150px;margin:18px auto 24px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 38% 30%,#fff1bc 0 5%,#ffc751 7% 31%,#ff8a2f 50%,#6d2a13 78%,#24100c 100%);box-shadow:0 0 0 10px rgba(255,178,41,.04),0 0 80px rgba(255,145,47,.20);position:relative}
+    .oracle-orb{width:150px;height:150px;margin:18px auto 24px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 38% 30%,#fff1bc 0 5%,#ffc751 7% 31%,#ff8a2f 50%,#6d2a13 78%,#24100c 100%);box-shadow:0 0 0 10px rgba(255,178,41,.04),0 0 80px rgba(255,145,47,.20);position:relative;transform:translateZ(0)}
     .oracle-orb::after{content:"";position:absolute;width:65%;height:24%;border-radius:50%;bottom:-18px;background:#2e2017;box-shadow:0 12px 30px rgba(0,0,0,.35)}
     .oracle-symbol{font-size:55px;filter:drop-shadow(0 3px 8px rgba(0,0,0,.25))}
-    .oracle-result{min-height:92px;padding:17px;border-radius:17px;background:rgba(0,0,0,.20);border:1px solid var(--line);color:#f1e0c8;line-height:1.55;font-size:17px}
+    .oracle-result{min-height:104px;padding:17px;border-radius:17px;background:rgba(0,0,0,.20);border:1px solid var(--line);color:#f1e0c8;line-height:1.55;font-size:17px;transition:opacity .22s ease,transform .22s ease}
+    .oracle-machine.consulting .oracle-orb{animation:oracleConsult 1s cubic-bezier(.4,0,.2,1) infinite}
+    .oracle-machine.consulting .oracle-sticker{animation:oracleStickerConsult .62s ease-in-out infinite alternate}
+    .oracle-machine.consulting .oracle-result{opacity:.45;transform:scale(.985)}
+    .oracle-machine.consulting #oracleBtn{pointer-events:none;opacity:.7}
+    .oracle-choice{display:grid;grid-template-columns:92px minmax(0,1fr);gap:15px;align-items:center;text-align:left}
+    .oracle-choice-image{width:92px;height:92px;border-radius:16px;object-fit:cover;border:1px solid rgba(255,212,110,.18);box-shadow:0 9px 28px rgba(0,0,0,.28)}
+    .oracle-choice-copy{min-width:0}
+    .oracle-choice-label{color:var(--amber-soft);font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+    .oracle-choice-title{margin:3px 0 7px;font-size:21px;line-height:1.15;color:var(--cream)}
+    .oracle-choice-reason{margin:0;color:#d8c6af;font-size:14px;line-height:1.5}
+    .oracle-choice .btn{margin-top:12px}
+    @keyframes oracleConsult{
+      0%,100%{transform:scale(1);box-shadow:0 0 0 10px rgba(255,178,41,.04),0 0 80px rgba(255,145,47,.20)}
+      35%{transform:scale(1.06) rotate(-2deg);box-shadow:0 0 0 18px rgba(255,178,41,.08),0 0 115px rgba(255,145,47,.42)}
+      70%{transform:scale(.98) rotate(2deg);box-shadow:0 0 0 7px rgba(255,178,41,.05),0 0 95px rgba(255,145,47,.30)}
+    }
+    @keyframes oracleStickerConsult{from{transform:rotate(-5deg) scale(.96)}to{transform:rotate(5deg) scale(1.05)}}
     .daily-card{padding:28px;border:1px solid var(--line);border-radius:var(--radius-xl);background:var(--surface);box-shadow:var(--shadow-soft)}
     .daily-number{font-family:"Arial Black",sans-serif;font-size:74px;line-height:.9;color:var(--amber);margin:24px 0 12px}
 
@@ -311,7 +328,7 @@
     @keyframes successSpin{to{transform:rotate(360deg)}}
     @keyframes emblemBounce{0%{opacity:0;transform:scale(.35) rotate(-22deg)}70%{opacity:1;transform:scale(1.12) rotate(6deg)}100%{transform:scale(1) rotate(0)}}
     @keyframes confettiFall{0%{transform:translate3d(0,-20px,0) rotate(var(--r));opacity:0}12%{opacity:1}100%{transform:translate3d(var(--drift),760px,0) rotate(calc(var(--r) + 680deg));opacity:0}}
-    @media(prefers-reduced-motion:reduce){.cook-success.open,.success-card,.success-emblem,.success-rays,.success-card::before,.success-confetti i{animation:none!important}}
+    @media(prefers-reduced-motion:reduce){.cook-success.open,.success-card,.success-emblem,.success-rays,.success-card::before,.success-confetti i,.oracle-machine.consulting .oracle-orb,.oracle-machine.consulting .oracle-sticker{animation:none!important}}
 
     @media(max-width:900px){
       .topbar.logo-hidden{display:none}
@@ -405,7 +422,6 @@
             <div class="hero-meta" id="featuredMeta"></div>
             <div class="hero-actions">
               <button class="btn primary" id="featuredOpenBtn">Открыть протокол</button>
-              <button class="btn secondary" id="randomRecipeBtn">🎲 Мне всё равно, что есть</button>
             </div>
           </div>
         </article>
@@ -443,8 +459,8 @@
             <div class="big-icon">🔮</div>
             <div class="section-overline">Отдел вероятностей</div>
             <h3>Оракул лапши</h3>
-            <p>Когда логика бессильна, остаётся задать вопрос лапше. Точность прогнозов примерно как у гороскопа, только вкуснее.</p>
-            <button class="btn secondary" data-route="oracle">Получить пророчество</button>
+            <p>Не знаешь, что съесть? Передай решение в Отдел вероятностей — Оракул выберет один протокол из всего архива.</p>
+            <button class="btn secondary" data-route="oracle">Довериться Оракулу</button>
           </article>
           <article class="lab-card">
             <div class="big-icon">❤️</div>
@@ -482,17 +498,17 @@
           <div>
             <div class="section-overline">Отдел вероятностей</div>
             <h2>Оракул лапши</h2>
-            <p>Алгоритм основан на паре от кипятка, внутреннем голосе и статистике, которую мы предпочитаем не публиковать.</p>
+            <p>Не знаешь, что покушать? Доверься Оракулу. Он заглянет в твою кулинарную судьбу и выберет один рецепт из всего архива института.</p>
           </div>
         </div>
         <div class="oracle-layout">
-          <article class="oracle-machine">
+          <article class="oracle-machine" id="oracleMachine">
             <div>
               <div class="lab-label">Центральный оракул</div>
               <div class="oracle-orb"><img class="mascot-sticker oracle-sticker" src="images/stickers/sticker-wow.svg?v=20261008-clean" alt="" aria-hidden="true"></div>
-              <div class="oracle-result" id="oracleResult">Сформулируй вопрос мысленно. Лаборатория уже прогревает воду.</div>
+              <div class="oracle-result" id="oracleResult">Если холодильник смотрит на тебя так же растерянно, как ты на него — нажимай кнопку. Судьба сама выберет протокол.</div>
             </div>
-            <button class="btn primary" id="oracleBtn">Запустить расчёт судьбы</button>
+            <button class="btn primary" id="oracleBtn">🔮 Узнать, что мне есть</button>
           </article>
           <aside class="daily-card">
             <div class="section-overline">Показатель дня</div>
@@ -664,17 +680,17 @@
     const fallbackData = {"banner":{"title":"Институт дошикологии докладывает","text":"Мы превращаем лапшу быстрого приготовления в дисциплину, где у каждого эксперимента есть протокол, легенда и шанс пережить конец месяца."},"donateUrl":"https://pay.cloudtips.ru/p/c096e867","recipes":[{"id":"carbonara-2049","title":"Доширак Карбонара 2049","description":"Когда Италия далеко, зарплата ещё дальше, а сыр уже подозрительно давно лежит в холодильнике.","time":"9 минут","difficulty":"Легко","cost":"Дёшево","ingredients":["1 пачка лапши быстрого приготовления","1 яйцо","30–40 г твёрдого сыра","2 ломтика бекона или колбасы","Чёрный перец","Немного воды от лапши"],"steps":["Завари лапшу до мягкости, но оставь 2–3 ложки горячей воды. Это не лень сливать — это будущий соус, лаборатория всё предусмотрела.","Нарежь бекон или колбасу и обжарь до румяности. Если запах уже собрал соседей у двери — этап выполнен успешно.","В миске смешай яйцо, тёртый сыр и пару ложек горячей воды от лапши. Выглядит подозрительно, но именно так начинаются великие открытия.","Переложи лапшу к бекону и сразу сними сковороду с огня. Сейчас важна скорость: мы готовим карбонару, а не археологический образец.","Влей сырно-яичную смесь и быстро перемешивай до кремовой текстуры. Если получилось яичницей — объявляем это авторской деконструкцией.","Посыпь чёрным перцем и подавай сразу. Итальянцам можно не показывать, зато себе можно наложить добавку."],"story":"Легенда гласит, что блюдо родилось в общежитии после того, как студент увидел видео про карбонару, проверил баланс карты и принял стратегическое решение: заменить почти всё.","image":"https://crossdoomdev.github.io/doshikologiya-data/images/recipes/carbonara-2049.webp?v=20261009-ingredients","categories":["После зарплаты","Сытное"]},{"id":"student-ramen","title":"Рамен стипендиата","description":"Богатый вкус при бюджете, который официально считается слухом.","time":"12 минут","difficulty":"Легко","cost":"Очень дёшево","ingredients":["1 пачка лапши","1 варёное или жареное яйцо","Немного зелёного лука","1 ч. л. соевого соуса","Щепотка кунжута","Любые остатки курицы — по возможности"],"steps":["Свари лапшу с половиной пакетика приправы. Вторую половину прибереги: наука давно доказала, что почки тоже хотят дожить до стипендии.","Добавь соевый соус и перемешай бульон. Одной ложкой мы только что повысили международный статус блюда.","Перелей лапшу с бульоном в глубокую миску. Глубокая миска автоматически добавляет блюду примерно три звезды солидности.","Разрежь яйцо пополам и уложи сверху. Симметрия важна: мы всё-таки институт, а не стихийный перекус у раковины.","Добавь зелёный лук, кунжут и кусочки курицы, если они нашлись. Если курицы нет — называем версию «вегетарианский грант не одобрен».","Дай рамену постоять минуту и начинай есть. Медленно: чем дольше ешь, тем убедительнее кажется, что порция была большой."],"story":"Появился в тот момент, когда кто-то впервые выложил яйцо поверх доширака и понял: теперь это не бедность, а подача.","image":"https://crossdoomdev.github.io/doshikologiya-data/images/recipes/student-ramen.webp?v=20261009-ingredients","categories":["До зарплаты","Быстро"]},{"id":"shawarma-noodles","title":"Шаурма без шаурмы","description":"Лапша, овощи и соус объединяются в блюдо, которому санитарная инспекция пока не придумала название.","time":"15 минут","difficulty":"Нормально","cost":"Дёшево","ingredients":["1 пачка лапши","Лаваш","Немного капусты","Огурец","Кетчуп","Майонез","Курица или сосиска"],"steps":["Завари лапшу, слей воду и дай ей немного остыть. Горячая лапша в лаваше — это уже не шаурма, а испытание на термостойкость.","Нарежь огурец, помидор, капусту и мясную часть небольшими кусочками. Размер «поместится в рот без переговоров» подходит идеально.","Смешай кетчуп и майонез до однородного соуса. Поздравляем: базовый курс высокой уличной кухни официально пройден.","Разложи лаваш, добавь овощи, мясо, лапшу и соус ближе к центру. Не строй Эверест — его потом ещё заворачивать.","Подверни края и сверни плотный рулет. Если начинка пытается сбежать, напомни ей, кто здесь руководитель эксперимента.","Подрумянь рулет на сухой сковороде с двух сторон. Когда лаваш станет золотистым, можно объявлять точку выдачи открытой."],"story":"Рецепт появился после философского вопроса: если положить доширак в лаваш, перестаёт ли он быть дошираком? Эксперимент продолжается.","image":"https://crossdoomdev.github.io/doshikologiya-data/images/recipes/shawarma-noodles.webp?v=20261009-ingredients","categories":["После зарплаты","На вынос"]},{"id":"hangover-soup","title":"Суп «Вчера было зря»","description":"Острый спасательный круг для утра, которое началось слишком громко.","time":"10 минут","difficulty":"Легко","cost":"Дёшево","ingredients":["1 пачка острой лапши","500 мл воды","1 яйцо","Немного томатной пасты","Зелень","Пара ломтиков солёного огурца"],"steps":["Доведи воду до кипения и размешай в ней томатную пасту. Красный цвет бодрит ещё до того, как организм понял, что происходит.","Добавь лапшу и примерно половину пакетика специй. Сегодня нам нужен вкус, а не повтор вчерашних ошибок в солёном формате.","Аккуратно разбей яйцо прямо в кипящий бульон. Желток должен попасть в кастрюлю, а не на плиту — это наш минимальный KPI.","Нарежь солёный огурец и отправь его в суп. Да, звучит странно, но вчерашние решения тоже звучали странно — и ничего.","Провари всё ещё 2–3 минуты на слабом огне. В это время можно молча пересмотреть жизненную стратегию и уровень гидратации.","Сними с огня, добавь зелень и дай супу минуту успокоиться. Потом ешь осторожно: организм сейчас принимает только дипломатические переговоры."],"story":"По неподтверждённым данным, первое испытание прошло в воскресенье в 11:47. Испытуемый выжил и даже смог включить чайник второй раз.","image":"https://crossdoomdev.github.io/doshikologiya-data/images/recipes/hangover-soup.webp?v=20261009-ingredients","categories":["Похмельное","Острое"]},{"id":"boss-level","title":"Доширак уровня «Босс»","description":"Версия для тех, кто однажды сказал: «А что будет, если добавить вообще всё?»","time":"20 минут","difficulty":"Опасно вкусно","cost":"Уже не доширак","ingredients":["2 пачки лапши","150 г курицы","1 яйцо","Грибы","Сыр","Зелёный лук","Соевый соус","Чеснок","Острый соус"],"steps":["Нарежь курицу, грибы и чеснок, затем обжарь всё до румяности. Если кухня пахнет так, будто пришла зарплата, движемся правильно.","Отдельно завари лапшу и полностью слей воду. Босс не плавает в бульоне — босс выходит на арену сухим.","Добавь лапшу в сковороду, влей немного соевого соуса и перемешай. На этом этапе обычный дошик начинает подозревать, что его повысили.","Приготовь сверху яичницу или яйцо-пашот. Выбирай по уровню амбиций: яичница — уверенный менеджер, пашот — уже совет директоров.","Добавь сыр, зелёный лук и немного острого соуса. Не переборщи: босс должен внушать уважение, а не вызывать эвакуацию.","Переложи всё на тарелку и сфотографируй до первого укуса. Иначе никто не поверит, что это когда-то начиналось с пачки лапши."],"story":"Блюдо возникло в конце месяца сразу после зарплаты, когда бывший стипендиат решил отомстить всем бедным ужинам прошлого. Через три дня бюджет снова вернулся к базовой лапше.","image":"https://crossdoomdev.github.io/doshikologiya-data/images/recipes/boss-level.webp?v=20261009-ingredients","categories":["После зарплаты","Сытное"]},{"id":"navy-noodles","title":"Лапша по-флотски","description":"Макароны по-флотски ушли в отпуск, поэтому их смену приняла лапша быстрого приготовления.","time":"14 минут","difficulty":"Легко","cost":"Дёшево","ingredients":["1 пачка лапши","120 г мясного фарша","Половина небольшой луковицы","1 ч. л. растительного масла","Чёрный перец","Половина пакетика приправы"],"steps":["Мелко нарежь лук и обжарь его на небольшом количестве масла до мягкости. Слёзы допустимы — флотская подготовка идёт по плану.","Добавь фарш и жарь, разбивая комочки, пока мясо полностью не приготовится. Крупные айсберги фарша в нашем море не приветствуются.","Отдельно завари лапшу и тщательно слей воду. Нам нужны макароны по-флотски, а не лапша в состоянии кораблекрушения.","Переложи лапшу к фаршу и хорошо перемешай. В этот момент две бюджетные цивилизации наконец подписывают мирный договор.","Добавь часть приправы и чёрный перец по вкусу. Сначала немного: адмирал может досолить, а вот разминировать соль уже сложнее.","Прогрей всё вместе около минуты и снимай с огня. Подавай горячим — флот готов, экипаж голоден, приказ понятен."],"story":"По легенде, рецепт придумал человек, который хотел макароны по-флотски, но обнаружил дома только фарш и одинокую пачку лапши. Отступать было поздно: сковорода уже нагрелась.","image":"https://crossdoomdev.github.io/doshikologiya-data/images/recipes/navy-noodles.webp?v=20261009-ingredients","categories":["До зарплаты","Сытное"]},{"id":"pan-noodle-pizza","title":"Доши-пицца на сковороде","description":"Если теста нет, это ещё не повод отменять пиццу. По крайней мере так утверждает дошикология.","time":"18 минут","difficulty":"Нормально","cost":"Дёшево","ingredients":["1 пачка лапши","2 яйца","50 г сыра","2 ст. л. томатного соуса","Колбаса или ветчина","Немного растительного масла"],"steps":["Завари лапшу до мягкости и полностью слей воду. Мокрая основа — это уже не пицца, а очень тревожное болото.","Разбей яйца в миску, добавь лапшу и перемешай. Сейчас она выглядит как ошибка, но дай науке ещё пару минут.","Выложи смесь на слегка смазанную сковороду и разровняй плотным слоем. Представь, что ты укладываешь фундамент бюджетной Италии.","Накрой крышкой и готовь несколько минут на небольшом огне, пока низ не схватится. Не торопи: даже доширачная пицца требует терпения.","Смажь основу томатным соусом, разложи колбасу и щедро посыпь сыром. Вот теперь эксперимент начал выглядеть подозрительно законно.","Снова накрой крышкой и дождись, пока сыр расплавится. Как только он потёк — можно объявлять Неаполь временно захваченным."],"story":"Пицца появилась после того, как доставка показала слишком длинное время ожидания. Создатель посмотрел на лапшу, лапша посмотрела на него, и дальше события развивались стремительно.","image":"https://crossdoomdev.github.io/doshikologiya-data/images/recipes/pan-noodle-pizza.webp?v=20261009-ingredients","categories":["До зарплаты","На сковороде"]},{"id":"noodle-omelette","title":"Омлет «Три минуты славы»","description":"Завтрак, который выглядит так, будто у тебя был план с самого начала.","time":"11 минут","difficulty":"Легко","cost":"Очень дёшево","ingredients":["Половина пачки лапши","2 яйца","2 ст. л. молока или воды","Немного сыра","Зелень","Щепотка приправы"],"steps":["Завари половину пачки лапши и хорошо слей воду. Целую пачку не надо — мы готовим омлет, а не несущую конструкцию.","Взбей яйца с молоком или водой до однородности. Венчик не обязателен: вилка тоже умеет делать карьеру.","Добавь щепотку приправы и ещё раз перемешай. Не высыпай весь пакет — утро и так достаточно агрессивное.","Выложи лапшу на разогретую сковороду и залей яичной смесью. Теперь главное не задавать вопрос «зачем», а уверенно идти дальше.","Посыпь сыром, накрой крышкой и готовь на слабом огне, пока яйца не схватятся. Если сыр расплавился первым — он просто более мотивирован.","Сними омлет с огня и добавь зелень. Завтрак готов быстрее, чем ты успел придумать уважительную причину опоздания."],"story":"История блюда началась с остатков вчерашней лапши и решительного нежелания выбрасывать еду. Через десять минут остатки получили новое имя и повысили социальный статус.","image":"https://crossdoomdev.github.io/doshikologiya-data/images/recipes/noodle-omelette.webp?v=20261009-ingredients","categories":["Завтрак","До зарплаты"]},{"id":"crispy-noodle-salad","title":"Хрустящий салат дошиколога","description":"Когда хочется салат, но организм подозревает, что его пытаются обмануть овощами.","time":"10 минут","difficulty":"Легко","cost":"Дёшево","ingredients":["Половина пачки сухой лапши","Капуста","Морковь","Свежий огурец","1 ст. л. майонеза или йогурта","Немного соевого соуса"],"steps":["Тонко нашинкуй капусту и морковь. Чем мельче нарезка, тем убедительнее салат делает вид, что он из кафе.","Нарежь свежий огурец небольшими полосками или кубиками. Геометрия свободная — комиссия по стандартам сегодня выходная.","Смешай овощи с майонезом или йогуртом и каплей соевого соуса. Каплей — не половиной бутылки, мы всё ещё различаем ингредиенты.","Разломай сухую лапшу на небольшие кусочки прямо в пачке или миске. Это редкий рецепт, где хрустеть дошиком до готовки официально разрешено.","Добавь сухую лапшу в салат непосредственно перед подачей. Раньше времени нельзя: хруст — ресурс невосполнимый.","Быстро перемешай и подавай сразу. Ешь, пока салат хрустит громче твоих финансовых решений."],"story":"Рецепт возник во время попытки вести здоровый образ жизни. Овощи уже лежали в миске, но рядом случайно оказался доширак. Компромисс был подписан без участия диетолога.","image":"https://crossdoomdev.github.io/doshikologiya-data/images/recipes/crispy-noodle-salad.webp?v=20261009-ingredients","categories":["До зарплаты","Хрустящее"]},{"id":"red-alert-noodles","title":"Красная тревога","description":"Острая лапша для людей, которые считают предупреждения на упаковке личным вызовом.","time":"13 минут","difficulty":"Остро","cost":"Дёшево","ingredients":["1 пачка лапши","1 ч. л. острого соуса","1 яйцо","Немного зелёного лука","1 ч. л. соевого соуса","Сыр по желанию"],"steps":["Приготовь лапшу и оставь 2–3 ложки воды после варки. Эта вода скоро станет системой пожаротушения для твоих вкусовых рецепторов.","Добавь соевый соус и острый соус, начиная с небольшого количества. Красная тревога должна включаться постепенно, а не ядерной кнопкой.","Перемешивай лапшу на слабом огне около минуты, чтобы соус равномерно её покрыл. Если уже хочется открыть окно — всё идёт подозрительно успешно.","Приготовь яйцо любым удобным способом и положи сверху. Желток здесь работает как официальный миротворец.","Посыпь зелёным луком. Он не уменьшит остроту, зато фотография будет выглядеть так, будто ситуация полностью под контролем.","Попробуй и при необходимости добавь немного сыра. Если стало легче — никому не говори: протокол «Красная тревога» всё равно засчитан."],"story":"Первый дегустатор уверенно заявил, что любит острое. Через минуту он уже молча смотрел в стену и переосмысливал значение слова «люблю». Так блюдо и получило название.","image":"https://crossdoomdev.github.io/doshikologiya-data/images/recipes/red-alert-noodles.webp?v=20261009-ingredients","categories":["Острое","Красный уровень"]}],"comments":[{"name":"Сергей Кипятков","amount":"300 рублей","text":"На научные исследования. Требую сравнительный тест приправ!","date":"07.10.2026"},{"name":"Анонимный Дошиколог","amount":"100 рублей","text":"Пусть лапша не заканчивается, а вода всегда кипит.","date":"06.10.2026"},{"name":"Лена","amount":"500 рублей","text":"Жду рубрику «рецепты после зарплаты» и «рецепты за три дня до зарплаты».","date":"05.10.2026"},{"name":"Игорь","amount":"250 рублей","text":"Оракул сказал донатить. Я человек суеверный.","date":"04.10.2026"},{"name":"Доши-Мэн","amount":"1000 рублей","text":"На сервер. И отдельно двадцать рублей на зелёный лук.","date":"30.09.2026"}],"featuredRecipeId":"carbonara-2049","version":"2.4.1"};
 
     const categoryOrder = ["Все","До зарплаты","После зарплаты","Похмельное","Острое","Завтрак"];
-    const oracleAnswers = [
-      "Да. Но сначала поешь.",
-      "Нет. И приправа тут ни при чём.",
-      "Шансы высоки, если не забудешь залить кипятком.",
-      "Оракул видит успех. Или это просто пар от кастрюли.",
-      "Сегодня лучше не экспериментировать с третьим пакетиком специй.",
-      "Ответ скрыт на дне миски.",
-      "Судьба говорит: добавь яйцо.",
-      "Определённо да. На 73%. Остальное — майонез.",
-      "Сейчас не время. Дай этому настояться три минуты.",
-      "Ты уже знаешь ответ. Просто хотел подтверждение от лапши."
+    const oracleReasons = [
+      "Звёзды, кипяток и остатки здравого смысла сошлись именно на этом варианте.",
+      "Оракул проверил все ветви будущего и решил, что эта хотя бы вкусная.",
+      "Вселенная намекает: сейчас лучше довериться лапше, чем продолжать переговоры с холодильником.",
+      "По расчётам Отдела вероятностей, этот выбор снижает риск ещё двадцать минут решать, что приготовить.",
+      "Кармический баланс требует именно этого протокола. Мы тоже не поняли почему, но печать уже поставлена.",
+      "Сегодня твоя внутренняя энергия подозрительно хорошо резонирует с этим блюдом. Звучит научно — значит, работает.",
+      "Судьба выбрала это первой. Оракул категорически отрицает использование виртуального кубика.",
+      "Вероятность того, что ты будешь доволен этим решением, значительно выше вероятности придумать что-то лучше самостоятельно.",
+      "Твой кулинарный маршрут на сегодня рассчитан. Спорить можно, но Оракул уже ушёл на обед.",
+      "Именно этот протокол сейчас находится в идеальной точке между «хочу поесть» и «не хочу больше думать»."
     ];
 
     let appData = structuredClone(fallbackData);
@@ -958,8 +974,40 @@
       document.getElementById("dailyForecast").textContent=forecasts[seed%forecasts.length];
     }
 
-    function oracle(){const out=document.getElementById("oracleResult");out.style.opacity=.22;setTimeout(()=>{out.textContent=oracleAnswers[Math.floor(Math.random()*oracleAnswers.length)];out.style.opacity=1;},220);}
-    function randomRecipe(){if(!appData.recipes.length)return;const r=appData.recipes[Math.floor(Math.random()*appData.recipes.length)];openRecipe(r.id);}
+    let lastOracleRecipeId=null;
+    let oracleBusy=false;
+    function oracle(){
+      if(oracleBusy || !appData.recipes.length)return;
+      const machine=document.getElementById("oracleMachine");
+      const out=document.getElementById("oracleResult");
+      const button=document.getElementById("oracleBtn");
+      oracleBusy=true;
+      machine.classList.add("consulting");
+      button.textContent="Оракул заглядывает в судьбу…";
+      out.textContent="Секунду… Сверяем положение звёзд, уровень кипятка и содержимое архива.";
+
+      window.setTimeout(()=>{
+        const pool=appData.recipes.length>1
+          ?appData.recipes.filter(recipe=>recipe.id!==lastOracleRecipeId)
+          :appData.recipes;
+        const recipe=pool[Math.floor(Math.random()*pool.length)];
+        const reason=oracleReasons[Math.floor(Math.random()*oracleReasons.length)];
+        lastOracleRecipeId=recipe.id;
+        out.innerHTML=`<div class="oracle-choice">
+          <img class="oracle-choice-image" src="${escapeHtml(recipe.image||"")}" alt="${escapeHtml(recipe.title)}">
+          <div class="oracle-choice-copy">
+            <div class="oracle-choice-label">Оракул постановил</div>
+            <h3 class="oracle-choice-title">${escapeHtml(recipe.title)}</h3>
+            <p class="oracle-choice-reason">${escapeHtml(reason)}</p>
+            <button class="btn secondary" data-open-recipe="${escapeHtml(recipe.id)}">Открыть протокол →</button>
+          </div>
+        </div>`;
+        bindDynamicButtons();
+        machine.classList.remove("consulting");
+        button.textContent="🔮 Спросить Оракула ещё раз";
+        oracleBusy=false;
+      },1050);
+    }
 
     const routes=["home","recipes","oracle","wall"];
     function goTo(route){if(!routes.includes(route))route="home";routes.forEach(name=>document.getElementById(`view-${name}`).classList.toggle("hidden",name!==route));document.querySelector(".topbar")?.classList.toggle("logo-hidden",route!=="home");document.querySelectorAll("[data-route]").forEach(el=>el.classList.toggle("active",el.dataset.route===route&&el.classList.contains("nav-btn")));history.replaceState(null,"",`#${route}`);window.scrollTo({top:0,behavior:"smooth"});}
@@ -970,7 +1018,6 @@
     document.getElementById("recipeSearch").addEventListener("input",e=>{currentSearch=e.target.value;renderRecipes();});
     document.getElementById("favoritesToggle").addEventListener("click",()=>{showFavoritesOnly=!showFavoritesOnly;document.getElementById("favoritesToggle").textContent=showFavoritesOnly?"♥ Показываем избранное":"♡ Только избранное";renderRecipes();});
     document.getElementById("featuredOpenBtn").addEventListener("click",()=>{});
-    document.getElementById("randomRecipeBtn").addEventListener("click",randomRecipe);
     document.getElementById("oracleBtn").addEventListener("click",oracle);
     ["noteDonateBtn","homeDonateBtn","wallDonateBtn","modalDonateBtn","modalDonateBottomBtn"].forEach(id=>document.getElementById(id).addEventListener("click",openDonate));
     document.getElementById("closeModal").addEventListener("click",closeRecipe);
