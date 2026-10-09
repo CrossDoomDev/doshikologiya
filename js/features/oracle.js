@@ -29,8 +29,18 @@ export function runOracle() {
 
   oracleBusy = true;
   machine.classList.add("consulting");
-  button.textContent = "Оракул заглядывает в судьбу…";
-  output.textContent = "Секунду… Сверяем положение звёзд, уровень кипятка и содержимое архива.";
+  button.disabled = true;
+  button.textContent = "📜 Оракул изучает хроники…";
+  output.classList.remove("oracle-revealed");
+  output.setAttribute("aria-busy", "true");
+  output.textContent = "📜 Раскрываем запечатанные хроники Института…";
+
+  window.setTimeout(() => {
+    if (oracleBusy) output.textContent = "Сопоставляем древние пророчества с запасами лапши…";
+  }, 1000);
+  window.setTimeout(() => {
+    if (oracleBusy) output.textContent = "Последняя проверка знаков судьбы…";
+  }, 2000);
 
   window.setTimeout(() => {
     const pool = state.recipes.length > 1
@@ -51,7 +61,10 @@ export function runOracle() {
     </div>`;
 
     machine.classList.remove("consulting");
+    output.removeAttribute("aria-busy");
+    output.classList.add("oracle-revealed");
+    button.disabled = false;
     button.textContent = "🔮 Спросить Оракула ещё раз";
     oracleBusy = false;
-  }, 1050);
+  }, 3000);
 }
