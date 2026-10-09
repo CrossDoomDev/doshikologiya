@@ -487,6 +487,7 @@ button:focus-visible,
   background-size:18px 18px;
   mask-image:radial-gradient(circle at center,black,transparent 70%);
 }
+.app-splash[hidden]{display:none!important}
 .app-splash.is-hiding{
   opacity:0;
   visibility:hidden;
@@ -561,5 +562,6 @@ button:focus-visible,
   .btn,.nav-btn,.chip,.favorite-btn,.sheet-close,.recipe-card{
     transition-duration:.01ms!important;
   }
+  .app-splash{transition:none!important}
 }
 
