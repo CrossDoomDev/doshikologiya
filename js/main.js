@@ -7,7 +7,7 @@ import { renderPatrons } from "./features/support.js";
 import { openRecipe, closeRecipe, toggleFavorite } from "./features/recipe-modal.js";
 import { openDonation } from "./features/donations.js";
 import { initCookingLayout, openCookMode, closeCookMode, navigateCookStep, closeCookSuccess } from "./features/cooking.js";
-import { renderDailyIndex, runOracle } from "./features/oracle.js";
+import { renderDailyIndex, runOracle } from "./features/oracle.js?v=20261009-oracle3";
 import { initSplash, hideSplash } from "./features/splash.js?v=20261009-motion2";
 import { initPressFeedback } from "./features/press-feedback.js?v=20261009-motion2";
 
