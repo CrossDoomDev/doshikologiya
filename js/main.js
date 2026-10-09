@@ -8,8 +8,8 @@ import { openRecipe, closeRecipe, toggleFavorite } from "./features/recipe-modal
 import { openDonation } from "./features/donations.js";
 import { initCookingLayout, openCookMode, closeCookMode, navigateCookStep, closeCookSuccess } from "./features/cooking.js";
 import { renderDailyIndex, runOracle } from "./features/oracle.js";
-import { initSplash, hideSplash } from "./features/splash.js";
-import { initPressFeedback } from "./features/press-feedback.js";
+import { initSplash, hideSplash } from "./features/splash.js?v=20261009-motion2";
+import { initPressFeedback } from "./features/press-feedback.js?v=20261009-motion2";
 
 function renderAll() {
   renderBanner();
