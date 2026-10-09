@@ -62,7 +62,8 @@
       "image": "https://crossdoomdev.github.io/doshikologiya-data/images/recipes/student-ramen.webp?v=20261009-ingredients",
       "categories": [
         "До зарплаты",
-        "Быстро"
+        "Быстро",
+        "Студенческое"
       ]
     },
     {
@@ -93,7 +94,8 @@
       "image": "https://crossdoomdev.github.io/doshikologiya-data/images/recipes/shawarma-noodles.webp?v=20261009-ingredients",
       "categories": [
         "После зарплаты",
-        "На вынос"
+        "На вынос",
+        "Холостяцкое"
       ]
     },
     {
@@ -123,7 +125,8 @@
       "image": "https://crossdoomdev.github.io/doshikologiya-data/images/recipes/hangover-soup.webp?v=20261009-ingredients",
       "categories": [
         "Похмельное",
-        "Острое"
+        "Острое",
+        "Холостяцкое"
       ]
     },
     {
@@ -156,7 +159,8 @@
       "image": "https://crossdoomdev.github.io/doshikologiya-data/images/recipes/boss-level.webp?v=20261009-ingredients",
       "categories": [
         "После зарплаты",
-        "Сытное"
+        "Сытное",
+        "Холостяцкое"
       ]
     },
     {
@@ -186,7 +190,9 @@
       "image": "https://crossdoomdev.github.io/doshikologiya-data/images/recipes/navy-noodles.webp?v=20261009-ingredients",
       "categories": [
         "До зарплаты",
-        "Сытное"
+        "Сытное",
+        "Студенческое",
+        "Холостяцкое"
       ]
     },
     {
@@ -216,7 +222,8 @@
       "image": "https://crossdoomdev.github.io/doshikologiya-data/images/recipes/pan-noodle-pizza.webp?v=20261009-ingredients",
       "categories": [
         "До зарплаты",
-        "На сковороде"
+        "На сковороде",
+        "Студенческое"
       ]
     },
     {
@@ -246,7 +253,9 @@
       "image": "https://crossdoomdev.github.io/doshikologiya-data/images/recipes/noodle-omelette.webp?v=20261009-ingredients",
       "categories": [
         "Завтрак",
-        "До зарплаты"
+        "До зарплаты",
+        "Студенческое",
+        "Холостяцкое"
       ]
     },
     {
@@ -276,7 +285,8 @@
       "image": "https://crossdoomdev.github.io/doshikologiya-data/images/recipes/crispy-noodle-salad.webp?v=20261009-ingredients",
       "categories": [
         "До зарплаты",
-        "Хрустящее"
+        "Хрустящее",
+        "Студенческое"
       ]
     },
     {
@@ -343,5 +353,5 @@
     }
   ],
   "featuredRecipeId": "carbonara-2049",
-  "version": "2.4.1"
+  "version": "2.4.2"
 }
