@@ -1,0 +1,52 @@
+import fs from "node:fs";
+import path from "node:path";
+
+const root = process.cwd();
+const readJson = file => JSON.parse(fs.readFileSync(path.join(root, file), "utf8"));
+
+const config = readJson("data/config.json");
+const recipes = readJson("data/recipes.json");
+const patrons = readJson("data/patrons.json");
+
+const errors = [];
+const ids = new Set();
+
+if (!Array.isArray(recipes)) errors.push("data/recipes.json должен содержать массив.");
+if (!Array.isArray(patrons)) errors.push("data/patrons.json должен содержать массив.");
+
+for (const [index, recipe] of (Array.isArray(recipes) ? recipes : []).entries()) {
+  const label = `Рецепт #${index + 1}`;
+  for (const field of ["id", "title", "description", "time", "difficulty", "cost", "story", "image"]) {
+    if (typeof recipe[field] !== "string" || !recipe[field].trim()) errors.push(`${label}: отсутствует строковое поле "${field}".`);
+  }
+  if (!Array.isArray(recipe.ingredients) || !recipe.ingredients.length) errors.push(`${label}: ingredients должен быть непустым массивом.`);
+  if (!Array.isArray(recipe.steps) || !recipe.steps.length) errors.push(`${label}: steps должен быть непустым массивом.`);
+  if (!Array.isArray(recipe.categories) || !recipe.categories.length) errors.push(`${label}: categories должен быть непустым массивом.`);
+
+  if (recipe.id) {
+    if (ids.has(recipe.id)) errors.push(`Повторяющийся id: ${recipe.id}`);
+    ids.add(recipe.id);
+  }
+
+  if (typeof recipe.image === "string" && recipe.image && !/^https?:\/\//.test(recipe.image)) {
+    const imagePath = recipe.image.split("?")[0];
+    if (!fs.existsSync(path.join(root, imagePath))) errors.push(`${label}: не найдено изображение ${imagePath}`);
+  }
+}
+
+if (config.featuredRecipeId && !ids.has(config.featuredRecipeId)) {
+  errors.push(`featuredRecipeId "${config.featuredRecipeId}" не найден среди рецептов.`);
+}
+if (!Array.isArray(config.categoryOrder) || !config.categoryOrder.includes("Все")) {
+  errors.push('config.categoryOrder должен быть массивом и содержать "Все".');
+}
+if (config.donateUrl && !/^https:\/\//.test(config.donateUrl)) {
+  errors.push("donateUrl должен быть HTTPS-ссылкой.");
+}
+
+if (errors.length) {
+  console.error("Проверка данных не пройдена:\n- " + errors.join("\n- "));
+  process.exit(1);
+}
+
+console.log(`Данные корректны: ${recipes.length} рецептов, ${patrons.length} записей на стене, schemaVersion ${config.schemaVersion}.`);

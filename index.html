@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.webmanifest?v=2">
   <meta name="application-name" content="Дошикология">
   <meta name="apple-mobile-web-app-title" content="Дошикология">
-  <link rel="stylesheet" href="css/styles.css?v=20261009-refactor1">
+  <link rel="stylesheet" href="css/styles.css?v=20261009-architecture2">
 </head>
 <body>
   <div class="app-shell">
@@ -49,7 +49,7 @@
             <strong id="bannerTitle">Институт дошикологии докладывает</strong>
             <p id="bannerText">Исследовательская сводка загружается…</p>
           </div>
-          <button class="btn ghost" id="noteDonateBtn">Поддержать НИИ</button>
+          <button class="btn ghost" id="noteDonateBtn" data-donate>Поддержать НИИ</button>
         </aside>
 
         <div class="section-head">
@@ -84,7 +84,7 @@
             <div class="section-overline">Фонд исследований</div>
             <h3>Поддержать лабораторию</h3>
             <p>Донаты идут на развитие приложения, новые рецепты и моральную компенсацию испытуемым. А удачное сообщение после модерации может поселиться на Стене меценатов.</p>
-            <button class="btn home-feature-btn" id="homeDonateBtn"><span class="btn-emoji" aria-hidden="true">❤️</span> Поддержать проект</button>
+            <button class="btn home-feature-btn" id="homeDonateBtn" data-donate><span class="btn-emoji" aria-hidden="true">❤️</span> Поддержать проект</button>
           </article>
         </div>
       </section>
@@ -155,7 +155,7 @@
               Поддержи институт — и твоё сообщение после модерации может попасть на Стену меценатов. Через годы потомки спросят: «Кто этот человек?» — и мы с гордостью ответим: «Он верил в лапшу раньше всех».
               <span class="donor-legacy-note">Публикация не гарантируется: сообщения проходят модерацию. Но шанс на цифровое бессмертие официально существует.</span>
             </div>
-            <button class="btn primary" id="wallDonateBtn">Поддержать и войти в историю</button>
+            <button class="btn primary" id="wallDonateBtn" data-donate>Поддержать и войти в историю</button>
           </aside>
           <div class="comments" id="commentsList"></div>
         </div>
@@ -203,7 +203,7 @@
         <div class="row-actions">
           <button class="btn primary" id="cookStartBtn">▶ Режим готовки</button>
           <button class="btn dosh-action-btn" id="modalFavoriteBtn">♡ Добавить в избранное</button>
-          <button class="btn ghost" id="modalDonateBtn">Поддержать лабораторию</button>
+          <button class="btn ghost" id="modalDonateBtn" data-donate>Поддержать лабораторию</button>
         </div>
         <div class="protocol-grid">
           <section class="protocol-card">
@@ -220,7 +220,7 @@
               <span>Если эксперимент удался — можно помочь лаборатории выпускать новые протоколы.</span>
             </div>
           </div>
-          <button class="btn primary recipe-donate-btn" id="modalDonateBottomBtn">Поддержать проект</button>
+          <button class="btn primary recipe-donate-btn" id="modalDonateBottomBtn" data-donate>Поддержать проект</button>
         </div>
       </div>
     </article>
@@ -292,15 +292,6 @@
       </div>
     </div>
   </div>
-
-    <script defer src="js/data.js?v=20261009-refactor1"></script>
-  <script defer src="js/core.js?v=20261009-refactor1"></script>
-  <script defer src="js/recipes.js?v=20261009-refactor1"></script>
-  <script defer src="js/support.js?v=20261009-refactor1"></script>
-  <script defer src="js/recipe-modal.js?v=20261009-refactor1"></script>
-  <script defer src="js/cooking.js?v=20261009-refactor1"></script>
-  <script defer src="js/oracle.js?v=20261009-refactor1"></script>
-  <script defer src="js/router.js?v=20261009-refactor1"></script>
-  <script defer src="js/app.js?v=20261009-refactor1"></script>
+  <script type="module" src="js/main.js?v=20261009-architecture2"></script>
 </body>
 </html>
