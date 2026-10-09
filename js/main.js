@@ -4,7 +4,7 @@ import { goTo } from "./core/router.js";
 import { renderBanner, renderFeatured } from "./features/home.js";
 import { renderChips, renderRecipes, selectCategory, setSearch, toggleFavoritesOnly } from "./features/recipes.js";
 import { renderPatrons } from "./features/support.js";
-import { openRecipe, closeRecipe, toggleFavorite } from "./features/recipe-modal.js";
+import { openRecipe, closeRecipe, toggleFavorite } from "./features/recipe-modal.js?v=20261010-hearts1";
 import { openDonation } from "./features/donations.js";
 import { initCookingLayout, openCookMode, closeCookMode, navigateCookStep, closeCookSuccess } from "./features/cooking.js";
 import { renderDailyIndex, runOracle } from "./features/oracle.js?v=20261009-oracle3";
