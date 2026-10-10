@@ -1,0 +1,8 @@
+{
+  "appId": "ru.doshikologiya.app",
+  "appName": "Дошикология",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false
+  }
+}
