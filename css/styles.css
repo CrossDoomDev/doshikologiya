@@ -229,22 +229,13 @@
 
     .oracle-layout{display:grid;grid-template-columns:1.05fr .95fr;gap:16px}
     .oracle-machine{min-height:520px;display:flex;flex-direction:column;justify-content:space-between;padding:30px;border:1px solid var(--line);border-radius:var(--radius-xl);background:radial-gradient(circle at 50% 35%,rgba(255,178,41,.12),transparent 36%),linear-gradient(155deg,#23180f,#15100c 64%);box-shadow:var(--shadow);overflow:hidden;position:relative}
-    .oracle-orb{width:210px;height:210px;max-width:70vw;margin:14px auto 16px;display:grid;place-items:center;position:relative;isolation:isolate;border-radius:50%;background:radial-gradient(circle at 50% 52%,rgba(140,87,185,.22),rgba(50,28,65,.22) 52%,transparent 72%)}
-    .oracle-orb::after{content:"";position:absolute;width:63%;height:12px;bottom:8px;border-radius:50%;background:rgba(0,0,0,.33);filter:blur(6px);z-index:0}
-    .oracle-mage{position:relative;z-index:2;display:block;width:100%;height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none}
-    .oracle-aura{position:absolute;inset:19px;border:2px dashed rgba(247,191,104,.30);border-radius:50%;opacity:.44;pointer-events:none}
-    .oracle-spark{position:absolute;z-index:3;opacity:.25;color:#ffe089;font-size:23px;pointer-events:none}
-    .oracle-spark-left{top:52px;left:-4px}
-    .oracle-spark-right{top:22px;right:6px;font-size:28px}
-    .oracle-phase-label{text-align:center;margin:-4px 0 18px;color:#d5bbef;font-size:13px;font-weight:800;letter-spacing:.015em}
+    .oracle-orb{width:280px;height:252px;max-width:100%;margin:16px auto 24px;display:grid;place-items:center;position:relative;isolation:isolate;background:transparent}
+    .oracle-orb::after{content:"";position:absolute;width:56%;height:10px;bottom:2px;border-radius:50%;background:rgba(0,0,0,.20);z-index:0}
+    .oracle-mage{position:relative;z-index:2;display:block;width:100%;height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none;transform-origin:50% 76%}
     .oracle-symbol{font-size:55px;filter:drop-shadow(0 3px 8px rgba(0,0,0,.25))}
     .oracle-result{min-height:104px;padding:17px;border-radius:17px;background:rgba(0,0,0,.20);border:1px solid var(--line);color:#f1e0c8;line-height:1.55;font-size:17px;transition:opacity .22s ease,transform .22s ease}
-    .oracle-machine.consulting .oracle-aura{opacity:.9;border-color:rgba(239,181,255,.7);animation:oracleAuraSpin 4s linear infinite}
     .oracle-machine.consulting .oracle-mage{animation:oracleMageConsult 1.3s ease-in-out infinite alternate}
-    .oracle-machine.consulting .oracle-spark{opacity:.95;animation:oracleSparkShine 1.15s ease-in-out infinite alternate}
     .oracle-machine.oracle-solved .oracle-mage{animation:oracleMageReveal .55s cubic-bezier(.2,.8,.25,1.15) both}
-    .oracle-machine.oracle-solved .oracle-spark{opacity:1;animation:oracleSparkShine .55s ease-out 2 alternate}
-    .oracle-machine.oracle-solved .oracle-aura{opacity:.78;border-color:rgba(255,209,106,.65)}
     .oracle-machine.consulting .oracle-result{opacity:1;transform:none;position:relative;overflow:hidden;padding-bottom:24px;border-color:rgba(255,178,41,.32);background:rgba(45,27,12,.56)}
     .oracle-machine.consulting .oracle-result::after{content:"";position:absolute;bottom:0;left:0;width:100%;height:5px;background:linear-gradient(90deg,#d87c23,#ffc95b);transform:scaleX(0);transform-origin:left;animation:oracleChronicleProgress 3s linear both}
     .oracle-result.oracle-revealed{animation:oracleAnswerReveal .36s ease-out both}
@@ -262,10 +253,8 @@
     .oracle-choice-title{margin:3px 0 7px;font-size:21px;line-height:1.15;color:var(--cream)}
     .oracle-choice-reason{margin:0;color:#d8c6af;font-size:14px;line-height:1.5}
     .oracle-choice .btn{margin-top:12px}
-    @keyframes oracleAuraSpin{to{transform:rotate(360deg)}}
     @keyframes oracleMageConsult{from{transform:translateY(3px) rotate(-2deg) scale(.985)}to{transform:translateY(-6px) rotate(2deg) scale(1.025)}}
     @keyframes oracleMageReveal{0%{opacity:.35;transform:scale(.82) translateY(15px)}65%{opacity:1;transform:scale(1.07) translateY(-5px)}100%{opacity:1;transform:scale(1) translateY(0)}}
-    @keyframes oracleSparkShine{from{opacity:.32;transform:scale(.7) rotate(-20deg)}to{opacity:1;transform:scale(1.25) rotate(18deg)}}
     .daily-card{padding:28px;border:1px solid var(--line);border-radius:var(--radius-xl);background:var(--surface);box-shadow:var(--shadow-soft)}
     .daily-number{font-family:"Arial Black",sans-serif;font-size:74px;line-height:.9;color:var(--amber);margin:24px 0 12px}
 
@@ -395,7 +384,7 @@
     @keyframes successSpin{to{transform:rotate(360deg)}}
     @keyframes emblemBounce{0%{opacity:0;transform:scale(.35) rotate(-22deg)}70%{opacity:1;transform:scale(1.12) rotate(6deg)}100%{transform:scale(1) rotate(0)}}
     @keyframes confettiFall{0%{transform:translate3d(0,-20px,0) rotate(var(--r));opacity:0}12%{opacity:1}100%{transform:translate3d(var(--drift),760px,0) rotate(calc(var(--r) + 680deg));opacity:0}}
-    @media(prefers-reduced-motion:reduce){.cook-success.open,.success-card,.success-emblem,.success-rays,.success-card::before,.success-confetti i,.oracle-machine.consulting .oracle-aura,.oracle-machine.consulting .oracle-mage,.oracle-machine.consulting .oracle-spark,.oracle-machine.oracle-solved .oracle-mage,.oracle-machine.oracle-solved .oracle-spark{animation:none!important}}
+    @media(prefers-reduced-motion:reduce){.cook-success.open,.success-card,.success-emblem,.success-rays,.success-card::before,.success-confetti i,.oracle-machine.consulting .oracle-mage,.oracle-machine.oracle-solved .oracle-mage{animation:none!important}}
 
     @media(max-width:900px){
       .topbar.logo-hidden{display:none}

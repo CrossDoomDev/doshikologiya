@@ -2,6 +2,11 @@ name: Дошикология — Android APK
 
 on:
   workflow_dispatch:
+  # Однократная сборка после обновления изображений Оракула.
+  push:
+    branches: [main]
+    paths:
+      - 'images/oracle/mage-idle.webp'
 
 permissions:
   contents: read

@@ -4,20 +4,14 @@ import { escapeHtml } from "../core/utils.js";
 import { unlockSuccessSound, playSuccessSound } from "./success-sound.js?v=20261010-oracle-mage1";
 
 const ORACLE_ART = Object.freeze({
-  idle: "images/oracle/mage-idle.svg",
-  thinking: "images/oracle/mage-thinking.svg",
-  success: "images/oracle/mage-success.svg"
+  idle: "images/oracle/mage-idle.webp",
+  thinking: "images/oracle/mage-thinking.webp",
+  success: "images/oracle/mage-success.webp"
 });
 
 function setOracleLook(machine, stage) {
   const mascot = document.getElementById("oracleMascot");
-  const caption = document.getElementById("oraclePhaseLabel");
   if (mascot) mascot.src = ORACLE_ART[stage];
-  if (caption) caption.textContent = {
-    idle: "Магия лапши ждёт своего часа",
-    thinking: "Лапша-маг творит предсказание…",
-    success: "✨ Протокол найден!"
-  }[stage];
   machine.classList.toggle("consulting", stage === "thinking");
   machine.classList.toggle("oracle-solved", stage === "success");
 }

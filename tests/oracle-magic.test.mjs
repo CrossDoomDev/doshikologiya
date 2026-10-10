@@ -7,11 +7,15 @@ const file = relative => fs.readFileSync(new URL(relative, root), "utf8");
 
 test("Оракул имеет три отдельные офлайн-иллюстрации", () => {
   for (const state of ["idle", "thinking", "success"]) {
-    const art = file(`images/oracle/mage-${state}.svg`);
-    assert.match(art, /^<svg[^>]+viewBox="0 0 320 320"/);
-    assert.match(art, /<path /);
+    const bytes = fs.readFileSync(new URL(`images/oracle/mage-${state}.webp`, root));
+    assert.equal(bytes.subarray(0, 4).toString(), "RIFF");
+    assert.equal(bytes.subarray(8, 12).toString(), "WEBP");
+    assert.ok(bytes.length > 10000 && bytes.length < 125000);
   }
-  assert.notEqual(file("images/oracle/mage-idle.svg"), file("images/oracle/mage-success.svg"));
+  assert.notDeepEqual(
+    fs.readFileSync(new URL("images/oracle/mage-idle.webp", root)),
+    fs.readFileSync(new URL("images/oracle/mage-success.webp", root))
+  );
 });
 
 test("Переходы меняют рисунок и включают общий звук только после ответа", () => {
@@ -54,10 +58,11 @@ test("Разметка и сборка Android подключают новые �
   const main = file("js/main.js");
   const prep = file("scripts/prepare-android.mjs");
   const css = file("css/styles.css");
-  assert.match(html, /id="oracleMascot" src="images\/oracle\/mage-idle\.svg"/);
+  assert.match(html, /id="oracleMascot" src="images\/oracle\/mage-idle\.webp"/);
   assert.match(html, /id="oraclePhaseLabel"/);
-  assert.match(main, /oracle-mage1/);
+  assert.match(main, /oracle-art2/);
   assert.match(prep, /"images"/);
   assert.match(prep, /"js"/);
   assert.match(css, /prefers-reduced-motion:reduce/);
+  assert.doesNotMatch(html, /oraclePhaseLabel|images\/oracle\/mage-idle\.svg/);
 });
