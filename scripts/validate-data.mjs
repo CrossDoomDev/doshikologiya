@@ -44,6 +44,36 @@ if (config.donateUrl && !/^https:\/\//.test(config.donateUrl)) {
   errors.push("donateUrl должен быть HTTPS-ссылкой.");
 }
 
+
+/* Защита оригинального названия во всех пользовательских текстах. */
+const forbiddenBrandPatterns = [
+  new RegExp("доши" + "рак", "iu"),
+  new RegExp("doshi" + "rak", "iu")
+];
+const inspectedExtensions = new Set([
+  ".html", ".css", ".js", ".mjs", ".json", ".md", ".svg", ".webmanifest", ".txt", ".yml", ".yaml"
+]);
+const ignoredDirectories = new Set([".git", "node_modules", ".cache"]);
+
+function inspectPublicTexts(folder) {
+  for (const entry of fs.readdirSync(folder, { withFileTypes: true })) {
+    const entryPath = path.join(folder, entry.name);
+    if (entry.isDirectory()) {
+      if (!ignoredDirectories.has(entry.name)) inspectPublicTexts(entryPath);
+      continue;
+    }
+    if (!entry.isFile() || !inspectedExtensions.has(path.extname(entry.name).toLowerCase())) continue;
+
+    const content = fs.readFileSync(entryPath, "utf8");
+    if (forbiddenBrandPatterns.some(pattern => pattern.test(content))) {
+      const relativePath = path.relative(root, entryPath).split(path.sep).join("/");
+      errors.push(`${relativePath}: обнаружено чужое торговое название. Используй «Дошик».`);
+    }
+  }
+}
+
+inspectPublicTexts(root);
+
 if (errors.length) {
   console.error("Проверка данных не пройдена:\n- " + errors.join("\n- "));
   process.exit(1);
