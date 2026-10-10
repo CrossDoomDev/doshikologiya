@@ -1,0 +1,256 @@
+{
+  "schemaVersion": 1,
+  "version": "2026-10-11-50",
+  "recipes": [
+    {
+      "id": "carbonara-2049",
+      "hash": "9fe66acd",
+      "path": "recipe-entries/carbonara-2049.json"
+    },
+    {
+      "id": "student-ramen",
+      "hash": "2572682f",
+      "path": "recipe-entries/student-ramen.json"
+    },
+    {
+      "id": "shawarma-noodles",
+      "hash": "47031418",
+      "path": "recipe-entries/shawarma-noodles.json"
+    },
+    {
+      "id": "hangover-soup",
+      "hash": "75cd3292",
+      "path": "recipe-entries/hangover-soup.json"
+    },
+    {
+      "id": "boss-level",
+      "hash": "4313172f",
+      "path": "recipe-entries/boss-level.json"
+    },
+    {
+      "id": "navy-noodles",
+      "hash": "8ca11156",
+      "path": "recipe-entries/navy-noodles.json"
+    },
+    {
+      "id": "pan-noodle-pizza",
+      "hash": "22c20c6f",
+      "path": "recipe-entries/pan-noodle-pizza.json"
+    },
+    {
+      "id": "noodle-omelette",
+      "hash": "9b7c1e46",
+      "path": "recipe-entries/noodle-omelette.json"
+    },
+    {
+      "id": "crispy-noodle-salad",
+      "hash": "6237ece8",
+      "path": "recipe-entries/crispy-noodle-salad.json"
+    },
+    {
+      "id": "red-alert-noodles",
+      "hash": "6411fc4c",
+      "path": "recipe-entries/red-alert-noodles.json"
+    },
+    {
+      "id": "garlic-butter",
+      "hash": "8ac905d6",
+      "path": "recipe-entries/garlic-butter.json"
+    },
+    {
+      "id": "creamy-mushrooms",
+      "hash": "37f5ef2c",
+      "path": "recipe-entries/creamy-mushrooms.json"
+    },
+    {
+      "id": "tomato-express",
+      "hash": "2d3baf28",
+      "path": "recipe-entries/tomato-express.json"
+    },
+    {
+      "id": "cheese-volcano",
+      "hash": "dae4d13a",
+      "path": "recipe-entries/cheese-volcano.json"
+    },
+    {
+      "id": "egg-broth",
+      "hash": "0f835e1f",
+      "path": "recipe-entries/egg-broth.json"
+    },
+    {
+      "id": "cold-cucumber",
+      "hash": "7fad73dc",
+      "path": "recipe-entries/cold-cucumber.json"
+    },
+    {
+      "id": "cabbage-crunch",
+      "hash": "5d9cca45",
+      "path": "recipe-entries/cabbage-crunch.json"
+    },
+    {
+      "id": "carrot-garlic",
+      "hash": "608f8088",
+      "path": "recipe-entries/carrot-garlic.json"
+    },
+    {
+      "id": "corn-landing",
+      "hash": "b316b824",
+      "path": "recipe-entries/corn-landing.json"
+    },
+    {
+      "id": "tomato-basil",
+      "hash": "0abe469a",
+      "path": "recipe-entries/tomato-basil.json"
+    },
+    {
+      "id": "zucchini-pan",
+      "hash": "663499c6",
+      "path": "recipe-entries/zucchini-pan.json"
+    },
+    {
+      "id": "sour-mushrooms",
+      "hash": "e3ebdf10",
+      "path": "recipe-entries/sour-mushrooms.json"
+    },
+    {
+      "id": "pea-egg",
+      "hash": "672e2a76",
+      "path": "recipe-entries/pea-egg.json"
+    },
+    {
+      "id": "broccoli-cheese",
+      "hash": "2d5c8514",
+      "path": "recipe-entries/broccoli-cheese.json"
+    },
+    {
+      "id": "ham-creamy",
+      "hash": "497ba2fb",
+      "path": "recipe-entries/ham-creamy.json"
+    },
+    {
+      "id": "sausage-rave",
+      "hash": "77e068a3",
+      "path": "recipe-entries/sausage-rave.json"
+    },
+    {
+      "id": "chicken-honey-soy",
+      "hash": "e410bfbd",
+      "path": "recipe-entries/chicken-honey-soy.json"
+    },
+    {
+      "id": "mince-tomato",
+      "hash": "e9a09ed4",
+      "path": "recipe-entries/mince-tomato.json"
+    },
+    {
+      "id": "bacon-alarm",
+      "hash": "69a19218",
+      "path": "recipe-entries/bacon-alarm.json"
+    },
+    {
+      "id": "smoked-sausage",
+      "hash": "09b31fd4",
+      "path": "recipe-entries/smoked-sausage.json"
+    },
+    {
+      "id": "cutlet-noodles",
+      "hash": "b2ce298e",
+      "path": "recipe-entries/cutlet-noodles.json"
+    },
+    {
+      "id": "morning-cheese",
+      "hash": "5d638393",
+      "path": "recipe-entries/morning-cheese.json"
+    },
+    {
+      "id": "fried-egg-soy",
+      "hash": "f21f88be",
+      "path": "recipe-entries/fried-egg-soy.json"
+    },
+    {
+      "id": "cheese-nuggets",
+      "hash": "b9f3e40a",
+      "path": "recipe-entries/cheese-nuggets.json"
+    },
+    {
+      "id": "cheese-bake",
+      "hash": "9134329a",
+      "path": "recipe-entries/cheese-bake.json"
+    },
+    {
+      "id": "wrap-egg",
+      "hash": "c27a8969",
+      "path": "recipe-entries/wrap-egg.json"
+    },
+    {
+      "id": "spicy-tomato",
+      "hash": "b4f05ca2",
+      "path": "recipe-entries/spicy-tomato.json"
+    },
+    {
+      "id": "spicy-garlic",
+      "hash": "12d0f83b",
+      "path": "recipe-entries/spicy-garlic.json"
+    },
+    {
+      "id": "spicy-cheese",
+      "hash": "2de97dd7",
+      "path": "recipe-entries/spicy-cheese.json"
+    },
+    {
+      "id": "fiery-mushroom",
+      "hash": "3680fb1a",
+      "path": "recipe-entries/fiery-mushroom.json"
+    },
+    {
+      "id": "pepper-fire",
+      "hash": "db6b08c2",
+      "path": "recipe-entries/pepper-fire.json"
+    },
+    {
+      "id": "kimchi-soup",
+      "hash": "3b6ad610",
+      "path": "recipe-entries/kimchi-soup.json"
+    },
+    {
+      "id": "tuna-lemon",
+      "hash": "52b8415a",
+      "path": "recipe-entries/tuna-lemon.json"
+    },
+    {
+      "id": "crab-salad",
+      "hash": "63534fca",
+      "path": "recipe-entries/crab-salad.json"
+    },
+    {
+      "id": "shrimp-garlic",
+      "hash": "1847a44d",
+      "path": "recipe-entries/shrimp-garlic.json"
+    },
+    {
+      "id": "lemon-butter",
+      "hash": "9e0fe766",
+      "path": "recipe-entries/lemon-butter.json"
+    },
+    {
+      "id": "peanut-sauce",
+      "hash": "a247609a",
+      "path": "recipe-entries/peanut-sauce.json"
+    },
+    {
+      "id": "coconut-curry",
+      "hash": "886f9d53",
+      "path": "recipe-entries/coconut-curry.json"
+    },
+    {
+      "id": "honey-chili",
+      "hash": "9b1962da",
+      "path": "recipe-entries/honey-chili.json"
+    },
+    {
+      "id": "apple-dessert",
+      "hash": "bddf518a",
+      "path": "recipe-entries/apple-dessert.json"
+    }
+  ]
+}
