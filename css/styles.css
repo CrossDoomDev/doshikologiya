@@ -140,21 +140,8 @@
       background:rgba(255,255,255,.2);
       box-shadow:inset 0 1px 0 rgba(255,255,255,.16);
     }
-    /* Все три сердечка используют одну SVG-форму из карточки рецепта. */
-    .btn.donate-spotlight-btn .donate-heart .favorite-heart{
-      width:21px;
-      height:21px;
-    }
-    #modalFavoriteBtn .modal-favorite-heart{
-      width:23px;
-      height:23px;
-      flex:0 0 23px;
-    }
-    #modalFavoriteBtn.is-favorite .modal-favorite-heart path{
-      fill:currentColor;
-      stroke:currentColor;
-      transform:scale(.96);
-    }
+    /* Цвет и состояние единой внешней SVG-иконки. */
+    .btn.donate-spotlight-btn .donate-heart .favorite-heart{width:21px;height:21px}
     .btn.donate-spotlight-btn:hover{
       transform:translateY(-2px);
       filter:brightness(1.08);
@@ -200,10 +187,13 @@
     .recipe-media::after{content:"";position:absolute;inset:auto 0 0;height:46%;background:linear-gradient(transparent,rgba(12,9,7,.78));pointer-events:none}
     .favorite-btn{position:absolute;right:10px;top:10px;z-index:2;width:40px;height:40px;padding:0;display:grid;place-items:center;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(15,11,8,.70);color:white;backdrop-filter:blur(8px);transition:transform .16s ease,background .16s ease,border-color .16s ease}
     .favorite-btn:hover{transform:scale(1.05)}
-    .favorite-heart{width:23px;height:23px;display:block;overflow:visible}
-    .favorite-heart path{fill:rgba(255,255,255,.08);stroke:currentColor;stroke-width:1.85;stroke-linecap:round;stroke-linejoin:round;transition:fill .16s ease,stroke .16s ease,transform .16s ease;transform-origin:center}
+    .favorite-heart{width:23px;height:23px;display:block;flex:0 0 auto;overflow:visible;fill:rgba(255,255,255,.08);stroke:currentColor;stroke-width:1.85;stroke-linecap:round;stroke-linejoin:round;transition:fill .16s ease,transform .16s ease;transform-origin:center}
     .favorite-btn.on{color:var(--amber);background:rgba(36,24,10,.82);border-color:rgba(255,178,41,.4)}
-    .favorite-btn.on .favorite-heart path{fill:currentColor;stroke:currentColor;transform:scale(.96)}
+    .favorite-btn.on .favorite-heart,
+    #modalFavoriteBtn.is-favorite .favorite-heart,
+    #favoritesToggle[aria-pressed="true"] .favorite-heart,
+    .favorite-heart.heart-filled{fill:currentColor}
+    .favorite-btn.on .favorite-heart{transform:scale(.96)}
     .card-category{position:absolute;left:11px;bottom:10px;z-index:2;padding:6px 9px;border-radius:999px;background:rgba(18,13,9,.72);border:1px solid rgba(255,255,255,.12);font-size:11px;font-weight:850;color:#f0dfc7;backdrop-filter:blur(8px)}
     .recipe-body{padding:17px}
     .recipe-body h3{font-size:19px}

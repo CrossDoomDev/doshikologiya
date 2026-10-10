@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.webmanifest?v=2">
   <meta name="application-name" content="Дошикология">
   <meta name="apple-mobile-web-app-title" content="Дошикология">
-  <link rel="stylesheet" href="css/styles.css?v=20261010-hearts1">
+  <link rel="stylesheet" href="css/styles.css?v=20261010-heart-asset1">
 </head>
 <body>
   <div class="app-splash" id="appSplash" role="status" aria-live="polite" aria-label="Дошикология загружается">
@@ -90,7 +90,7 @@
             <div class="section-overline">Фонд исследований</div>
             <h3>Поддержать лабораторию</h3>
             <p>Донаты идут на развитие приложения, новые рецепты и моральную компенсацию испытуемым. А удачное сообщение после модерации может поселиться на Стене меценатов.</p>
-            <button class="btn home-feature-btn" id="homeDonateBtn" data-donate><span class="btn-emoji" aria-hidden="true">❤️</span> Поддержать проект</button>
+            <button class="btn home-feature-btn" id="homeDonateBtn" data-donate><svg class="favorite-heart heart-filled" viewBox="0 0 24 24" aria-hidden="true"><use href="images/ui/heart.svg#heart"></use></svg> Поддержать проект</button>
           </article>
         </div>
       </section>
@@ -109,7 +109,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
             <input id="recipeSearch" type="search" placeholder="Найти протокол…" autocomplete="off">
           </label>
-          <button class="btn secondary" id="favoritesToggle">♡ Только избранное</button>
+          <button class="btn secondary" id="favoritesToggle" aria-pressed="false"><svg class="favorite-heart" viewBox="0 0 24 24" aria-hidden="true"><use href="images/ui/heart.svg#heart"></use></svg> <span class="favorite-filter-label">Только избранное</span></button>
         </div>
         <div class="chips" id="recipeCategoryChips"></div>
         <div style="height:14px"></div>
@@ -208,8 +208,8 @@
         <p class="sheet-intro" id="modalDescription"></p>
         <div class="row-actions">
           <button class="btn primary" id="cookStartBtn">▶ Режим готовки</button>
-          <button class="btn dosh-action-btn" id="modalFavoriteBtn" aria-pressed="false"><svg class="favorite-heart modal-favorite-heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.6C10.65 19.55 3.55 15.05 2.55 9.65C1.95 6.4 4.05 3.55 7.25 3.55C9.35 3.55 11.05 4.7 12 6.25C12.95 4.7 14.65 3.55 16.75 3.55C19.95 3.55 22.05 6.4 21.45 9.65C20.45 15.05 13.35 19.55 12 20.6Z"/></svg> Добавить в избранное</button>
-          <button class="btn donate-spotlight-btn" id="modalDonateBtn" data-donate><span class="donate-heart" aria-hidden="true"><svg class="favorite-heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.6C10.65 19.55 3.55 15.05 2.55 9.65C1.95 6.4 4.05 3.55 7.25 3.55C9.35 3.55 11.05 4.7 12 6.25C12.95 4.7 14.65 3.55 16.75 3.55C19.95 3.55 22.05 6.4 21.45 9.65C20.45 15.05 13.35 19.55 12 20.6Z"/></svg></span> Поддержать лабораторию</button>
+          <button class="btn dosh-action-btn" id="modalFavoriteBtn" aria-pressed="false"><svg class="favorite-heart modal-favorite-heart" viewBox="0 0 24 24" aria-hidden="true"><use href="images/ui/heart.svg#heart"></use></svg> <span class="modal-favorite-label">Добавить в избранное</span></button>
+          <button class="btn donate-spotlight-btn" id="modalDonateBtn" data-donate><span class="donate-heart" aria-hidden="true"><svg class="favorite-heart heart-filled" viewBox="0 0 24 24" aria-hidden="true"><use href="images/ui/heart.svg#heart"></use></svg></span> Поддержать лабораторию</button>
         </div>
         <div class="protocol-grid">
           <section class="protocol-card">
@@ -298,6 +298,6 @@
       </div>
     </div>
   </div>
-  <script type="module" src="js/main.js?v=20261010-hearts1"></script>
+  <script type="module" src="js/main.js?v=20261010-heart-asset1"></script>
 </body>
 </html>

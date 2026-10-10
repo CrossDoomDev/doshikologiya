@@ -11,7 +11,7 @@ function recipeCard(recipe) {
     <div class="recipe-media">
       <img class="recipe-image" src="${escapeHtml(recipe.image || "")}" alt="${escapeHtml(recipe.title)}" loading="lazy">
       <button class="favorite-btn ${favorite ? "on" : ""}" data-favorite="${escapeHtml(recipe.id)}" aria-label="${favorite ? "Убрать из избранного" : "Добавить в избранное"}" aria-pressed="${favorite ? "true" : "false"}">
-        <svg class="favorite-heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.6C10.65 19.55 3.55 15.05 2.55 9.65C1.95 6.4 4.05 3.55 7.25 3.55C9.35 3.55 11.05 4.7 12 6.25C12.95 4.7 14.65 3.55 16.75 3.55C19.95 3.55 22.05 6.4 21.45 9.65C20.45 15.05 13.35 19.55 12 20.6Z"/></svg>
+        <svg class="favorite-heart" viewBox="0 0 24 24" aria-hidden="true"><use href="images/ui/heart.svg#heart"></use></svg>
       </button>
       <span class="card-category">${escapeHtml(category)}</span>
     </div>
@@ -84,6 +84,7 @@ export function setSearch(value) {
 export function toggleFavoritesOnly() {
   state.showFavoritesOnly = !state.showFavoritesOnly;
   const button = document.getElementById("favoritesToggle");
-  button.textContent = state.showFavoritesOnly ? "♥ Показываем избранное" : "♡ Только избранное";
+  button.querySelector(".favorite-filter-label").textContent = state.showFavoritesOnly ? "Показываем избранное" : "Только избранное";
+  button.setAttribute("aria-pressed", String(state.showFavoritesOnly));
   renderRecipes();
 }
