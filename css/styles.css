@@ -115,6 +115,8 @@
     .btn.orange{background:var(--orange);color:white}
     .btn.secondary{background:rgba(255,255,255,.07);color:var(--text);border:1px solid var(--line);backdrop-filter:blur(10px)}
     .btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+    .btn.share-protocol-btn{border-color:rgba(255,178,41,.36);color:var(--cream);background:rgba(255,178,41,.10)}
+    .btn.share-protocol-btn:hover{background:rgba(255,178,41,.19)}
 
     /* Яркий, но отдельный от готовки и избранного акцент для поддержки лаборатории. */
     .btn.donate-spotlight-btn{

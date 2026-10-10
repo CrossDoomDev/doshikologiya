@@ -1,5 +1,6 @@
 import { loadCatalog, refreshOnlineRecipes } from "./core/api.js?v=20261010-offline-share1";
 import { applyCatalog, state } from "./core/state.js";
+import { shareRecipe, incomingRecipeId } from "./features/sharing.js?v=20261010-offline-share1";
 import { goTo } from "./core/router.js";
 import { renderBanner, renderFeatured } from "./features/home.js";
 import { renderChips, renderRecipes, selectCategory, setSearch, toggleFavoritesOnly } from "./features/recipes.js?v=20261010-heart-asset1";
@@ -59,6 +60,7 @@ function bindEvents() {
   document.getElementById("recipeSearch").addEventListener("input", event => setSearch(event.target.value));
   document.getElementById("favoritesToggle").addEventListener("click", toggleFavoritesOnly);
   document.getElementById("oracleBtn").addEventListener("click", runOracle);
+  document.getElementById("modalShareBtn").addEventListener("click", event => shareRecipe(state.currentRecipe, event.currentTarget));
   document.getElementById("closeModal").addEventListener("click", closeRecipe);
   document.getElementById("recipeModal").addEventListener("click", event => {
     if (event.target.id === "recipeModal") closeRecipe();
@@ -105,11 +107,23 @@ async function boot() {
   renderAll();
   hideSplash();
 
+  // Shared links open a specific recipe, including a newly downloaded recipe.
+  const sharedId = incomingRecipeId();
+  let sharedOpened = false;
+  function openSharedRecipe() {
+    if (sharedOpened || !sharedId || !state.recipes.some(recipe => recipe.id === sharedId)) return;
+    goTo("recipes");
+    openRecipe(sharedId);
+    sharedOpened = true;
+  }
+  openSharedRecipe();
+
   // Updates are downloaded in the background without blocking first render.
   refreshOnlineRecipes(catalog.config, catalog.bundledRecipes).then(recipes => {
     if (!recipes) return;
     applyCatalog({ config: state.config, recipes, patrons: state.patrons });
     renderAll();
+    openSharedRecipe();
   }).catch(error => console.warn("Не удалось обновить каталог:", error));
 }
 
