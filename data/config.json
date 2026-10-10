@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "version": "2.6.0",
+  "version": "2.7.0",
   "banner": {
     "title": "Институт дошикологии докладывает",
     "text": "Мы превращаем лапшу быстрого приготовления в дисциплину, где у каждого эксперимента есть протокол, легенда и шанс пережить конец месяца."
@@ -19,5 +19,6 @@
     "Завтрак"
   ],
   "homeRecipeLimit": 6,
-  "remoteRecipesUrl": "https://crossdoomdev.github.io/doshikologiya/data/recipes.json"
+  "remoteRecipesUrl": "https://crossdoomdev.github.io/doshikologiya/data/recipes.json",
+  "remoteRecipeIndexUrl": "https://crossdoomdev.github.io/doshikologiya/data/recipes-index.json"
 }

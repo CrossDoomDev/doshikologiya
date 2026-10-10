@@ -1,4 +1,4 @@
-import { checkOnlineRecipes, installOnlineRecipes } from "../core/api.js?v=20261010-manual-catalog1";
+import { checkOnlineRecipes, installOnlineRecipes } from "../core/api.js?v=20261011-delta50";
 import { applyCatalog, state } from "../core/state.js";
 import { renderFeatured } from "./home.js";
 import { renderChips, renderRecipes } from "./recipes.js?v=20261010-heart-asset1";
@@ -38,7 +38,7 @@ export function initRecipeUpdates(catalog) {
       if (!result.hasUpdates) {
         setStatus("✓ Новых и изменённых рецептов нет. Всё уже на устройстве.");
       } else {
-        pending = result.downloaded;
+        pending = result;
         const changes = [
           result.added ? `новых: ${result.added}` : "",
           result.updated ? `обновлённых: ${result.updated}` : ""
@@ -59,7 +59,7 @@ export function initRecipeUpdates(catalog) {
   downloadButton.addEventListener("click", async () => {
     if (busy || !pending) return;
     setBusy(true);
-    setStatus("Сохраняем рецепты и изображения для офлайн-доступа…");
+    setStatus("Докачиваем только новые и изменённые рецепты с изображениями…");
     try {
       const result = await installOnlineRecipes(state.config, catalog.bundledRecipes, knownRecipes, pending);
       knownRecipes = result.knownRecipes;

@@ -17,6 +17,7 @@ export const DEFAULT_CONFIG = Object.freeze({
   },
   donateUrl: "",
   remoteRecipesUrl: "",
+  remoteRecipeIndexUrl: "",
   featuredRecipeId: "",
   categoryOrder: ["Все"],
   homeRecipeLimit: 6

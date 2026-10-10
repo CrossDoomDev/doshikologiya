@@ -74,6 +74,35 @@ function inspectPublicTexts(folder) {
 
 inspectPublicTexts(root);
 
+
+const index = readJson("data/recipes-index.json");
+function fingerprint(recipe) {
+  let h = 2166136261;
+  for (let i = 0, str = JSON.stringify(recipe); i < str.length; i++) {
+    h = Math.imul(h ^ str.charCodeAt(i), 16777619);
+  }
+  return (h >>> 0).toString(16).padStart(8, "0");
+}
+if (recipes.length !== 50) errors.push("Ожидалось ровно 50 рецептов.");
+if (index.schemaVersion !== 1 || !Array.isArray(index.recipes) || index.recipes.length !== recipes.length) {
+  errors.push("Индекс рецептов отсутствует или содержит неверное количество.");
+} else {
+  const byId = new Map(recipes.map(recipe => [recipe.id, recipe]));
+  const manifestIds = new Set();
+  for (const entry of index.recipes) {
+    const recipe = byId.get(entry.id);
+    if (manifestIds.has(entry.id)) errors.push("Повтор в индексе: " + entry.id);
+    manifestIds.add(entry.id);
+    if (!recipe || entry.path !== `recipe-entries/${entry.id}.json` || entry.hash !== fingerprint(recipe)) {
+      errors.push("Неверный индекс рецепта: " + entry.id); continue;
+    }
+    const resource = path.join(root, "data", entry.path);
+    if (!fs.existsSync(resource) || JSON.stringify(readJson(path.join("data", entry.path))) !== JSON.stringify(recipe)) {
+      errors.push("Не совпадает отдельный файл рецепта: " + entry.id);
+    }
+  }
+}
+
 if (errors.length) {
   console.error("Проверка данных не пройдена:\n- " + errors.join("\n- "));
   process.exit(1);

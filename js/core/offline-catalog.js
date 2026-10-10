@@ -86,19 +86,24 @@ export async function hydrateRecipeImages(recipes, bundledRecipes, catalogUrl) {
 export async function cacheRemoteImages(recipes, catalogUrl) {
   const urls = [...new Set(recipes.map(recipe => remoteImageUrl(recipe.image, catalogUrl)).filter(Boolean))];
   let position = 0;
+  let failed = 0;
   async function worker() {
     while (position < urls.length) {
       const url = urls[position++];
       if (await read("images", url)) continue;
       try {
         const response = await fetch(url);
-        if (!response.ok) continue;
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const blob = await response.blob();
-        if (blob.type.startsWith("image/")) await write("images", url, blob);
+        if (!blob.type.startsWith("image/") || !(await write("images", url, blob))) {
+          throw new Error("Не удалось сохранить изображение");
+        }
       } catch {
-        // Another online session can finish interrupted downloads.
+        failed++;
+        // Successful images remain cached; next attempt retrieves only missing ones.
       }
     }
   }
   await Promise.all(Array.from({ length: Math.min(3, urls.length) }, worker));
+  if (failed) throw new Error(`Не удалось скачать изображения: ${failed}`);
 }
