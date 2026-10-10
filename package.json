@@ -3,13 +3,15 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
-    "android:prepare": "node scripts/prepare-android.mjs"
+    "android:prepare": "node scripts/prepare-android.mjs",
+    "android:icons": "node scripts/generate-android-icons.mjs"
   },
   "dependencies": {
     "@capacitor/core": "8.5.2",
     "@capacitor/android": "8.5.2"
   },
   "devDependencies": {
-    "@capacitor/cli": "8.5.2"
+    "@capacitor/cli": "8.5.2",
+    "sharp": "0.34.4"
   }
 }

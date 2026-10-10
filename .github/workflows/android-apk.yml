@@ -2,6 +2,11 @@ name: Дошикология — Android APK
 
 on:
   workflow_dispatch:
+  # Разовый запуск после добавления генератора иконок.
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/generate-android-icons.mjs'
 
 permissions:
   contents: read
@@ -47,6 +52,13 @@ jobs:
 
       - name: Synchronize Android assets
         run: npx cap sync android
+
+      - name: Generate branded Android launcher icons
+        run: |
+          npm run android:icons
+          test -s android/app/src/main/res/mipmap-mdpi/ic_launcher.png
+          test -s android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png
+          test -s android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
 
       - name: Configure Gradle
         uses: gradle/actions/setup-gradle@v4
