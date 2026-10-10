@@ -9,7 +9,12 @@ export function goTo(route) {
 
   document.querySelector(".topbar")?.classList.toggle("logo-hidden", target !== "home");
   document.querySelectorAll("[data-route]").forEach(element => {
-    element.classList.toggle("active", element.dataset.route === target && element.classList.contains("nav-btn"));
+    const active = element.dataset.route === target && element.classList.contains("nav-btn");
+    element.classList.toggle("active", active);
+    if (element.closest(".mobile-tabs")) {
+      if (active) element.setAttribute("aria-current", "page");
+      else element.removeAttribute("aria-current");
+    }
   });
 
   history.replaceState(null, "", `#${target}`);

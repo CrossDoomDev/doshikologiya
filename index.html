@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.webmanifest?v=2">
   <meta name="application-name" content="Дошикология">
   <meta name="apple-mobile-web-app-title" content="Дошикология">
-  <link rel="stylesheet" href="css/styles.css?v=20261010-offline-share1">
+  <link rel="stylesheet" href="css/styles.css?v=20261010-nav-minimal1">
 </head>
 <body>
   <div class="app-splash" id="appSplash" role="status" aria-live="polite" aria-label="Дошикология загружается">
@@ -175,21 +175,31 @@
   </div>
 
   <nav class="mobile-tabs" aria-label="Нижняя навигация">
-    <button class="nav-btn active" data-route="home" aria-label="Главная" title="Главная">
-      <img class="tab-icon-img" src="images/ui/nav-home.webp?v=20261008-nav2" alt="" aria-hidden="true">
-      <span class="sr-only">Главная</span>
+    <button class="nav-btn active" data-route="home" aria-label="Главная" aria-current="page" title="Главная" type="button">
+      <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3.5 10.5 12 3.5l8.5 7v9a1 1 0 0 1-1 1h-5.25V14h-4.5v6.5H4.5a1 1 0 0 1-1-1z"/>
+      </svg>
+      <span class="tab-label" aria-hidden="true">Главная</span>
     </button>
-    <button class="nav-btn" data-route="recipes" aria-label="Протоколы" title="Протоколы">
-      <img class="tab-icon-img" src="images/ui/nav-recipes.webp?v=20261009-nav3" alt="" aria-hidden="true">
-      <span class="sr-only">Протоколы</span>
+    <button class="nav-btn" data-route="recipes" aria-label="Рецепты" title="Рецепты" type="button">
+      <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="5" y="2.75" width="14" height="18.5" rx="2.5"/>
+        <path d="M9 8h6M9 12h6M9 16h4"/>
+      </svg>
+      <span class="tab-label" aria-hidden="true">Рецепты</span>
     </button>
-    <button class="nav-btn" data-route="oracle" aria-label="Оракул" title="Оракул">
-      <img class="tab-icon-img" src="images/ui/nav-oracle.webp?v=20261008-nav2" alt="" aria-hidden="true">
-      <span class="sr-only">Оракул</span>
+    <button class="nav-btn" data-route="oracle" aria-label="Оракул" title="Оракул" type="button">
+      <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="10.5" r="7.25"/>
+        <path d="M9 7.75a4.5 4.5 0 0 1 3-1.2M9.25 17.5 7.5 21h9l-1.75-3.5"/>
+      </svg>
+      <span class="tab-label" aria-hidden="true">Оракул</span>
     </button>
-    <button class="nav-btn" data-route="wall" aria-label="Поддержка" title="Поддержка">
-      <img class="tab-icon-img" src="images/ui/nav-support.webp?v=20261008-nav2" alt="" aria-hidden="true">
-      <span class="sr-only">Поддержка</span>
+    <button class="nav-btn" data-route="wall" aria-label="Поддержка" title="Поддержка" type="button">
+      <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <use href="images/ui/heart.svg#heart"></use>
+      </svg>
+      <span class="tab-label" aria-hidden="true">Поддержка</span>
     </button>
   </nav>
 
