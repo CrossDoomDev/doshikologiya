@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.webmanifest?v=2">
   <meta name="application-name" content="Дошикология">
   <meta name="apple-mobile-web-app-title" content="Дошикология">
-  <link rel="stylesheet" href="css/styles.css?v=20261010-nav-minimal1">
+  <link rel="stylesheet" href="css/styles.css?v=20261010-manual-catalog1">
 </head>
 <body>
   <div class="app-splash" id="appSplash" role="status" aria-live="polite" aria-label="Дошикология загружается">
@@ -111,6 +111,16 @@
           </label>
           <button class="btn secondary" id="favoritesToggle" aria-pressed="false"><svg class="favorite-heart" viewBox="0 0 24 24" aria-hidden="true"><use href="images/ui/heart.svg#heart"></use></svg> <span class="favorite-filter-label">Только избранное</span></button>
         </div>
+        <section class="catalog-update" aria-label="Обновление рецептов">
+          <div class="catalog-update-copy">
+            <strong>📚 Обновление архива</strong>
+            <p id="recipeUpdateStatus" role="status" aria-live="polite" aria-atomic="true">Рецепты доступны без интернета. Проверка новых протоколов — только по твоему запросу.</p>
+          </div>
+          <div class="catalog-update-actions">
+            <button class="btn secondary" id="recipeUpdateCheckBtn" type="button" disabled>↻ Проверить обновления</button>
+            <button class="btn primary hidden" id="recipeUpdateDownloadBtn" type="button">↓ Скачать рецепты</button>
+          </div>
+        </section>
         <div class="chips" id="recipeCategoryChips"></div>
         <div style="height:14px"></div>
         <div class="grid" id="recipesGrid"></div>
@@ -309,6 +319,6 @@
       </div>
     </div>
   </div>
-  <script type="module" src="js/main.js?v=20261010-offline-share1"></script>
+  <script type="module" src="js/main.js?v=20261010-manual-catalog1"></script>
 </body>
 </html>

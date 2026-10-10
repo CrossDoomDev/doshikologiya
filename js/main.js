@@ -1,4 +1,5 @@
-import { loadCatalog, refreshOnlineRecipes } from "./core/api.js?v=20261010-offline-share1";
+import { loadCatalog } from "./core/api.js?v=20261010-manual-catalog1";
+import { initRecipeUpdates } from "./features/recipe-updates.js?v=20261010-manual-catalog1";
 import { applyCatalog, state } from "./core/state.js";
 import { shareRecipe, incomingRecipeId } from "./features/sharing.js?v=20261010-offline-share1";
 import { goTo } from "./core/router.js";
@@ -105,6 +106,7 @@ async function boot() {
   const catalog = await loadCatalog();
   applyCatalog(catalog);
   renderAll();
+  initRecipeUpdates(catalog);
   hideSplash();
 
   // Shared links open a specific recipe, including a newly downloaded recipe.
@@ -118,13 +120,7 @@ async function boot() {
   }
   openSharedRecipe();
 
-  // Updates are downloaded in the background without blocking first render.
-  refreshOnlineRecipes(catalog.config, catalog.bundledRecipes).then(recipes => {
-    if (!recipes) return;
-    applyCatalog({ config: state.config, recipes, patrons: state.patrons });
-    renderAll();
-    openSharedRecipe();
-  }).catch(error => console.warn("Не удалось обновить каталог:", error));
+
 }
 
 boot().catch(error => {

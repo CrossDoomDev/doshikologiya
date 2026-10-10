@@ -71,7 +71,8 @@ export async function loadCatalog() {
   const bundledRecipes = normalizeRecipes(results[1].status === "fulfilled" ? results[1].value : []);
   const cachedRecipes = normalizeRecipes(results[3].status === "fulfilled" ? results[3].value : []);
   const config = normalizeConfig(results[0].status === "fulfilled" ? results[0].value : null);
-  const recipes = await hydrateRecipeImages(mergeRecipes(bundledRecipes, cachedRecipes), bundledRecipes, config.remoteRecipesUrl);
+  const knownRecipes = mergeRecipes(bundledRecipes, cachedRecipes);
+  const recipes = await hydrateRecipeImages(knownRecipes, bundledRecipes, config.remoteRecipesUrl);
 
   if (results[0].status === "rejected") console.warn("Не удалось загрузить конфигурацию:", results[0].reason);
   if (results[1].status === "rejected") console.warn("Не удалось загрузить базовые рецепты:", results[1].reason);
@@ -81,20 +82,38 @@ export async function loadCatalog() {
     config,
     recipes,
     patrons: normalizePatrons(results[2].status === "fulfilled" ? results[2].value : []),
-    bundledRecipes
+    bundledRecipes,
+    knownRecipes
   };
 }
 
-export async function refreshOnlineRecipes(config, bundledRecipes) {
-  if (!config.remoteRecipesUrl) return null;
-  try {
-    const downloaded = normalizeRecipes(await fetchJson(config.remoteRecipesUrl));
-    if (!downloaded.length) return null;
-    await saveCachedRecipes(downloaded);
-    await cacheRemoteImages(downloaded, config.remoteRecipesUrl);
-    return hydrateRecipeImages(mergeRecipes(bundledRecipes, downloaded), bundledRecipes, config.remoteRecipesUrl);
-  } catch (error) {
-    console.info("Офлайн-режим: используем сохранённые рецепты.", error);
-    return null;
+export function diffOnlineRecipes(knownRecipes, downloaded) {
+  const known = new Map(knownRecipes.map(recipe => [recipe.id, recipe]));
+  let added = 0;
+  let updated = 0;
+  for (const recipe of downloaded) {
+    const previous = known.get(recipe.id);
+    if (!previous) added++;
+    else if (JSON.stringify(previous) !== JSON.stringify(recipe)) updated++;
   }
+  return { added, updated, hasUpdates: added + updated > 0 };
+}
+
+export async function checkOnlineRecipes(config, knownRecipes) {
+  if (!config.remoteRecipesUrl) throw new Error("Адрес удалённого архива не настроен.");
+  const downloaded = normalizeRecipes(await fetchJson(config.remoteRecipesUrl));
+  if (!downloaded.length) throw new Error("Удалённый архив пуст или недоступен.");
+  return { ...diffOnlineRecipes(knownRecipes, downloaded), downloaded };
+}
+
+export async function installOnlineRecipes(config, bundledRecipes, knownRecipes, downloaded) {
+  if (!Array.isArray(downloaded) || !downloaded.length) throw new Error("Нет рецептов для загрузки.");
+  await cacheRemoteImages(downloaded, config.remoteRecipesUrl);
+  const nextKnownRecipes = mergeRecipes(knownRecipes, downloaded);
+  const saved = await saveCachedRecipes(nextKnownRecipes);
+  if (!saved) throw new Error("Не удалось сохранить рецепты на устройстве.");
+  return {
+    recipes: await hydrateRecipeImages(nextKnownRecipes, bundledRecipes, config.remoteRecipesUrl),
+    knownRecipes: nextKnownRecipes
+  };
 }

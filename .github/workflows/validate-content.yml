@@ -15,3 +15,4 @@ jobs:
         with:
           node-version: "22"
       - run: node scripts/validate-data.mjs
+      - run: node --test tests/recipe-updates.test.mjs

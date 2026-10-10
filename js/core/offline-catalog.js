@@ -78,7 +78,8 @@ export async function hydrateRecipeImages(recipes, bundledRecipes, catalogUrl) {
       if (!objectUrls.has(remoteUrl)) objectUrls.set(remoteUrl, URL.createObjectURL(blob));
       return { ...recipe, image: objectUrls.get(remoteUrl) };
     }
-    return bundledIds.has(recipe.id) ? recipe : { ...recipe, image: remoteUrl };
+    // На старте работаем офлайн; недокачанные картинки заменяем встроенным логотипом.
+    return bundledIds.has(recipe.id) ? recipe : { ...recipe, image: "images/ui/doshikologiya-mark.svg" };
   }));
 }
 
