@@ -2,19 +2,6 @@ name: Дошикология — Android APK
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'package.json'
-      - 'capacitor.config.json'
-      - 'scripts/prepare-android.mjs'
-      - '.github/workflows/android-apk.yml'
-      - 'index.html'
-      - 'manifest.webmanifest'
-      - 'css/**'
-      - 'js/**'
-      - 'data/**'
-      - 'images/**'
 
 permissions:
   contents: read
@@ -76,4 +63,4 @@ jobs:
           name: doshikologiya-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 3
