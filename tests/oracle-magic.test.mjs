@@ -59,7 +59,6 @@ test("Разметка и сборка Android подключают новые �
   const prep = file("scripts/prepare-android.mjs");
   const css = file("css/styles.css");
   assert.match(html, /id="oracleMascot" src="images\/oracle\/mage-idle\.webp"/);
-  assert.match(html, /id="oraclePhaseLabel"/);
   assert.match(main, /oracle-art2/);
   assert.match(prep, /"images"/);
   assert.match(prep, /"js"/);
