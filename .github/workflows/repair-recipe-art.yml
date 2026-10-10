@@ -1,0 +1,36 @@
+name: Исправить иллюстрации и описания рецептов
+
+on:
+  push:
+    paths:
+      - 'scripts/rebuild-recipe-art.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Пересоздать рисунки только из разрешённых ингредиентов
+        run: node scripts/rebuild-recipe-art.mjs
+      - name: Проверить готовый каталог и тесты
+        run: |
+          node scripts/validate-data.mjs
+          node --test tests/*.test.mjs
+      - name: Опубликовать исправленные материалы
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/recipes.json data/recipes-index.json data/recipe-entries images/recipes
+          if ! git diff --cached --quiet; then
+            git commit -m "Replace generic recipe placeholders with ingredient-specific illustrated dishes"
+            git push
+          fi

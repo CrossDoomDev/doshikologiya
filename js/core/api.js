@@ -1,5 +1,5 @@
 import { DATA_URLS, DEFAULT_CONFIG } from "./config.js";
-import { loadCachedRecipes, saveCachedRecipes, mergeRecipes, hydrateRecipeImages, cacheRemoteImages } from "./offline-catalog.js";
+import { loadCachedRecipes, saveCachedRecipes, mergeRecipes, hydrateRecipeImages, cacheRemoteImages } from "./offline-catalog.js?v=20261011-web-fix1";
 
 async function fetchJson(url) {
   const response = await fetch(url, { cache: "no-store" });
@@ -52,7 +52,12 @@ export async function loadCatalog() {
     fetchJson(DATA_URLS.patrons), loadCachedRecipes()
   ]);
   const bundledRecipes = normalizeRecipes(results[1].status === "fulfilled" ? results[1].value : []);
-  const cachedRecipes = normalizeRecipes(results[3].status === "fulfilled" ? results[3].value : []);
+  // On GitHub Pages, published JSON and images are the source of truth.
+  // IndexedDB is used only by the Android app, so stale downloads cannot hide web assets.
+  const nativeApp = globalThis.Capacitor?.isNativePlatform?.() === true;
+  const cachedRecipes = nativeApp
+    ? normalizeRecipes(results[3].status === "fulfilled" ? results[3].value : [])
+    : [];
   const config = normalizeConfig(results[0].status === "fulfilled" ? results[0].value : null);
   const knownRecipes = mergeRecipes(bundledRecipes, cachedRecipes);
   const recipes = await hydrateRecipeImages(knownRecipes, bundledRecipes, config.remoteRecipesUrl);

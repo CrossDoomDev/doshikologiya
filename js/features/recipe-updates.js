@@ -1,4 +1,4 @@
-import { checkOnlineRecipes, installOnlineRecipes } from "../core/api.js?v=20261011-delta50";
+import { checkOnlineRecipes, installOnlineRecipes } from "../core/api.js?v=20261011-web-fix1";
 import { applyCatalog, state } from "../core/state.js";
 import { renderFeatured } from "./home.js";
 import { renderChips, renderRecipes } from "./recipes.js?v=20261010-heart-asset1";

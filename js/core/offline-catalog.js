@@ -69,6 +69,8 @@ function remoteImageUrl(image, catalogUrl) {
 }
 
 export async function hydrateRecipeImages(recipes, bundledRecipes, catalogUrl) {
+  // Browser: use current same-origin images directly. Android: prefer saved offline blobs.
+  if (globalThis.Capacitor?.isNativePlatform?.() !== true) return recipes;
   const bundledIds = new Set(bundledRecipes.map(recipe => recipe.id));
   return Promise.all(recipes.map(async recipe => {
     const remoteUrl = remoteImageUrl(recipe.image, catalogUrl);
