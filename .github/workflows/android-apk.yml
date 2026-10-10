@@ -2,11 +2,6 @@ name: Дошикология — Android APK
 
 on:
   workflow_dispatch:
-  # Разовый запуск после добавления генератора иконок.
-  push:
-    branches: [main]
-    paths:
-      - 'scripts/generate-android-icons.mjs'
 
 permissions:
   contents: read
