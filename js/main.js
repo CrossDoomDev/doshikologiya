@@ -8,8 +8,8 @@ import { renderChips, renderRecipes, selectCategory, setSearch, toggleFavoritesO
 import { renderPatrons } from "./features/support.js";
 import { openRecipe, closeRecipe, toggleFavorite } from "./features/recipe-modal.js?v=20261010-heart-asset1";
 import { openDonation } from "./features/donations.js";
-import { initCookingLayout, openCookMode, closeCookMode, navigateCookStep, closeCookSuccess } from "./features/cooking.js";
-import { renderDailyIndex, runOracle } from "./features/oracle.js?v=20261009-oracle3";
+import { initCookingLayout, openCookMode, closeCookMode, navigateCookStep, closeCookSuccess } from "./features/cooking.js?v=20261010-oracle-mage1";
+import { renderDailyIndex, runOracle } from "./features/oracle.js?v=20261010-oracle-mage1";
 import { initSplash, hideSplash } from "./features/splash.js?v=20261009-motion2";
 import { initPressFeedback } from "./features/press-feedback.js?v=20261009-motion2";
 

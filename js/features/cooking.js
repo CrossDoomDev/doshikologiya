@@ -1,5 +1,6 @@
 import { state } from "../core/state.js";
 import { closeRecipe } from "./recipe-modal.js";
+import { unlockSuccessSound, playSuccessSound } from "./success-sound.js?v=20261010-oracle-mage1";
 
 let cookStepAnimating = false;
 let resizeObserver = null;
@@ -73,7 +74,8 @@ function renderCookStep() {
 
 export function navigateCookStep(direction) {
   const recipe = state.currentRecipe;
-  if (!recipe || cookStepAnimating) return;
+  if (!recipe || cookStepAnimating || document.getElementById("cookSuccess")?.classList.contains("open")) return;
+  if (direction > 0) unlockSuccessSound();
 
   const target = state.cookStepIndex + direction;
   if (target < 0) return;
@@ -142,6 +144,7 @@ function showCookSuccess() {
   void success.offsetWidth;
   success.classList.add("open");
   success.setAttribute("aria-hidden", "false");
+  playSuccessSound();
 }
 
 export function closeCookSuccess({ returnToRecipe = false } = {}) {

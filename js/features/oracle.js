@@ -1,6 +1,26 @@
 import { ORACLE_REASONS } from "../core/config.js";
 import { state } from "../core/state.js";
 import { escapeHtml } from "../core/utils.js";
+import { unlockSuccessSound, playSuccessSound } from "./success-sound.js?v=20261010-oracle-mage1";
+
+const ORACLE_ART = Object.freeze({
+  idle: "images/oracle/mage-idle.svg",
+  thinking: "images/oracle/mage-thinking.svg",
+  success: "images/oracle/mage-success.svg"
+});
+
+function setOracleLook(machine, stage) {
+  const mascot = document.getElementById("oracleMascot");
+  const caption = document.getElementById("oraclePhaseLabel");
+  if (mascot) mascot.src = ORACLE_ART[stage];
+  if (caption) caption.textContent = {
+    idle: "Магия лапши ждёт своего часа",
+    thinking: "Лапша-маг творит предсказание…",
+    success: "✨ Протокол найден!"
+  }[stage];
+  machine.classList.toggle("consulting", stage === "thinking");
+  machine.classList.toggle("oracle-solved", stage === "success");
+}
 
 let lastOracleRecipeId = null;
 let oracleBusy = false;
@@ -27,8 +47,10 @@ export function runOracle() {
   const output = document.getElementById("oracleResult");
   const button = document.getElementById("oracleBtn");
 
+  // Разблокируем звук прямо во время касания, до 3-секундного ожидания.
+  unlockSuccessSound();
   oracleBusy = true;
-  machine.classList.add("consulting");
+  setOracleLook(machine, "thinking");
   button.disabled = true;
   button.textContent = "📜 Оракул изучает хроники…";
   output.classList.remove("oracle-revealed");
@@ -60,11 +82,12 @@ export function runOracle() {
       </div>
     </div>`;
 
-    machine.classList.remove("consulting");
+    setOracleLook(machine, "success");
     output.removeAttribute("aria-busy");
     output.classList.add("oracle-revealed");
     button.disabled = false;
     button.textContent = "🔮 Спросить Оракула ещё раз";
     oracleBusy = false;
+    playSuccessSound();
   }, 3000);
 }
