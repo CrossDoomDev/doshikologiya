@@ -1,6 +1,5 @@
 {
   "schemaVersion": 1,
-  "version": "2026-10-11-50",
   "recipes": [
     {
       "id": "carbonara-2049",
@@ -54,202 +53,202 @@
     },
     {
       "id": "garlic-butter",
-      "hash": "8ac905d6",
+      "hash": "0e0d7350",
       "path": "recipe-entries/garlic-butter.json"
     },
     {
       "id": "creamy-mushrooms",
-      "hash": "37f5ef2c",
+      "hash": "d444cf7c",
       "path": "recipe-entries/creamy-mushrooms.json"
     },
     {
       "id": "tomato-express",
-      "hash": "2d3baf28",
+      "hash": "fc552853",
       "path": "recipe-entries/tomato-express.json"
     },
     {
       "id": "cheese-volcano",
-      "hash": "dae4d13a",
+      "hash": "0fc1ae52",
       "path": "recipe-entries/cheese-volcano.json"
     },
     {
       "id": "egg-broth",
-      "hash": "0f835e1f",
+      "hash": "3475c5fb",
       "path": "recipe-entries/egg-broth.json"
     },
     {
       "id": "cold-cucumber",
-      "hash": "7fad73dc",
+      "hash": "91cb5db0",
       "path": "recipe-entries/cold-cucumber.json"
     },
     {
       "id": "cabbage-crunch",
-      "hash": "5d9cca45",
+      "hash": "c5308772",
       "path": "recipe-entries/cabbage-crunch.json"
     },
     {
       "id": "carrot-garlic",
-      "hash": "608f8088",
+      "hash": "99e88cc8",
       "path": "recipe-entries/carrot-garlic.json"
     },
     {
       "id": "corn-landing",
-      "hash": "b316b824",
+      "hash": "7fd17604",
       "path": "recipe-entries/corn-landing.json"
     },
     {
       "id": "tomato-basil",
-      "hash": "0abe469a",
+      "hash": "3abafafc",
       "path": "recipe-entries/tomato-basil.json"
     },
     {
       "id": "zucchini-pan",
-      "hash": "663499c6",
+      "hash": "6614da63",
       "path": "recipe-entries/zucchini-pan.json"
     },
     {
       "id": "sour-mushrooms",
-      "hash": "e3ebdf10",
+      "hash": "f52c8b6d",
       "path": "recipe-entries/sour-mushrooms.json"
     },
     {
       "id": "pea-egg",
-      "hash": "672e2a76",
+      "hash": "fecf43af",
       "path": "recipe-entries/pea-egg.json"
     },
     {
       "id": "broccoli-cheese",
-      "hash": "2d5c8514",
+      "hash": "fd3b9db8",
       "path": "recipe-entries/broccoli-cheese.json"
     },
     {
       "id": "ham-creamy",
-      "hash": "497ba2fb",
+      "hash": "a834ca72",
       "path": "recipe-entries/ham-creamy.json"
     },
     {
       "id": "sausage-rave",
-      "hash": "77e068a3",
+      "hash": "acaeec82",
       "path": "recipe-entries/sausage-rave.json"
     },
     {
       "id": "chicken-honey-soy",
-      "hash": "e410bfbd",
+      "hash": "f15b15b4",
       "path": "recipe-entries/chicken-honey-soy.json"
     },
     {
       "id": "mince-tomato",
-      "hash": "e9a09ed4",
+      "hash": "5d825dec",
       "path": "recipe-entries/mince-tomato.json"
     },
     {
       "id": "bacon-alarm",
-      "hash": "69a19218",
+      "hash": "584f971e",
       "path": "recipe-entries/bacon-alarm.json"
     },
     {
       "id": "smoked-sausage",
-      "hash": "09b31fd4",
+      "hash": "da01838f",
       "path": "recipe-entries/smoked-sausage.json"
     },
     {
       "id": "cutlet-noodles",
-      "hash": "b2ce298e",
+      "hash": "a992fd38",
       "path": "recipe-entries/cutlet-noodles.json"
     },
     {
       "id": "morning-cheese",
-      "hash": "5d638393",
+      "hash": "80412371",
       "path": "recipe-entries/morning-cheese.json"
     },
     {
       "id": "fried-egg-soy",
-      "hash": "f21f88be",
+      "hash": "1f550323",
       "path": "recipe-entries/fried-egg-soy.json"
     },
     {
       "id": "cheese-nuggets",
-      "hash": "b9f3e40a",
+      "hash": "3f33f6bf",
       "path": "recipe-entries/cheese-nuggets.json"
     },
     {
       "id": "cheese-bake",
-      "hash": "9134329a",
+      "hash": "3e809a51",
       "path": "recipe-entries/cheese-bake.json"
     },
     {
       "id": "wrap-egg",
-      "hash": "c27a8969",
+      "hash": "85692ec6",
       "path": "recipe-entries/wrap-egg.json"
     },
     {
       "id": "spicy-tomato",
-      "hash": "b4f05ca2",
+      "hash": "c8c65b08",
       "path": "recipe-entries/spicy-tomato.json"
     },
     {
       "id": "spicy-garlic",
-      "hash": "12d0f83b",
+      "hash": "d61ce1a0",
       "path": "recipe-entries/spicy-garlic.json"
     },
     {
       "id": "spicy-cheese",
-      "hash": "2de97dd7",
+      "hash": "f35de6b3",
       "path": "recipe-entries/spicy-cheese.json"
     },
     {
       "id": "fiery-mushroom",
-      "hash": "3680fb1a",
+      "hash": "511d33c7",
       "path": "recipe-entries/fiery-mushroom.json"
     },
     {
       "id": "pepper-fire",
-      "hash": "db6b08c2",
+      "hash": "e7ee39fd",
       "path": "recipe-entries/pepper-fire.json"
     },
     {
       "id": "kimchi-soup",
-      "hash": "3b6ad610",
+      "hash": "450d6d3c",
       "path": "recipe-entries/kimchi-soup.json"
     },
     {
       "id": "tuna-lemon",
-      "hash": "52b8415a",
+      "hash": "22afa4ca",
       "path": "recipe-entries/tuna-lemon.json"
     },
     {
       "id": "crab-salad",
-      "hash": "63534fca",
+      "hash": "428ea18d",
       "path": "recipe-entries/crab-salad.json"
     },
     {
       "id": "shrimp-garlic",
-      "hash": "1847a44d",
+      "hash": "553dbdf1",
       "path": "recipe-entries/shrimp-garlic.json"
     },
     {
       "id": "lemon-butter",
-      "hash": "9e0fe766",
+      "hash": "5b1cfae0",
       "path": "recipe-entries/lemon-butter.json"
     },
     {
       "id": "peanut-sauce",
-      "hash": "a247609a",
+      "hash": "06410dc2",
       "path": "recipe-entries/peanut-sauce.json"
     },
     {
       "id": "coconut-curry",
-      "hash": "886f9d53",
+      "hash": "7066d68c",
       "path": "recipe-entries/coconut-curry.json"
     },
     {
       "id": "honey-chili",
-      "hash": "9b1962da",
+      "hash": "63cb71f2",
       "path": "recipe-entries/honey-chili.json"
     },
     {
       "id": "apple-dessert",
-      "hash": "bddf518a",
+      "hash": "5b761a5c",
       "path": "recipe-entries/apple-dessert.json"
     }
   ]
