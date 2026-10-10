@@ -1,4 +1,4 @@
-import { loadCatalog } from "./core/api.js";
+import { loadCatalog, refreshOnlineRecipes } from "./core/api.js?v=20261010-offline-share1";
 import { applyCatalog, state } from "./core/state.js";
 import { goTo } from "./core/router.js";
 import { renderBanner, renderFeatured } from "./features/home.js";
@@ -104,6 +104,13 @@ async function boot() {
   applyCatalog(catalog);
   renderAll();
   hideSplash();
+
+  // Updates are downloaded in the background without blocking first render.
+  refreshOnlineRecipes(catalog.config, catalog.bundledRecipes).then(recipes => {
+    if (!recipes) return;
+    applyCatalog({ config: state.config, recipes, patrons: state.patrons });
+    renderAll();
+  }).catch(error => console.warn("Не удалось обновить каталог:", error));
 }
 
 boot().catch(error => {

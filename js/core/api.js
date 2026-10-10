@@ -1,4 +1,5 @@
 import { DATA_URLS, DEFAULT_CONFIG } from "./config.js";
+import { loadCachedRecipes, saveCachedRecipes, mergeRecipes, hydrateRecipeImages, cacheRemoteImages } from "./offline-catalog.js";
 
 async function fetchJson(url) {
   const response = await fetch(url, { cache: "no-store" });
@@ -59,19 +60,41 @@ function normalizePatrons(value) {
 }
 
 export async function loadCatalog() {
+  // Bundled JSON and images work without internet inside an Android APK.
   const results = await Promise.allSettled([
     fetchJson(DATA_URLS.config),
     fetchJson(DATA_URLS.recipes),
-    fetchJson(DATA_URLS.patrons)
+    fetchJson(DATA_URLS.patrons),
+    loadCachedRecipes()
   ]);
 
+  const bundledRecipes = normalizeRecipes(results[1].status === "fulfilled" ? results[1].value : []);
+  const cachedRecipes = normalizeRecipes(results[3].status === "fulfilled" ? results[3].value : []);
+  const config = normalizeConfig(results[0].status === "fulfilled" ? results[0].value : null);
+  const recipes = await hydrateRecipeImages(mergeRecipes(bundledRecipes, cachedRecipes), bundledRecipes, config.remoteRecipesUrl);
+
   if (results[0].status === "rejected") console.warn("Не удалось загрузить конфигурацию:", results[0].reason);
-  if (results[1].status === "rejected") console.warn("Не удалось загрузить рецепты:", results[1].reason);
+  if (results[1].status === "rejected") console.warn("Не удалось загрузить базовые рецепты:", results[1].reason);
   if (results[2].status === "rejected") console.warn("Не удалось загрузить стену меценатов:", results[2].reason);
 
   return {
-    config: normalizeConfig(results[0].status === "fulfilled" ? results[0].value : null),
-    recipes: normalizeRecipes(results[1].status === "fulfilled" ? results[1].value : []),
-    patrons: normalizePatrons(results[2].status === "fulfilled" ? results[2].value : [])
+    config,
+    recipes,
+    patrons: normalizePatrons(results[2].status === "fulfilled" ? results[2].value : []),
+    bundledRecipes
   };
+}
+
+export async function refreshOnlineRecipes(config, bundledRecipes) {
+  if (!config.remoteRecipesUrl) return null;
+  try {
+    const downloaded = normalizeRecipes(await fetchJson(config.remoteRecipesUrl));
+    if (!downloaded.length) return null;
+    await saveCachedRecipes(downloaded);
+    await cacheRemoteImages(downloaded, config.remoteRecipesUrl);
+    return hydrateRecipeImages(mergeRecipes(bundledRecipes, downloaded), bundledRecipes, config.remoteRecipesUrl);
+  } catch (error) {
+    console.info("Офлайн-режим: используем сохранённые рецепты.", error);
+    return null;
+  }
 }

@@ -1,0 +1,103 @@
+// IndexedDB stores a downloaded catalog and its images for future Android packaging.
+const DB_NAME = "doshikologiya-offline";
+const DB_VERSION = 1;
+let databasePromise;
+const objectUrls = new Map();
+
+function database() {
+  if (!("indexedDB" in globalThis)) return Promise.resolve(null);
+  if (databasePromise) return databasePromise;
+  databasePromise = new Promise(resolve => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onupgradeneeded = () => {
+      if (!request.result.objectStoreNames.contains("catalog")) request.result.createObjectStore("catalog");
+      if (!request.result.objectStoreNames.contains("images")) request.result.createObjectStore("images");
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => resolve(null);
+    request.onblocked = () => resolve(null);
+  });
+  return databasePromise;
+}
+
+async function read(store, key) {
+  const db = await database();
+  if (!db) return null;
+  return new Promise(resolve => {
+    try {
+      const request = db.transaction(store, "readonly").objectStore(store).get(key);
+      request.onsuccess = () => resolve(request.result ?? null);
+      request.onerror = () => resolve(null);
+    } catch { resolve(null); }
+  });
+}
+
+async function write(store, key, value) {
+  const db = await database();
+  if (!db) return false;
+  return new Promise(resolve => {
+    try {
+      const tx = db.transaction(store, "readwrite");
+      tx.objectStore(store).put(value, key);
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = () => resolve(false);
+      tx.onabort = () => resolve(false);
+    } catch { resolve(false); }
+  });
+}
+
+export async function loadCachedRecipes() {
+  const value = await read("catalog", "recipes");
+  return Array.isArray(value) ? value : [];
+}
+
+export function saveCachedRecipes(recipes) {
+  return write("catalog", "recipes", recipes);
+}
+
+export function mergeRecipes(bundled, downloaded) {
+  const merged = new Map(bundled.map(recipe => [recipe.id, recipe]));
+  for (const recipe of downloaded) merged.set(recipe.id, recipe);
+  return [...merged.values()];
+}
+
+function remoteImageUrl(image, catalogUrl) {
+  if (!image || !catalogUrl) return null;
+  try {
+    return new URL(image, new URL("../", new URL(catalogUrl, location.href))).href;
+  } catch { return null; }
+}
+
+export async function hydrateRecipeImages(recipes, bundledRecipes, catalogUrl) {
+  const bundledIds = new Set(bundledRecipes.map(recipe => recipe.id));
+  return Promise.all(recipes.map(async recipe => {
+    const remoteUrl = remoteImageUrl(recipe.image, catalogUrl);
+    if (!remoteUrl) return recipe;
+    const blob = await read("images", remoteUrl);
+    if (blob instanceof Blob) {
+      if (!objectUrls.has(remoteUrl)) objectUrls.set(remoteUrl, URL.createObjectURL(blob));
+      return { ...recipe, image: objectUrls.get(remoteUrl) };
+    }
+    return bundledIds.has(recipe.id) ? recipe : { ...recipe, image: remoteUrl };
+  }));
+}
+
+export async function cacheRemoteImages(recipes, catalogUrl) {
+  const urls = [...new Set(recipes.map(recipe => remoteImageUrl(recipe.image, catalogUrl)).filter(Boolean))];
+  let position = 0;
+  async function worker() {
+    while (position < urls.length) {
+      const url = urls[position++];
+      if (await read("images", url)) continue;
+      try {
+        const response = await fetch(url);
+        if (!response.ok) continue;
+        const blob = await response.blob();
+        if (blob.type.startsWith("image/")) await write("images", url, blob);
+      } catch {
+        // Another online session can finish interrupted downloads.
+      }
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(3, urls.length) }, worker));
+}

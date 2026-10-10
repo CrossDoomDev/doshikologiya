@@ -16,6 +16,7 @@ export const DEFAULT_CONFIG = Object.freeze({
     text: "Архив временно недоступен, но лаборатория уже греет чайник."
   },
   donateUrl: "",
+  remoteRecipesUrl: "",
   featuredRecipeId: "",
   categoryOrder: ["Все"],
   homeRecipeLimit: 6
