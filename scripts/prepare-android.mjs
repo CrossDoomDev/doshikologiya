@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const output = path.join(root, "www");
-const sources = ["index.html", "css", "js", "data", "images", "manifest.webmanifest"];
+const sources = ["index.html", "privacy.html", "terms.html", "css", "js", "data", "images", "manifest.webmanifest"];
 fs.rmSync(output, { recursive: true, force: true });
 fs.mkdirSync(output, { recursive: true });
 
