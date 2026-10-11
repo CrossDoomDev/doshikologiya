@@ -17,8 +17,8 @@ const ART_SIZE = 768;
 const ART_SCALED_SIZE = 900;
 const ART_LEFT_CROP = 66;
 const ART_TOP_MARGIN = 14;
-const FADE_START = 612;
-const FADE_END = 662;
+const FADE_START = 590;
+const FADE_END = 634;
 
 const sourceWebp = Buffer.from(embedded[1], "base64");
 const scaled = await sharp(sourceWebp).resize(ART_SCALED_SIZE, ART_SCALED_SIZE).png().toBuffer();
