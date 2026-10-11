@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.webmanifest?v=3">
   <meta name="application-name" content="Дошикология">
   <meta name="apple-mobile-web-app-title" content="Дошикология">
-  <link rel="stylesheet" href="css/styles.css?v=20261011-icon-no-text">
+  <link rel="stylesheet" href="css/styles.css?v=20261011-more1">
 </head>
 <body>
   <div class="app-splash" id="appSplash" role="status" aria-live="polite" aria-label="Дошикология загружается">
@@ -27,6 +27,7 @@
         <button class="nav-btn" data-route="recipes">Протоколы</button>
         <button class="nav-btn" data-route="oracle">Оракул</button>
         <button class="nav-btn" data-route="wall">Стена</button>
+        <button class="nav-btn" data-route="more">Ещё</button>
       </nav>
     </header>
 
@@ -112,26 +113,6 @@
           </label>
           <button class="btn secondary" id="favoritesToggle" aria-pressed="false"><svg class="favorite-heart" viewBox="0 0 24 24" aria-hidden="true"><use href="images/ui/heart.svg#heart"></use></svg> <span class="favorite-filter-label">Только избранное</span></button>
         </div>
-        <section class="catalog-update" aria-label="Обновление рецептов">
-          <div class="catalog-update-copy">
-            <strong>📚 Обновление архива</strong>
-            <p id="recipeUpdateStatus" role="status" aria-live="polite" aria-atomic="true">Рецепты доступны без интернета. Проверка новых протоколов — только по твоему запросу.</p>
-          </div>
-          <div class="catalog-update-actions">
-            <button class="btn secondary" id="recipeUpdateCheckBtn" type="button" disabled>↻ Проверить обновления</button>
-            <button class="btn primary hidden" id="recipeUpdateDownloadBtn" type="button">↓ Получить обновление</button>
-          </div>
-          <div class="recipe-update-progress hidden" id="recipeUpdateProgress">
-            <div class="recipe-update-progress-info">
-              <span id="recipeUpdateProgressStage">Подготовка обновления</span>
-              <span id="recipeUpdateProgressCount"></span>
-            </div>
-            <div class="recipe-update-progress-track" id="recipeUpdateProgressBar" role="progressbar"
-              aria-label="Прогресс обновления рецептов" aria-valuemin="0" aria-valuemax="100">
-              <div class="recipe-update-progress-fill" id="recipeUpdateProgressFill"></div>
-            </div>
-          </div>
-        </section>
         <div class="chips" id="recipeCategoryChips"></div>
         <div style="height:14px"></div>
         <div class="grid" id="recipesGrid"></div>
@@ -189,6 +170,110 @@
           <div class="comments" id="commentsList"></div>
         </div>
       </section>
+      <section id="view-more" class="view hidden" aria-labelledby="moreTitle">
+        <div class="section-head more-heading">
+          <div>
+            <div class="section-overline">Служба института</div>
+            <h2 id="moreTitle">Ещё</h2>
+            <p>Обновления, поддержка и документы — всё важное в одном месте.</p>
+          </div>
+        </div>
+
+        <div class="more-layout">
+          <section class="more-panel" aria-labelledby="moreUpdatesTitle">
+            <div class="more-panel-heading">
+              <span class="more-panel-icon" aria-hidden="true">↻</span>
+              <div>
+                <div class="section-overline">Архив института</div>
+                <h3 id="moreUpdatesTitle">Обновления</h3>
+              </div>
+            </div>
+        <section class="catalog-update" aria-label="Обновление рецептов">
+          <div class="catalog-update-copy">
+            <strong>📚 Обновление рецептов</strong>
+            <p id="recipeUpdateStatus" role="status" aria-live="polite" aria-atomic="true">Рецепты доступны без интернета. Проверка новых протоколов — только по твоему запросу.</p>
+          </div>
+          <div class="catalog-update-actions">
+            <button class="btn secondary" id="recipeUpdateCheckBtn" type="button" disabled>↻ Проверить обновления</button>
+            <button class="btn primary hidden" id="recipeUpdateDownloadBtn" type="button">↓ Получить обновление</button>
+          </div>
+          <div class="recipe-update-progress hidden" id="recipeUpdateProgress">
+            <div class="recipe-update-progress-info">
+              <span id="recipeUpdateProgressStage">Подготовка обновления</span>
+              <span id="recipeUpdateProgressCount"></span>
+            </div>
+            <div class="recipe-update-progress-track" id="recipeUpdateProgressBar" role="progressbar"
+              aria-label="Прогресс обновления рецептов" aria-valuemin="0" aria-valuemax="100">
+              <div class="recipe-update-progress-fill" id="recipeUpdateProgressFill"></div>
+            </div>
+          </div>
+        </section>
+            <div class="more-version">
+              <div>
+                <strong>Версия приложения</strong>
+                <p>Сейчас: <span id="moreAppVersion">—</span></p>
+              </div>
+              <span class="more-version-icon" aria-hidden="true">📱</span>
+            </div>
+            <p class="more-hint">Новые рецепты загружаются здесь. После выпуска Android-версии обновления самого приложения будут доступны через RuStore.</p>
+          </section>
+
+          <section class="more-panel" aria-labelledby="moreSupportTitle">
+            <div class="more-panel-heading">
+              <span class="more-panel-icon" aria-hidden="true">✉</span>
+              <div>
+                <div class="section-overline">Связь с лабораторией</div>
+                <h3 id="moreSupportTitle">Помощь и поддержка</h3>
+              </div>
+            </div>
+            <a class="more-link hidden" id="supportEmailLink" href="mailto:" rel="nofollow">
+              <span class="more-link-symbol" aria-hidden="true">✉</span>
+              <span class="more-link-copy"><strong>Написать разработчику</strong><small>Личное обращение по электронной почте</small></span>
+              <span class="more-link-chevron" aria-hidden="true">›</span>
+            </a>
+            <p class="more-hint" id="supportEmailPending">Личный адрес техподдержки добавим перед публикацией в RuStore.</p>
+            <a class="more-link" href="https://github.com/CrossDoomDev/doshikologiya/issues/new" target="_blank" rel="noopener noreferrer">
+              <span class="more-link-symbol" aria-hidden="true">⚑</span>
+              <span class="more-link-copy"><strong>Сообщить об ошибке через GitHub</strong><small>Публичное обращение; требуется аккаунт GitHub</small></span>
+              <span class="more-link-chevron" aria-hidden="true">↗</span>
+            </a>
+            <p class="more-hint">В публичных обращениях не указывай телефон, адрес, платёжные данные и другую личную информацию.</p>
+            <details class="more-faq">
+              <summary>Частые вопросы <span aria-hidden="true">⌄</span></summary>
+              <div class="more-faq-content">
+                <p><strong>Работают ли рецепты без интернета?</strong> В Android — да, встроенный и сохранённый каталог. Для первой загрузки веб-сайта интернет нужен.</p>
+                <p><strong>Как получить новые рецепты?</strong> Нажми «Проверить обновления» выше, затем подтверди загрузку.</p>
+                <p><strong>Где хранится избранное?</strong> На устройстве; удаление данных приложения может очистить избранное.</p>
+              </div>
+            </details>
+          </section>
+
+          <section class="more-panel" aria-labelledby="moreLegalTitle">
+            <div class="more-panel-heading">
+              <span class="more-panel-icon" aria-hidden="true">§</span>
+              <div>
+                <div class="section-overline">Документы</div>
+                <h3 id="moreLegalTitle">Информация</h3>
+              </div>
+            </div>
+            <a class="more-link" href="privacy.html">
+              <span class="more-link-symbol" aria-hidden="true">♢</span>
+              <span class="more-link-copy"><strong>Политика конфиденциальности</strong><small>Локальные данные, внешние сервисы и обращения</small></span>
+              <span class="more-link-chevron" aria-hidden="true">›</span>
+            </a>
+            <a class="more-link" href="terms.html">
+              <span class="more-link-symbol" aria-hidden="true">▤</span>
+              <span class="more-link-copy"><strong>Пользовательское соглашение</strong><small>Правила использования Дошикологии</small></span>
+              <span class="more-link-chevron" aria-hidden="true">›</span>
+            </a>
+            <div class="more-about">
+              <strong>О Дошикологии</strong>
+              <p>Институт лапши быстрого приготовления: рецепты, немного магии и кухонные эксперименты. Приложение бесплатно и не требует регистрации.</p>
+            </div>
+          </section>
+        </div>
+      </section>
+
     </main>
 
     <footer class="footer">
@@ -223,6 +308,12 @@
         <use href="images/ui/heart.svg#heart"></use>
       </svg>
       <span class="tab-label" aria-hidden="true">Стена</span>
+    </button>
+    <button class="nav-btn" data-route="more" aria-label="Ещё" title="Ещё" type="button">
+      <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>
+      </svg>
+      <span class="tab-label" aria-hidden="true">Ещё</span>
     </button>
   </nav>
 
@@ -331,6 +422,6 @@
       </div>
     </div>
   </div>
-  <script type="module" src="js/main.js?v=20261011-home-clean1"></script>
+  <script type="module" src="js/main.js?v=20261011-more1"></script>
 </body>
 </html>
