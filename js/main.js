@@ -2,7 +2,7 @@ import { loadCatalog } from "./core/api.js?v=20261011-progress1";
 import { initRecipeUpdates } from "./features/recipe-updates.js?v=20261011-home-clean1";
 import { applyCatalog, state } from "./core/state.js";
 import { shareRecipe, incomingRecipeId } from "./features/sharing.js?v=20261010-offline-share1";
-import { goTo } from "./core/router.js";
+import { goTo } from "./core/router.js?v=20261011-more1";
 import { renderBanner, renderFeatured } from "./features/home.js";
 import { renderChips, renderRecipes, selectCategory, setSearch, toggleFavoritesOnly } from "./features/recipes.js?v=20261011-home-clean1";
 import { renderPatrons } from "./features/support.js?v=20261011-home-feed1";
@@ -14,6 +14,22 @@ import { renderDailyIndex, runOracle } from "./features/oracle.js?v=20261010-ora
 import { initSplash, hideSplash } from "./features/splash.js?v=20261009-motion2";
 import { initPressFeedback } from "./features/press-feedback.js?v=20261009-motion2";
 
+function renderServiceInfo() {
+  const version = state.config.version || "—";
+  const versionElement = document.getElementById("moreAppVersion");
+  if (versionElement) versionElement.textContent = version;
+
+  const contact = String(state.config.supportEmail || "").trim();
+  const supportLink = document.getElementById("supportEmailLink");
+  const pending = document.getElementById("supportEmailPending");
+  if (supportLink && pending && /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(contact)) {
+    const subject = encodeURIComponent("Дошикология — обращение в поддержку (версия " + version + ")");
+    supportLink.href = "mailto:" + contact + "?subject=" + subject;
+    supportLink.classList.remove("hidden");
+    pending.classList.add("hidden");
+  }
+}
+
 function renderAll() {
   renderBanner();
   renderFeatured();
@@ -22,6 +38,7 @@ function renderAll() {
   renderPatrons();
   renderNews();
   renderDailyIndex();
+  renderServiceInfo();
 }
 
 function bindEvents() {
