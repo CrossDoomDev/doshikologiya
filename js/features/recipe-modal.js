@@ -1,8 +1,8 @@
 import { state } from "../core/state.js";
 import { escapeHtml } from "../core/utils.js";
 import { isFavorite, toggleFavoriteValue } from "../core/favorites.js";
-import { renderRecipes } from "./recipes.js?v=20261011-home-feed1";
-import { formatPublicationDate } from "../core/chronology.js";
+import { renderRecipes } from "./recipes.js?v=20261012-dateonly1";
+import { formatPublicationDate } from "../core/chronology.js?v=20261012-dateonly1";
 
 export function openRecipe(id) {
   const recipe = state.recipes.find(item => item.id === id);

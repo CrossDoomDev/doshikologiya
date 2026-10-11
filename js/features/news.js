@@ -1,6 +1,6 @@
 import { state } from "../core/state.js";
 import { escapeHtml } from "../core/utils.js";
-import { latestNews, formatPublicationDate } from "../core/chronology.js";
+import { latestNews, formatPublicationDate } from "../core/chronology.js?v=20261012-dateonly1";
 
 export function renderNews() {
   const box = document.getElementById("homeNewsList");

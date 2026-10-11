@@ -1,7 +1,7 @@
 import { state, getAllCategories } from "../core/state.js";
 import { escapeHtml, getCategories } from "../core/utils.js";
 import { isFavorite } from "../core/favorites.js";
-import { latestRecipes, formatPublicationDate } from "../core/chronology.js";
+import { latestRecipes, formatPublicationDate } from "../core/chronology.js?v=20261012-dateonly1";
 
 function recipeCard(recipe) {
   const category = getCategories(recipe)[0];

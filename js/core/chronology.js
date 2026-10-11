@@ -45,9 +45,9 @@ export function newestPatrons(patrons) {
 
 export function formatPublicationDate(value) {
   if (!Number.isFinite(publicationTime(value))) return "Дата не указана";
-  if (LEGACY_DATE.test(value.trim())) return value.trim();
+  const legacy = LEGACY_DATE.exec(value.trim());
+  if (legacy) return `${legacy[1]}.${legacy[2]}.${legacy[3]}`;
   return new Intl.DateTimeFormat("ru-RU", {
-    day: "2-digit", month: "2-digit", year: "numeric",
-    hour: "2-digit", minute: "2-digit", hourCycle: "h23"
+    day: "2-digit", month: "2-digit", year: "numeric"
   }).format(new Date(publicationTime(value)));
 }

@@ -1,7 +1,7 @@
 import { checkOnlineRecipes, installOnlineRecipes } from "../core/api.js?v=20261011-progress1";
 import { applyCatalog, state } from "../core/state.js";
 import { renderFeatured } from "./home.js";
-import { renderChips, renderRecipes } from "./recipes.js?v=20261011-home-clean1";
+import { renderChips, renderRecipes } from "./recipes.js?v=20261012-dateonly1";
 
 export function initRecipeUpdates(catalog) {
   const section = document.querySelector(".catalog-update");

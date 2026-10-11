@@ -24,3 +24,9 @@ test("new recipes sort by publication time; same-time recipes use insertion orde
     { id: "newest", publishedAt: "2026-10-11T09:30:00Z" }];
   assert.deepEqual(latestRecipes(recipes, 5).map(x => x.id), ["newest", "recent", "b", "a", "old"]);
 });
+
+test("publication dates hide clock time but timestamps still order recipes", () => {
+  assert.equal(formatPublicationDate("11.10.2026 15:24"), "11.10.2026");
+  assert.match(formatPublicationDate("2026-10-11T12:45:00Z"), /^\d{2}\.\d{2}\.\d{4}$/);
+  assert.ok(publicationTime("2026-10-11T12:45:00Z") > publicationTime("2026-10-11T12:00:00Z"));
+});
