@@ -9,10 +9,10 @@
   "theme_color": "#ffb229",
   "icons": [
     {
-      "src": "images/ui/doshikologiya-mark.svg?v=20261008-logo-hd768",
+      "src": "images/ui/doshikologiya-app-icon.svg?v=20261011-icon-no-text",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ]
 }
