@@ -209,6 +209,8 @@ function inspectStaticLinks(sourceFile) {
 }
 
 inspectStaticLinks("index.html");
+inspectStaticLinks("privacy.html");
+inspectStaticLinks("terms.html");
 inspectStaticLinks("manifest.webmanifest");
 inspectStaticLinks("css/styles.css");
 for (const directory of ["js/core", "js/features"]) {
