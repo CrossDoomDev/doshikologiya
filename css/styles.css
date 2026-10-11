@@ -163,6 +163,7 @@
     .favorite-btn.on{color:var(--amber);background:rgba(36,24,10,.82);border-color:rgba(255,178,41,.4)}
     .favorite-btn.on .favorite-heart,
     #modalFavoriteBtn.is-favorite .favorite-heart,
+    #successFavoriteBtn.is-favorite .favorite-heart,
     #favoritesToggle[aria-pressed="true"] .favorite-heart,
     .favorite-heart.heart-filled{fill:currentColor}
     .favorite-btn.on .favorite-heart{transform:scale(.96)}
@@ -334,6 +335,8 @@
     .success-badge strong{display:block;color:var(--cream);font-size:14px;margin-bottom:3px}
     .success-badge span{color:var(--muted);font-size:12px}
     .success-actions{position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .success-favorite-btn{grid-column:1/-1;width:100%;min-width:0;margin-bottom:2px}
+    .success-favorite-btn .favorite-heart{width:19px;height:19px;flex:none}
     .success-confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden}
     .success-confetti i{position:absolute;top:-12%;left:var(--x);width:8px;height:16px;border-radius:3px;background:var(--c);opacity:.95;transform:rotate(var(--r));animation:confettiFall var(--d) var(--delay) cubic-bezier(.2,.7,.3,1) forwards}
     @keyframes successFade{from{opacity:0}to{opacity:1}}

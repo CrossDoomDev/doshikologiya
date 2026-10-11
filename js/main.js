@@ -1,4 +1,5 @@
 import { loadCatalog } from "./core/api.js?v=20261011-progress1";
+import { initBackNavigation } from "./core/android-back.js?v=20261012-android-back1";
 import { initRecipeUpdates } from "./features/recipe-updates.js?v=20261012-dateonly1";
 import { applyCatalog, state } from "./core/state.js";
 import { shareRecipe, incomingRecipeId } from "./features/sharing.js?v=20261010-offline-share1";
@@ -9,7 +10,7 @@ import { renderPatrons } from "./features/support.js?v=20261011-home-feed1";
 import { renderNews } from "./features/news.js?v=20261012-dateonly1";
 import { openRecipe, closeRecipe, toggleFavorite } from "./features/recipe-modal.js?v=20261012-dateonly1";
 import { openDonation } from "./features/donations.js";
-import { initCookingLayout, openCookMode, closeCookMode, navigateCookStep, closeCookSuccess } from "./features/cooking.js?v=20261010-oracle-mage1";
+import { initCookingLayout, openCookMode, closeCookMode, navigateCookStep, closeCookSuccess, updateCookSuccessFavorite } from "./features/cooking.js?v=20261012-android-back1";
 import { renderDailyIndex, runOracle } from "./features/oracle.js?v=20261010-oracle-art2";
 import { initSplash, hideSplash } from "./features/splash.js?v=20261009-motion2";
 import { initPressFeedback } from "./features/press-feedback.js?v=20261009-motion2";
@@ -94,19 +95,13 @@ function bindEvents() {
   document.getElementById("cookNextBtn").addEventListener("click", () => navigateCookStep(1));
   document.getElementById("successBackBtn").addEventListener("click", () => closeCookSuccess({ returnToRecipe: true }));
   document.getElementById("successDoneBtn").addEventListener("click", () => closeCookSuccess({ returnToRecipe: false }));
+  document.getElementById("successFavoriteBtn").addEventListener("click", () => {
+    if (!state.currentRecipe) return;
+    toggleFavorite(state.currentRecipe.id);
+    updateCookSuccessFavorite();
+  });
   document.getElementById("cookSuccess").addEventListener("click", event => {
     if (event.target.id === "cookSuccess") closeCookSuccess({ returnToRecipe: true });
-  });
-
-  document.addEventListener("keydown", event => {
-    if (event.key !== "Escape") return;
-    const success = document.getElementById("cookSuccess");
-    if (success.classList.contains("open")) {
-      closeCookSuccess({ returnToRecipe: true });
-      return;
-    }
-    closeCookMode();
-    closeRecipe();
   });
 
   // A previously saved recipe may point to a deleted legacy image.
@@ -135,6 +130,7 @@ async function boot() {
   initSplash();
   initPressFeedback();
   bindEvents();
+  initBackNavigation({ closeCookSuccess, closeCookMode, closeRecipe, goTo });
   initCookingLayout();
   goTo(location.hash.replace("#", "") || "home");
 

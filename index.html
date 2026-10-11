@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.webmanifest?v=3">
   <meta name="application-name" content="Дошикология">
   <meta name="apple-mobile-web-app-title" content="Дошикология">
-  <link rel="stylesheet" href="css/styles.css?v=20261011-more1">
+  <link rel="stylesheet" href="css/styles.css?v=20261012-android-back1">
 </head>
 <body>
   <div class="app-splash" id="appSplash" role="status" aria-live="polite" aria-label="Дошикология загружается">
@@ -417,11 +417,15 @@
         </div>
       </div>
       <div class="success-actions">
+        <button class="btn dosh-action-btn success-favorite-btn" type="button" id="successFavoriteBtn" aria-pressed="false">
+          <svg class="favorite-heart" viewBox="0 0 24 24" aria-hidden="true"><use href="images/ui/heart.svg#heart"></use></svg>
+          <span class="success-favorite-label">Добавить в избранное</span>
+        </button>
         <button class="btn secondary" id="successBackBtn">Вернуться к рецепту</button>
         <button class="btn primary" id="successDoneBtn">Отлично! ✨</button>
       </div>
     </div>
   </div>
-  <script type="module" src="js/main.js?v=20261012-dateonly1"></script>
+  <script type="module" src="js/main.js?v=20261012-android-back1"></script>
 </body>
 </html>

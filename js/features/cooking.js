@@ -1,5 +1,6 @@
 import { state } from "../core/state.js";
 import { closeRecipe } from "./recipe-modal.js";
+import { isFavorite } from "../core/favorites.js";
 import { unlockSuccessSound, playSuccessSound } from "./success-sound.js?v=20261010-oracle-mage1";
 
 let cookStepAnimating = false;
@@ -131,6 +132,16 @@ function buildSuccessConfetti() {
   }).join("");
 }
 
+export function updateCookSuccessFavorite() {
+  const button = document.getElementById("successFavoriteBtn");
+  if (!button || !state.currentRecipe) return;
+  const active = isFavorite(state.currentRecipe.id);
+  button.classList.toggle("is-favorite", active);
+  button.setAttribute("aria-pressed", String(active));
+  button.querySelector(".success-favorite-label").textContent =
+    active ? "В избранном" : "Добавить в избранное";
+}
+
 function showCookSuccess() {
   const recipe = state.currentRecipe;
   if (!recipe) return;
@@ -138,6 +149,7 @@ function showCookSuccess() {
   document.getElementById("successRecipeTitle").textContent = recipe.title;
   document.getElementById("successBadgeText").textContent = `${recipe.steps.length} из ${recipe.steps.length} этапов завершены. Протокол закрыт.`;
   buildSuccessConfetti();
+  updateCookSuccessFavorite();
 
   const success = document.getElementById("cookSuccess");
   success.classList.remove("open");
