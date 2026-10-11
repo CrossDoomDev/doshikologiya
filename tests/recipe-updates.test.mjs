@@ -83,3 +83,10 @@ test("download progress counts actual recipe and image completion, not simulated
   assert.match(cache, /onProgress\?\.\(\{ completed, total: urls\.length \}\)/);
   assert.match(cache, /finally \{\s*completed\+\+/);
 });
+
+test("network calls have timeouts so progress does not spin indefinitely", () => {
+  const api = fs.readFileSync(new URL("../js/core/api.js", import.meta.url), "utf8");
+  const offline = fs.readFileSync(new URL("../js/core/offline-catalog.js", import.meta.url), "utf8");
+  assert.match(api, /AbortSignal\.timeout\(30000\)/);
+  assert.match(offline, /AbortSignal\.timeout\(60000\)/);
+});

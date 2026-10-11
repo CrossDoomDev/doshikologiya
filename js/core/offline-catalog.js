@@ -104,7 +104,8 @@ export async function cacheRemoteImages(recipes, catalogUrl, onProgress) {
       const url = urls[position++];
       try {
         if (await read("images", url)) continue;
-        const response = await fetch(url);
+        const signal = typeof AbortSignal.timeout === "function" ? AbortSignal.timeout(60000) : undefined;
+        const response = await fetch(url, { signal });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const blob = await response.blob();
         if (!blob.type.startsWith("image/") || !(await write("images", url, blob))) {

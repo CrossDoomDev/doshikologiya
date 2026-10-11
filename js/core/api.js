@@ -3,7 +3,8 @@ import { publicationTime } from "./chronology.js";
 import { loadCachedRecipes, saveCachedRecipes, mergeRecipes, hydrateRecipeImages, cacheRemoteImages } from "./offline-catalog.js?v=20261011-progress1";
 
 async function fetchJson(url) {
-  const response = await fetch(url, { cache: "no-store" });
+  const signal = typeof AbortSignal.timeout === "function" ? AbortSignal.timeout(30000) : undefined;
+  const response = await fetch(url, { cache: "no-store", signal });
   if (!response.ok) throw new Error(`HTTP ${response.status}: ${url}`);
   return response.json();
 }
