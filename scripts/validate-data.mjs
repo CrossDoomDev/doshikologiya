@@ -83,7 +83,7 @@ function fingerprint(recipe) {
   }
   return (h >>> 0).toString(16).padStart(8, "0");
 }
-if (recipes.length !== 50) errors.push("Ожидалось ровно 50 рецептов.");
+if (recipes.length < 50) errors.push("Каталог должен содержать не менее 50 рецептов.");
 if (index.schemaVersion !== 1 || !Array.isArray(index.recipes) || index.recipes.length !== recipes.length) {
   errors.push("Индекс рецептов отсутствует или содержит неверное количество.");
 } else {
@@ -100,6 +100,31 @@ if (index.schemaVersion !== 1 || !Array.isArray(index.recipes) || index.recipes.
     if (!fs.existsSync(resource) || JSON.stringify(readJson(path.join("data", entry.path))) !== JSON.stringify(recipe)) {
       errors.push("Не совпадает отдельный файл рецепта: " + entry.id);
     }
+  }
+}
+
+// Следим за чистотой каталога: только используемые изображения и уникальные тексты.
+const activeRecipeImages = new Set(recipes.map(recipe => recipe.image?.split("?")[0]).filter(Boolean));
+for (const filename of fs.readdirSync(path.join(root, "images/recipes"))) {
+  if (!/\.(?:webp|png|jpe?g|svg)$/i.test(filename)) continue;
+  const relative = `images/recipes/${filename}`;
+  if (!activeRecipeImages.has(relative)) errors.push(`Неиспользуемое изображение: ${relative}`);
+}
+
+const seenRecipeTexts = new Map();
+for (const recipe of recipes) {
+  const fields = [
+    ["description", recipe.description],
+    ["story", recipe.story],
+    ...(recipe.steps || []).map(step => ["steps", step])
+  ];
+  for (const [kind, value] of fields) {
+    if (typeof value !== "string") continue;
+    const normalized = value.trim().replace(/\s+/g, " ").toLocaleLowerCase("ru");
+    const key = kind + ":" + normalized;
+    if (seenRecipeTexts.has(key)) {
+      errors.push(`Повторяющийся текст (${kind}) у рецептов ${seenRecipeTexts.get(key)} и ${recipe.id}`);
+    } else seenRecipeTexts.set(key, recipe.id);
   }
 }
 
