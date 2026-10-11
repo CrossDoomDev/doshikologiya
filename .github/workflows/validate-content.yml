@@ -6,6 +6,12 @@ on:
   pull_request:
   workflow_dispatch:
 
+# When several commits are pushed rapidly, only validate the newest revision.
+# Older queued/running checks are superseded, reducing obsolete failures.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate:
     runs-on: ubuntu-latest
