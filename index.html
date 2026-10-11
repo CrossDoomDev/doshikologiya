@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.webmanifest?v=2">
   <meta name="application-name" content="Дошикология">
   <meta name="apple-mobile-web-app-title" content="Дошикология">
-  <link rel="stylesheet" href="css/styles.css?v=20261011-news-feed1">
+  <link rel="stylesheet" href="css/styles.css?v=20261011-progress1">
 </head>
 <body>
   <div class="app-splash" id="appSplash" role="status" aria-live="polite" aria-label="Дошикология загружается">
@@ -131,7 +131,17 @@
           </div>
           <div class="catalog-update-actions">
             <button class="btn secondary" id="recipeUpdateCheckBtn" type="button" disabled>↻ Проверить обновления</button>
-            <button class="btn primary hidden" id="recipeUpdateDownloadBtn" type="button">↓ Скачать рецепты</button>
+            <button class="btn primary hidden" id="recipeUpdateDownloadBtn" type="button">↓ Получить обновление</button>
+          </div>
+          <div class="recipe-update-progress hidden" id="recipeUpdateProgress">
+            <div class="recipe-update-progress-info">
+              <span id="recipeUpdateProgressStage">Подготовка обновления</span>
+              <span id="recipeUpdateProgressCount"></span>
+            </div>
+            <div class="recipe-update-progress-track" id="recipeUpdateProgressBar" role="progressbar"
+              aria-label="Прогресс обновления рецептов" aria-valuemin="0" aria-valuemax="100">
+              <div class="recipe-update-progress-fill" id="recipeUpdateProgressFill"></div>
+            </div>
           </div>
         </section>
         <div class="chips" id="recipeCategoryChips"></div>
@@ -333,6 +343,6 @@
       </div>
     </div>
   </div>
-  <script type="module" src="js/main.js?v=20261011-news-feed1"></script>
+  <script type="module" src="js/main.js?v=20261011-progress1"></script>
 </body>
 </html>

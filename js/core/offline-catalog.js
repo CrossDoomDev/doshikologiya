@@ -93,15 +93,17 @@ export async function hydrateRecipeImages(recipes, bundledRecipes, catalogUrl) {
   }));
 }
 
-export async function cacheRemoteImages(recipes, catalogUrl) {
+export async function cacheRemoteImages(recipes, catalogUrl, onProgress) {
   const urls = [...new Set(recipes.map(recipe => remoteImageUrl(recipe.image, catalogUrl)).filter(Boolean))];
   let position = 0;
   let failed = 0;
+  let completed = 0;
+  onProgress?.({ completed, total: urls.length });
   async function worker() {
     while (position < urls.length) {
       const url = urls[position++];
-      if (await read("images", url)) continue;
       try {
+        if (await read("images", url)) continue;
         const response = await fetch(url);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const blob = await response.blob();
@@ -111,6 +113,9 @@ export async function cacheRemoteImages(recipes, catalogUrl) {
       } catch {
         failed++;
         // Successful images remain cached; next attempt retrieves only missing ones.
+      } finally {
+        completed++;
+        onProgress?.({ completed, total: urls.length });
       }
     }
   }

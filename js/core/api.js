@@ -1,6 +1,6 @@
 import { DATA_URLS, DEFAULT_CONFIG } from "./config.js";
 import { publicationTime } from "./chronology.js";
-import { loadCachedRecipes, saveCachedRecipes, mergeRecipes, hydrateRecipeImages, cacheRemoteImages } from "./offline-catalog.js?v=20261011-link-audit1";
+import { loadCachedRecipes, saveCachedRecipes, mergeRecipes, hydrateRecipeImages, cacheRemoteImages } from "./offline-catalog.js?v=20261011-progress1";
 
 async function fetchJson(url) {
   const response = await fetch(url, { cache: "no-store" });
@@ -148,10 +148,11 @@ export async function checkOnlineRecipes(config, knownRecipes) {
   return { ...diffOnlineRecipes(knownRecipes, downloaded), kind: "legacy", downloaded };
 }
 
-async function downloadRecipeChanges(entries, indexUrl) {
+async function downloadRecipeChanges(entries, indexUrl, onProgress) {
   const base = new URL(indexUrl, typeof location === "undefined" ? "https://localhost/" : location.href);
   const records = new Array(entries.length);
   let position = 0;
+  let completed = 0;
   async function worker() {
     while (position < entries.length) {
       const i = position++;
@@ -162,24 +163,35 @@ async function downloadRecipeChanges(entries, indexUrl) {
         throw new Error(`Проверка целостности не пройдена: ${entry.id}`);
       }
       records[i] = recipe;
+      completed++;
+      onProgress?.({ phase: "recipes", completed, total: entries.length });
     }
   }
   await Promise.all(Array.from({ length: Math.min(4, entries.length) }, worker));
   return records;
 }
 
-export async function installOnlineRecipes(config, bundledRecipes, knownRecipes, pending) {
+export async function installOnlineRecipes(config, bundledRecipes, knownRecipes, pending, { onProgress } = {}) {
   if (!pending) throw new Error("Нет выбранных обновлений.");
+  if (pending.kind === "index") {
+    onProgress?.({ phase: "recipes", completed: 0, total: pending.changes.length });
+  }
   const changedRecipes = pending.kind === "index"
-    ? await downloadRecipeChanges(pending.changes, config.remoteRecipeIndexUrl)
+    ? await downloadRecipeChanges(pending.changes, config.remoteRecipeIndexUrl, onProgress)
     : normalizeRecipes(Array.isArray(pending) ? pending : pending.downloaded)
       .filter(recipe => {
         const previous = knownRecipes.find(item => item.id === recipe.id);
         return !previous || JSON.stringify(previous) !== JSON.stringify(recipe);
       });
+  if (pending.kind !== "index") {
+    onProgress?.({ phase: "recipes", completed: changedRecipes.length, total: changedRecipes.length });
+  }
   if (!changedRecipes.length) throw new Error("Нет новых или изменённых рецептов.");
   // Only images belonging to changed recipes are considered; already saved blobs are skipped.
-  await cacheRemoteImages(changedRecipes, config.remoteRecipesUrl);
+  await cacheRemoteImages(changedRecipes, config.remoteRecipesUrl, progress => {
+    onProgress?.({ phase: "images", ...progress });
+  });
+  onProgress?.({ phase: "saving" });
   const nextKnownRecipes = mergeRecipes(knownRecipes, changedRecipes);
   const saved = await saveCachedRecipes(nextKnownRecipes);
   if (!saved) throw new Error("Не удалось сохранить каталог на устройстве.");

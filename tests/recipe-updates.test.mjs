@@ -57,3 +57,29 @@ test("скачивание использует список изменений 
   assert.match(api, /config\.remoteRecipeIndexUrl/);
   assert.match(api, /config\.remoteRecipesUrl/);
 });
+
+test("checking and downloading expose a visible progress bar, spinner and accessible status", () => {
+  const html = fs.readFileSync(new URL("../index.html", import.meta.url), "utf8");
+  const ui = fs.readFileSync(new URL("../js/features/recipe-updates.js", import.meta.url), "utf8");
+  const styles = fs.readFileSync(new URL("../css/styles.css", import.meta.url), "utf8");
+  assert.match(html, /id="recipeUpdateProgressBar" role="progressbar"/);
+  assert.match(html, /id="recipeUpdateProgressStage"/);
+  assert.match(html, /id="recipeUpdateProgressCount"/);
+  assert.match(ui, /setBusy\(true, "checking"\)/);
+  assert.match(ui, /setBusy\(true, "downloading"\)/);
+  assert.match(ui, /phase === "recipes"/);
+  assert.match(ui, /phase === "images"/);
+  assert.match(ui, /phase === "saving"/);
+  assert.match(ui, /progressBar\.setAttribute\("aria-valuenow"/);
+  assert.match(styles, /recipe-update-spin/);
+  assert.match(styles, /prefers-reduced-motion:reduce/);
+});
+
+test("download progress counts actual recipe and image completion, not simulated timers", () => {
+  const api = fs.readFileSync(new URL("../js/core/api.js", import.meta.url), "utf8");
+  const cache = fs.readFileSync(new URL("../js/core/offline-catalog.js", import.meta.url), "utf8");
+  assert.match(api, /onProgress\?\.\(\{ phase: "recipes", completed, total: entries\.length \}\)/);
+  assert.match(api, /phase: "saving"/);
+  assert.match(cache, /onProgress\?\.\(\{ completed, total: urls\.length \}\)/);
+  assert.match(cache, /finally \{\s*completed\+\+/);
+});

@@ -1,5 +1,5 @@
-import { loadCatalog } from "./core/api.js?v=20261011-news-feed1";
-import { initRecipeUpdates } from "./features/recipe-updates.js?v=20261011-home-feed1";
+import { loadCatalog } from "./core/api.js?v=20261011-progress1";
+import { initRecipeUpdates } from "./features/recipe-updates.js?v=20261011-progress1";
 import { applyCatalog, state } from "./core/state.js";
 import { shareRecipe, incomingRecipeId } from "./features/sharing.js?v=20261010-offline-share1";
 import { goTo } from "./core/router.js";
