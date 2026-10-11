@@ -1,7 +1,6 @@
 import { state, getAllCategories } from "../core/state.js";
 import { escapeHtml, getCategories } from "../core/utils.js";
 import { isFavorite } from "../core/favorites.js";
-import { goTo } from "../core/router.js";
 import { latestRecipes, formatPublicationDate } from "../core/chronology.js";
 
 function recipeCard(recipe) {
@@ -76,15 +75,13 @@ export function renderChips() {
     `<button class="chip ${category === state.currentCategory ? "active" : ""}" data-category="${escapeHtml(category)}">${escapeHtml(category)}</button>`
   ).join("");
 
-  document.getElementById("homeCategoryChips").innerHTML = markup;
   document.getElementById("recipeCategoryChips").innerHTML = markup;
 }
 
-export function selectCategory(category, { fromHome = false } = {}) {
+export function selectCategory(category) {
   state.currentCategory = getAllCategories().includes(category) ? category : "Все";
   renderChips();
   renderRecipes();
-  if (fromHome) goTo("recipes");
 }
 
 export function setSearch(value) {
