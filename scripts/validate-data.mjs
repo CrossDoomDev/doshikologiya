@@ -129,42 +129,43 @@ for (const recipe of recipes) {
 }
 
 
-// Verify local links before deployment, including HTML, manifests, CSS and JS modules.
-// External services cannot be verified reliably from a CI build and are intentionally excluded.
+// Verify local links before deployment, including HTML, manifest, CSS and JS modules.
+// External services are excluded: their HTTP status depends on the user's network.
 const checkedStaticLinks = new Set();
 function checkStaticLink(sourceFile, rawLink, { moduleImport = false } = {}) {
   const url = String(rawLink || "").trim();
   if (!url || /^(?:#|https?:|mailto:|tel:|data:|blob:|javascript:|\/\/)/i.test(url)
-    || url.includes("\${") || url.includes("{{")) return;
+    || url.includes("$" + "{") || url.includes("{{")) return;
   const bare = url.split(/[?#]/, 1)[0];
-  if (!bare || bare.startsWith("/")) return; // Absolute deployment URLs are provider-specific.
-  const key = \`\${sourceFile}|\${bare}|\${moduleImport}\`;
+  if (!bare || bare.startsWith("/")) return;
+  const key = sourceFile + "|" + bare + "|" + String(moduleImport);
   if (checkedStaticLinks.has(key)) return;
   checkedStaticLinks.add(key);
-  // Runtime strings such as "images/..." resolve relative to the web app root.
   const appRootAsset = !moduleImport && /^(?:images|data|js|css)\//.test(bare);
   const parent = appRootAsset ? root : path.dirname(path.join(root, sourceFile));
   const resolved = path.resolve(parent, bare);
   if (resolved !== root && !resolved.startsWith(root + path.sep)) {
-    errors.push(\`Ссылка выходит за пределы проекта: \${sourceFile} -> \${url}\`);
-  } else if (!fs.existsSync(resolved) || !fs.statSync(resolved).isFile()) {
-    errors.push(\`Отсутствующий локальный ресурс: \${sourceFile} -> \${url}\`);
+    errors.push("Ссылка выходит за пределы проекта: " + sourceFile + " -> " + url);
+  } else if (!fs.existsSync(resolved) ||
+    !(bare.endsWith("/") || bare === "." || bare === "./"
+      ? fs.statSync(resolved).isDirectory() : fs.statSync(resolved).isFile())) {
+    errors.push("Отсутствующий локальный ресурс: " + sourceFile + " -> " + url);
   }
 }
 
 function inspectStaticLinks(sourceFile) {
   const content = fs.readFileSync(path.join(root, sourceFile), "utf8");
-  for (const match of content.matchAll(/\\b(?:src|href|poster)\\s*=\\s*["']([^"']+)["']/gi)) {
+  for (const match of content.matchAll(/\b(?:src|href|poster)\s*=\s*["']([^"']+)["']/gi)) {
     checkStaticLink(sourceFile, match[1]);
   }
-  for (const match of content.matchAll(/url\\(\\s*["']?([^)"']+)["']?\\s*\\)/gi)) {
+  for (const match of content.matchAll(/url\(\s*["']?([^)"']+)["']?\s*\)/gi)) {
     checkStaticLink(sourceFile, match[1]);
   }
-  if (/\\.m?js$/.test(sourceFile)) {
-    for (const match of content.matchAll(/\\b(?:from\\s*|import\\s*\\(\\s*|import\\s*)["'](\\.{1,2}\\/[^"']+)["']/g)) {
+  if (/\.m?js$/.test(sourceFile)) {
+    for (const match of content.matchAll(/\b(?:from\s*|import\s*\(\s*|import\s*)["'](\.{1,2}\/[^"']+)["']/g)) {
       checkStaticLink(sourceFile, match[1], { moduleImport: true });
     }
-    for (const match of content.matchAll(/["'\`](images\\/[a-z0-9_./-]+\\.(?:svg|webp|png|jpe?g)(?:[?#][^"'\`\\s]*)?)["'\`]/gi)) {
+    for (const match of content.matchAll(/["'](images\/[a-z0-9_./-]+\.(?:svg|webp|png|jpe?g)(?:[?#][^"'\s]*)?)["']/gi)) {
       checkStaticLink(sourceFile, match[1]);
     }
   }
@@ -180,23 +181,22 @@ inspectStaticLinks("manifest.webmanifest");
 inspectStaticLinks("css/styles.css");
 for (const directory of ["js/core", "js/features"]) {
   for (const file of fs.readdirSync(path.join(root, directory))) {
-    if (file.endsWith(".js")) inspectStaticLinks(\`\${directory}/\${file}\`);
+    if (file.endsWith(".js")) inspectStaticLinks(directory + "/" + file);
   }
 }
 inspectStaticLinks("js/main.js");
 
-// Detect a stale app-owned URL in config even though it is syntactically valid.
 for (const key of ["remoteRecipesUrl", "remoteRecipeIndexUrl"]) {
   if (!config[key]) continue;
   let target;
   try { target = new URL(config[key]); } catch {
-    errors.push(\`Неверный URL в настройках: \${key}\`);
+    errors.push("Неверный URL в настройках: " + key);
     continue;
   }
   if (target.hostname === "crossdoomdev.github.io") {
     const prefix = "/doshikologiya/";
     if (!target.pathname.startsWith(prefix)) {
-      errors.push(\`Ссылка \${key} не указывает на проект Дошикологии.\`);
+      errors.push("Ссылка " + key + " не указывает на проект Дошикологии.");
       continue;
     }
     checkStaticLink("data/config.json", target.pathname.slice(prefix.length));
