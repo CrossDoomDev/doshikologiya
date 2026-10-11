@@ -1,4 +1,4 @@
-const ROUTES = Object.freeze(["home", "recipes", "oracle", "wall"]);
+const ROUTES = Object.freeze(["home", "recipes", "oracle", "wall", "more"]);
 
 export function goTo(route) {
   const target = ROUTES.includes(route) ? route : "home";
