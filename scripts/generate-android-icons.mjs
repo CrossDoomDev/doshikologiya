@@ -5,12 +5,12 @@ import sharp from "sharp";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const res = path.join(root, "android", "app", "src", "main", "res");
-const source = fs.readFileSync(path.join(root, "images", "ui", "doshikologiya-mark.svg"), "utf8");
+const source = fs.readFileSync(path.join(root, "images", "ui", "doshikologiya-app-icon.svg"), "utf8");
 const embedded = source.match(/href="data:image\/webp;base64,([^"]+)"/);
 if (!embedded) throw new Error("В фирменном SVG не найден встроенный WebP-логотип.");
 if (!fs.existsSync(res)) throw new Error("Сначала создайте Android-проект командой cap add android.");
 
-const logo = Buffer.from(embedded[1], "base64");
+const logo = await sharp(Buffer.from(source)).png().toBuffer();
 const dimensions = await sharp(logo).metadata();
 if (dimensions.width !== dimensions.height || dimensions.width < 256) {
   throw new Error("Исходный логотип должен быть квадратным и достаточно крупным.");
