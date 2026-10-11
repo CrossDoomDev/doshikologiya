@@ -1,5 +1,5 @@
 import { DATA_URLS, DEFAULT_CONFIG } from "./config.js";
-import { loadCachedRecipes, saveCachedRecipes, mergeRecipes, hydrateRecipeImages, cacheRemoteImages } from "./offline-catalog.js?v=20261011-web-fix1";
+import { loadCachedRecipes, saveCachedRecipes, mergeRecipes, hydrateRecipeImages, cacheRemoteImages } from "./offline-catalog.js?v=20261011-link-audit1";
 
 async function fetchJson(url) {
   const response = await fetch(url, { cache: "no-store" });

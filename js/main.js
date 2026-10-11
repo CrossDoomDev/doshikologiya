@@ -1,5 +1,5 @@
-import { loadCatalog } from "./core/api.js?v=20261011-web-fix1";
-import { initRecipeUpdates } from "./features/recipe-updates.js?v=20261011-web-fix1";
+import { loadCatalog } from "./core/api.js?v=20261011-link-audit1";
+import { initRecipeUpdates } from "./features/recipe-updates.js?v=20261011-link-audit1";
 import { applyCatalog, state } from "./core/state.js";
 import { shareRecipe, incomingRecipeId } from "./features/sharing.js?v=20261010-offline-share1";
 import { goTo } from "./core/router.js";
@@ -90,9 +90,25 @@ function bindEvents() {
     closeRecipe();
   });
 
+  // A previously saved recipe may point to a deleted legacy image.
+  // Use one known local asset instead of leaving a broken picture on screen.
   document.addEventListener("error", event => {
     const image = event.target;
-    if (image instanceof HTMLImageElement) image.style.opacity = .25;
+    if (!(image instanceof HTMLImageElement)) return;
+    const fallback = new URL("images/ui/doshikologiya-mark.svg", document.baseURI).href;
+    if (image.src === fallback) {
+      // The fallback itself failed: stop here, do not create a retry loop.
+      image.removeAttribute("src");
+      image.style.opacity = "0.25";
+      return;
+    }
+    image.src = fallback;
+    image.style.objectFit = "contain";
+    image.style.opacity = "0.9";
+    if (image.id === "cookImage") {
+      const backdrop = document.getElementById("cookBackdrop");
+      if (backdrop) backdrop.style.backgroundImage = `url("${fallback}")`;
+    }
   }, true);
 }
 

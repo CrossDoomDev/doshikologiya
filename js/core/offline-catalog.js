@@ -71,17 +71,20 @@ function remoteImageUrl(image, catalogUrl) {
 export async function hydrateRecipeImages(recipes, bundledRecipes, catalogUrl) {
   // Browser: use current same-origin images directly. Android: prefer saved offline blobs.
   if (globalThis.Capacitor?.isNativePlatform?.() !== true) return recipes;
-  const bundledIds = new Set(bundledRecipes.map(recipe => recipe.id));
+  const bundledById = new Map(bundledRecipes.map(recipe => [recipe.id, recipe]));
   return Promise.all(recipes.map(async recipe => {
     const remoteUrl = remoteImageUrl(recipe.image, catalogUrl);
-    if (!remoteUrl) return recipe;
-    const blob = await read("images", remoteUrl);
+    const blob = remoteUrl ? await read("images", remoteUrl) : null;
     if (blob instanceof Blob) {
       if (!objectUrls.has(remoteUrl)) objectUrls.set(remoteUrl, URL.createObjectURL(blob));
       return { ...recipe, image: objectUrls.get(remoteUrl) };
     }
-    // На старте работаем офлайн; недокачанные картинки заменяем встроенным логотипом.
-    return bundledIds.has(recipe.id) ? recipe : { ...recipe, image: "images/ui/doshikologiya-mark.svg" };
+    // An older downloaded catalog can still reference deleted SVGs.
+    // Prefer the current packaged photograph for known IDs, not that stale URL.
+    const bundled = bundledById.get(recipe.id);
+    if (bundled?.image) return { ...recipe, image: bundled.image };
+    // A new recipe whose image was not saved yet remains usable offline.
+    return { ...recipe, image: "images/ui/doshikologiya-mark.svg" };
   }));
 }
 
