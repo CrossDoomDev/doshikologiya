@@ -7,14 +7,44 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const res = path.join(root, "android", "app", "src", "main", "res");
 const source = fs.readFileSync(path.join(root, "images", "ui", "doshikologiya-app-icon.svg"), "utf8");
 const embedded = source.match(/href="data:image\/webp;base64,([^"]+)"/);
-if (!embedded) throw new Error("В фирменном SVG не найден встроенный WebP-логотип.");
+if (!embedded) throw new Error("В SVG-иконке не найден исходный WebP-рисунок.");
 if (!fs.existsSync(res)) throw new Error("Сначала создайте Android-проект командой cap add android.");
 
-const logo = await sharp(Buffer.from(source)).png().toBuffer();
-const dimensions = await sharp(logo).metadata();
-if (dimensions.width !== dimensions.height || dimensions.width < 256) {
-  throw new Error("Исходный логотип должен быть квадратным и достаточно крупным.");
+// Work directly with the embedded raster, rather than asking sharp/librsvg to resolve
+// a WebP data URI inside an SVG. This reliably removes the entire lower wordmark.
+// Match the coordinates and fade in doshikologiya-app-icon.svg exactly.
+const ART_SIZE = 768;
+const ART_SCALED_SIZE = 900;
+const ART_LEFT_CROP = 66;
+const ART_TOP_MARGIN = 14;
+const FADE_START = 612;
+const FADE_END = 662;
+
+const sourceWebp = Buffer.from(embedded[1], "base64");
+const scaled = await sharp(sourceWebp).resize(ART_SCALED_SIZE, ART_SCALED_SIZE).png().toBuffer();
+const cropped = await sharp(scaled)
+  .extract({ left: ART_LEFT_CROP, top: 0, width: ART_SIZE, height: ART_SIZE - ART_TOP_MARGIN })
+  .png().toBuffer();
+const { data: pixels, info } = await sharp({
+  create: {
+    width: ART_SIZE, height: ART_SIZE, channels: 4,
+    background: { r: 0, g: 0, b: 0, alpha: 0 }
+  }
+})
+  .composite([{ input: cropped, left: 0, top: ART_TOP_MARGIN }])
+  .ensureAlpha()
+  .raw()
+  .toBuffer({ resolveWithObject: true });
+
+for (let y = FADE_START; y < ART_SIZE; y++) {
+  const opacity = Math.max(0, Math.min(1, (FADE_END - y) / (FADE_END - FADE_START)));
+  for (let x = 0; x < ART_SIZE; x++) {
+    const alpha = (y * ART_SIZE + x) * info.channels + 3;
+    pixels[alpha] = Math.round(pixels[alpha] * opacity);
+  }
 }
+const logo = await sharp(pixels, { raw: { width: ART_SIZE, height: ART_SIZE, channels: info.channels } })
+  .png().toBuffer();
 
 const bgColor = "#160f0a";
 const densities = new Map([
@@ -50,7 +80,7 @@ for (const [density, size] of densities) {
   fs.mkdirSync(folder, { recursive: true });
   fs.writeFileSync(path.join(folder, "ic_launcher.png"), await compositeLauncher(size, 0.84));
   fs.writeFileSync(path.join(folder, "ic_launcher_round.png"), await compositeLauncher(size, 0.84, { round: true }));
-  // Adaptive launcher: 108dp viewport, artwork inside the guaranteed 72dp safe zone.
+  // Adaptive icon artwork stays within the safe zone of the 108dp launcher foreground.
   const adaptiveSize = Math.round(size * 2.25);
   fs.writeFileSync(path.join(folder, "ic_launcher_foreground.png"),
     await compositeLauncher(adaptiveSize, 0.62, { transparent: true }));
@@ -69,4 +99,4 @@ const adaptive = `
 writeXml("mipmap-anydpi-v26/ic_launcher.xml", adaptive);
 writeXml("mipmap-anydpi-v26/ic_launcher_round.xml", adaptive);
 
-console.log("Готовы фирменные Android-иконки: 5 плотностей, обычные, круглые и адаптивные.");
+console.log("Иконка Дошикологии без нижней надписи: обычная, круглая и адаптивная, все плотности.");
