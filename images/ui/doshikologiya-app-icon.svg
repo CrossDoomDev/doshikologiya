@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="768" height="768" viewBox="0 0 768 768">
   <!-- Android app icon only: original ramen illustration without the lettering.
        The complete wordmark remains in doshikologiya-mark.svg for the splash screen.
-       Source WebP is scaled into this canvas; all content beneath y=662 (wordmark)
+       Source WebP is scaled into this canvas; all content beneath y=634 (wordmark)
        is fully masked out. -->
   <defs>
     <linearGradient id="illustration-fade" gradientUnits="userSpaceOnUse"
