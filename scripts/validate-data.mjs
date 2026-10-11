@@ -158,8 +158,10 @@ function inspectStaticLinks(sourceFile) {
   for (const match of content.matchAll(/\b(?:src|href|poster)\s*=\s*["']([^"']+)["']/gi)) {
     checkStaticLink(sourceFile, match[1]);
   }
+  if (/\.(?:css|html)$/.test(sourceFile)) {
   for (const match of content.matchAll(/url\(\s*["']?([^)"']+)["']?\s*\)/gi)) {
     checkStaticLink(sourceFile, match[1]);
+  }
   }
   if (/\.m?js$/.test(sourceFile)) {
     for (const match of content.matchAll(/\b(?:from\s*|import\s*\(\s*|import\s*)["'](\.{1,2}\/[^"']+)["']/g)) {
