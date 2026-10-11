@@ -7,7 +7,6 @@ export function goTo(route) {
     document.getElementById(`view-${name}`)?.classList.toggle("hidden", name !== target);
   });
 
-  document.querySelector(".topbar")?.classList.toggle("logo-hidden", target !== "home");
   document.querySelectorAll("[data-route]").forEach(element => {
     const active = element.dataset.route === target && element.classList.contains("nav-btn");
     element.classList.toggle("active", active);
