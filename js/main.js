@@ -22,7 +22,7 @@ function renderServiceInfo() {
   const contact = String(state.config.supportEmail || "").trim();
   const supportLink = document.getElementById("supportEmailLink");
   const pending = document.getElementById("supportEmailPending");
-  if (supportLink && pending && /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(contact)) {
+  if (supportLink && pending && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact)) {
     const subject = encodeURIComponent("Дошикология — обращение в поддержку (версия " + version + ")");
     supportLink.href = "mailto:" + contact + "?subject=" + subject;
     supportLink.classList.remove("hidden");
