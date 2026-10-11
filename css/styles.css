@@ -56,15 +56,12 @@
     .app-shell{width:min(calc(100% - 28px),var(--max));margin:0 auto;padding:calc(18px + var(--safe-top)) 0 112px}
     .topbar{
       position:relative;z-index:20;
-      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+      display:flex;align-items:center;justify-content:center;gap:10px;
       padding:8px 16px 14px;
       border:0;border-radius:0;
       background:transparent;backdrop-filter:none;
       box-shadow:none;
     }
-    .brand{display:flex;align-items:center;justify-content:center;width:100%;min-width:0}
-    .brand-logo{width:min(320px,78vw);height:auto;object-fit:contain;display:block;filter:contrast(1.18) saturate(1.08) brightness(1.03) drop-shadow(0 5px 10px rgba(255,178,41,.16));image-rendering:auto}
-    .topbar.logo-hidden .brand{display:none}
     .desktop-nav{display:flex;justify-content:center;gap:4px}
     .nav-btn{
       border:0;background:transparent;color:var(--muted);
@@ -348,9 +345,8 @@
     @media(prefers-reduced-motion:reduce){.cook-success.open,.success-card,.success-emblem,.success-rays,.success-card::before,.success-confetti i,.oracle-machine.consulting .oracle-mage,.oracle-machine.oracle-solved .oracle-mage{animation:none!important}}
 
     @media(max-width:900px){
-      .topbar.logo-hidden{display:none}
+      .topbar{display:none}
       .desktop-nav{display:none}
-      .brand small{display:none}
       .grid{grid-template-columns:repeat(2,1fr)}
       .feature-grid,.oracle-layout,.wall-layout,.protocol-grid{grid-template-columns:1fr}
       .support-card{position:static}
@@ -384,11 +380,7 @@
       .mobile-tabs .nav-btn:focus-visible{outline:2px solid var(--amber);outline-offset:-2px}
     }
     @media(max-width:620px){
-      .brand-logo{width:min(260px,84vw);height:auto}
-      .topbar{padding:4px 8px 10px}
-      .brand{width:100%;justify-content:center}
       .app-shell{width:min(calc(100% - 20px),var(--max));padding-top:calc(9px + var(--safe-top))}
-      .topbar{border-radius:0}
       main{padding-top:4px}
       .hero{min-height:500px;border-radius:24px}
       .hero-content{min-height:500px;padding:22px}
