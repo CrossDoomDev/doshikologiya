@@ -5,14 +5,14 @@
        is fully masked out. -->
   <defs>
     <linearGradient id="illustration-fade" gradientUnits="userSpaceOnUse"
-      x1="0" y1="612" x2="0" y2="662">
+      x1="0" y1="590" x2="0" y2="634">
       <stop offset="0" stop-color="#fff"/>
       <stop offset="1" stop-color="#000"/>
     </linearGradient>
     <mask id="picture-without-wordmark" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse"
       x="0" y="0" width="768" height="768">
-      <rect x="0" y="0" width="768" height="612" fill="#fff"/>
-      <rect x="0" y="612" width="768" height="50" fill="url(#illustration-fade)"/>
+      <rect x="0" y="0" width="768" height="590" fill="#fff"/>
+      <rect x="0" y="590" width="768" height="44" fill="url(#illustration-fade)"/>
     </mask>
   </defs>
   <g mask="url(#picture-without-wordmark)">
