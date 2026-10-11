@@ -73,6 +73,12 @@ export async function hydrateRecipeImages(recipes, bundledRecipes, catalogUrl) {
   if (globalThis.Capacitor?.isNativePlatform?.() !== true) return recipes;
   const bundledById = new Map(bundledRecipes.map(recipe => [recipe.id, recipe]));
   return Promise.all(recipes.map(async recipe => {
+    // Old downloaded SVG art must not override the newer bundled WebP photo.
+    const bundled = bundledById.get(recipe.id);
+    if (bundled?.image?.split("?")[0]?.endsWith(".webp")
+      && recipe.image?.split("?")[0]?.endsWith(".svg")) {
+      return { ...recipe, image: bundled.image };
+    }
     const remoteUrl = remoteImageUrl(recipe.image, catalogUrl);
     const blob = remoteUrl ? await read("images", remoteUrl) : null;
     if (blob instanceof Blob) {
@@ -81,7 +87,6 @@ export async function hydrateRecipeImages(recipes, bundledRecipes, catalogUrl) {
     }
     // An older downloaded catalog can still reference deleted SVGs.
     // Prefer the current packaged photograph for known IDs, not that stale URL.
-    const bundled = bundledById.get(recipe.id);
     if (bundled?.image) return { ...recipe, image: bundled.image };
     // A new recipe whose image was not saved yet remains usable offline.
     return { ...recipe, image: "images/ui/doshikologiya-mark.svg" };

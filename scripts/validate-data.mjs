@@ -30,7 +30,17 @@ for (const [index, recipe] of (Array.isArray(recipes) ? recipes : []).entries())
 
   if (typeof recipe.image === "string" && recipe.image && !/^https?:\/\//.test(recipe.image)) {
     const imagePath = recipe.image.split("?")[0];
-    if (!fs.existsSync(path.join(root, imagePath))) errors.push(`${label}: не найдено изображение ${imagePath}`);
+    const imageFile = path.join(root, imagePath);
+    if (!fs.existsSync(imageFile)) errors.push(`${label}: не найдено изображение ${imagePath}`);
+    else if (imagePath.endsWith(".webp")) {
+      const header = Buffer.alloc(12);
+      const handle = fs.openSync(imageFile, "r");
+      try { fs.readSync(handle, header, 0, 12, 0); } finally { fs.closeSync(handle); }
+      if (header.toString("ascii", 0, 4) !== "RIFF"
+        || header.toString("ascii", 8, 12) !== "WEBP") {
+        errors.push(`${label}: изображение имеет неверный формат WebP: ${imagePath}`);
+      }
+    }
   }
 }
 
