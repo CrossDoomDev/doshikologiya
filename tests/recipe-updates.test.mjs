@@ -21,12 +21,12 @@ test("новые и изменённые протоколы определяют
   });
 });
 
-test("в заголовке обновлений нет ложной кнопки со стрелкой", () => {
+test("в блоке обновлений нет избыточного заголовка и декоративной стрелки", () => {
   const html = fs.readFileSync(new URL("../index.html", import.meta.url), "utf8");
-  const start = html.indexOf('<section class="more-panel" aria-labelledby="moreUpdatesTitle">');
+  const start = html.indexOf('<section class="more-panel" aria-label="Управление обновлениями">');
   const end = html.indexOf('<section class="catalog-update"', start);
   assert.ok(start >= 0 && end > start, "Раздел обновлений существует");
-  assert.doesNotMatch(html.slice(start, end), /more-panel-icon|↻/);
+  assert.doesNotMatch(html.slice(start, end), /Архив института|moreUpdatesTitle|more-panel-heading|more-panel-icon|↻/);
   assert.ok(html.includes('id="recipeUpdateCheckBtn" type="button" disabled>↻ Проверить обновления</button>'));
 });
 
