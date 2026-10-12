@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { publicationTime } from "../js/core/chronology.js";
+import { validSupportEmail } from "../js/core/remote-service-contacts.js";
 
 const root = process.cwd();
 const readJson = file => JSON.parse(fs.readFileSync(path.join(root, file), "utf8"));
@@ -72,6 +73,12 @@ if (!Array.isArray(config.categoryOrder) || !config.categoryOrder.includes("Вс
 }
 if (config.donateUrl && !/^https:\/\//.test(config.donateUrl)) {
   errors.push("donateUrl должен быть HTTPS-ссылкой.");
+}
+if (typeof config.supportEmail !== "string" || (config.supportEmail && !validSupportEmail(config.supportEmail))) {
+  errors.push("supportEmail должен быть корректным адресом электронной почты или пустой строкой.");
+}
+if (!config.remoteConfigUrl || !/^https:\/\//.test(config.remoteConfigUrl)) {
+  errors.push("remoteConfigUrl должен содержать HTTPS-адрес публичной конфигурации.");
 }
 
 
@@ -220,7 +227,7 @@ for (const directory of ["js/core", "js/features"]) {
 }
 inspectStaticLinks("js/main.js");
 
-for (const key of ["remoteRecipesUrl", "remoteRecipeIndexUrl"]) {
+for (const key of ["remoteRecipesUrl", "remoteRecipeIndexUrl", "remoteConfigUrl"]) {
   if (!config[key]) continue;
   let target;
   try { target = new URL(config[key]); } catch {

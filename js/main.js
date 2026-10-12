@@ -1,4 +1,5 @@
 import { loadCatalog } from "./core/api.js?v=20261011-progress1";
+import { readCachedServiceContacts, applyServiceContacts, fetchRemoteServiceContacts, validSupportEmail } from "./core/remote-service-contacts.js?v=20261012-remote-settings1";
 import { initBackNavigation } from "./core/android-back.js?v=20261012-exitconfirm1";
 import { initRecipeUpdates } from "./features/recipe-updates.js?v=20261012-hidden-recipe-dates1";
 import { applyCatalog, state } from "./core/state.js";
@@ -23,12 +24,32 @@ function renderServiceInfo() {
   const contact = String(state.config.supportEmail || "").trim();
   const supportLink = document.getElementById("supportEmailLink");
   const pending = document.getElementById("supportEmailPending");
-  if (supportLink && pending && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact)) {
+  if (supportLink && pending) {
+    const valid = validSupportEmail(contact);
+    supportLink.classList.toggle("hidden", !valid);
+    pending.classList.toggle("hidden", valid);
     const subject = encodeURIComponent("Дошикология — обращение в поддержку (версия " + version + ")");
-    supportLink.href = "mailto:" + contact + "?subject=" + subject;
-    supportLink.classList.remove("hidden");
-    pending.classList.add("hidden");
+    supportLink.href = valid ? "mailto:" + encodeURIComponent(contact) + "?subject=" + subject : "mailto:";
   }
+}
+
+function nativeAndroid() {
+  return globalThis.Capacitor?.isNativePlatform?.() === true;
+}
+
+// Online contact refresh runs in the background. The offline recipe catalog is unchanged.
+let serviceContactsRequest = null;
+function refreshServiceContacts() {
+  if (!nativeAndroid() || !state.config.remoteConfigUrl) return Promise.resolve();
+  if (serviceContactsRequest) return serviceContactsRequest;
+  serviceContactsRequest = fetchRemoteServiceContacts(state.config.remoteConfigUrl)
+    .then(contacts => {
+      state.config = applyServiceContacts(state.config, contacts);
+      renderServiceInfo();
+    })
+    .catch(error => console.warn("Контактные данные не обновлены; используем сохранённые:", error))
+    .finally(() => { serviceContactsRequest = null; });
+  return serviceContactsRequest;
 }
 
 function renderAll() {
@@ -48,6 +69,7 @@ function bindEvents() {
     if (route) {
       event.preventDefault();
       goTo(route.dataset.route);
+      if (route.dataset.route === "more") void refreshServiceContacts();
       return;
     }
 
@@ -142,9 +164,15 @@ async function boot() {
 
   const catalog = await loadCatalog();
   applyCatalog(catalog);
+  if (nativeAndroid()) {
+    const savedContacts = readCachedServiceContacts();
+    if (Object.keys(savedContacts).length) state.config = applyServiceContacts(state.config, savedContacts);
+  }
   renderAll();
   initRecipeUpdates(catalog);
   hideSplash();
+  // Sync the support address and donation link independently of recipe updates.
+  void refreshServiceContacts();
 
   // Shared links open a specific recipe, including a newly downloaded recipe.
   const sharedId = incomingRecipeId();
