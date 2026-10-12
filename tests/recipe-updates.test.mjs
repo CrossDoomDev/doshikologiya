@@ -21,6 +21,15 @@ test("новые и изменённые протоколы определяют
   });
 });
 
+test("в заголовке обновлений нет ложной кнопки со стрелкой", () => {
+  const html = fs.readFileSync(new URL("../index.html", import.meta.url), "utf8");
+  const start = html.indexOf('<section class="more-panel" aria-labelledby="moreUpdatesTitle">');
+  const end = html.indexOf('<section class="catalog-update"', start);
+  assert.ok(start >= 0 && end > start, "Раздел обновлений существует");
+  assert.doesNotMatch(html.slice(start, end), /more-panel-icon|↻/);
+  assert.ok(html.includes('id="recipeUpdateCheckBtn" type="button" disabled>↻ Проверить обновления</button>'));
+});
+
 test("загрузка и проверка выполняются только по кнопкам", () => {
   const main = fs.readFileSync(new URL("../js/main.js", import.meta.url), "utf8");
   assert.doesNotMatch(main, /refreshOnlineRecipes|checkOnlineRecipes\s*\(/);
