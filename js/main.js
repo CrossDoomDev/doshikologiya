@@ -1,14 +1,14 @@
 import { loadCatalog } from "./core/api.js?v=20261011-progress1";
 import { initBackNavigation } from "./core/android-back.js?v=20261012-exitconfirm1";
-import { initRecipeUpdates } from "./features/recipe-updates.js?v=20261012-dateonly1";
+import { initRecipeUpdates } from "./features/recipe-updates.js?v=20261012-hidden-recipe-dates1";
 import { applyCatalog, state } from "./core/state.js";
 import { shareRecipe, incomingRecipeId } from "./features/sharing.js?v=20261010-offline-share1";
 import { goTo } from "./core/router.js?v=20261011-more1";
 import { renderBanner, renderFeatured } from "./features/home.js";
-import { renderChips, renderRecipes, selectCategory, setSearch, toggleFavoritesOnly } from "./features/recipes.js?v=20261012-dateonly1";
+import { renderChips, renderRecipes, selectCategory, setSearch, toggleFavoritesOnly } from "./features/recipes.js?v=20261012-hidden-recipe-dates1";
 import { renderPatrons } from "./features/support.js?v=20261011-home-feed1";
 import { renderNews } from "./features/news.js?v=20261012-dateonly1";
-import { openRecipe, closeRecipe, toggleFavorite } from "./features/recipe-modal.js?v=20261012-dateonly1";
+import { openRecipe, closeRecipe, toggleFavorite } from "./features/recipe-modal.js?v=20261012-hidden-recipe-dates1";
 import { openDonation } from "./features/donations.js";
 import { initCookingLayout, openCookMode, closeCookMode, navigateCookStep, closeCookSuccess, updateCookSuccessFavorite } from "./features/cooking.js?v=20261012-android-back1";
 import { renderDailyIndex, runOracle } from "./features/oracle.js?v=20261010-oracle-art2";

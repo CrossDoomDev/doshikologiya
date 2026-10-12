@@ -1,7 +1,7 @@
 import { state, getAllCategories } from "../core/state.js";
 import { escapeHtml, getCategories } from "../core/utils.js";
 import { isFavorite } from "../core/favorites.js";
-import { latestRecipes, formatPublicationDate } from "../core/chronology.js?v=20261012-dateonly1";
+import { latestRecipes } from "../core/chronology.js?v=20261012-dateonly1";
 
 function recipeCard(recipe) {
   const category = getCategories(recipe)[0];
@@ -19,7 +19,6 @@ function recipeCard(recipe) {
       <h3>${escapeHtml(recipe.title)}</h3>
       <p>${escapeHtml(recipe.description)}</p>
       <div class="meta"><span class="tag">⏱ ${escapeHtml(recipe.time)}</span><span class="tag">🔥 ${escapeHtml(recipe.difficulty)}</span></div>
-      <p class="recipe-published">📅 ${escapeHtml(formatPublicationDate(recipe.publishedAt))}</p>
       <button class="btn dosh-action-btn card-open" data-open-recipe="${escapeHtml(recipe.id)}"><span class="btn-emoji" aria-hidden="true">📖</span> Открыть протокол</button>
     </div>
   </article>`;
@@ -30,7 +29,6 @@ function recentRecipeCard(recipe) {
     <img class="recent-recipe-image" src="${escapeHtml(recipe.image || "")}" alt="" loading="lazy">
     <span class="recent-recipe-info">
       <strong>${escapeHtml(recipe.title)}</strong>
-      <small>📅 ${escapeHtml(formatPublicationDate(recipe.publishedAt))}</small>
     </span>
   </button>`;
 }

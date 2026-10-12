@@ -7,6 +7,7 @@ const recipes = JSON.parse(fs.readFileSync(new URL("../data/recipes.json", impor
 const news = JSON.parse(fs.readFileSync(new URL("../data/news.json", import.meta.url), "utf8"));
 const index = fs.readFileSync(new URL("../index.html", import.meta.url), "utf8");
 const renderer = fs.readFileSync(new URL("../js/features/recipes.js", import.meta.url), "utf8");
+const recipeModal = fs.readFileSync(new URL("../js/features/recipe-modal.js", import.meta.url), "utf8");
 const main = fs.readFileSync(new URL("../js/main.js", import.meta.url), "utf8");
 
 test("the live recipe catalog has publication dates and latest five match insertion history", () => {
@@ -22,6 +23,14 @@ test("recent recipes use a compact clickable homepage strip and update after cat
   assert.match(renderer, /latestRecipes\(state\.recipes, homeLimit\)/);
   assert.match(renderer, /data-open-recipe/);
   assert.match(main, /renderRecipes\(\)/);
+});
+
+test("recipe publication timestamps are internal metadata, never displayed in cards, recent strip or details", () => {
+  assert.ok(recipes.every(recipe => typeof recipe.publishedAt === "string"));
+  assert.match(renderer, /latestRecipes\(state\.recipes, homeLimit\)/);
+  assert.doesNotMatch(renderer, /formatPublicationDate|recipe-published|📅|\.publishedAt/);
+  assert.doesNotMatch(recipeModal, /formatPublicationDate|\.publishedAt|📅/);
+  assert.doesNotMatch(index, /по дате публикации/);
 });
 
 test("news are independent, initially empty and sorted by timestamp when available", () => {
