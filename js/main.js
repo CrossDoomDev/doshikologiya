@@ -1,5 +1,5 @@
 import { loadCatalog } from "./core/api.js?v=20261011-progress1";
-import { initBackNavigation } from "./core/android-back.js?v=20261012-android-back1";
+import { initBackNavigation } from "./core/android-back.js?v=20261012-exitconfirm1";
 import { initRecipeUpdates } from "./features/recipe-updates.js?v=20261012-dateonly1";
 import { applyCatalog, state } from "./core/state.js";
 import { shareRecipe, incomingRecipeId } from "./features/sharing.js?v=20261010-offline-share1";

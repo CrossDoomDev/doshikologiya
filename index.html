@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.webmanifest?v=3">
   <meta name="application-name" content="Дошикология">
   <meta name="apple-mobile-web-app-title" content="Дошикология">
-  <link rel="stylesheet" href="css/styles.css?v=20261012-android-back1">
+  <link rel="stylesheet" href="css/styles.css?v=20261012-exitconfirm1">
 </head>
 <body>
   <div class="app-splash" id="appSplash" role="status" aria-live="polite" aria-label="Дошикология загружается">
@@ -426,6 +426,18 @@
       </div>
     </div>
   </div>
-  <script type="module" src="js/main.js?v=20261012-android-back1"></script>
+  <div class="exit-confirm" id="exitConfirm" aria-hidden="true">
+    <section class="exit-confirm-card" role="alertdialog" aria-modal="true"
+             aria-labelledby="exitConfirmTitle" aria-describedby="exitConfirmText">
+      <div class="exit-confirm-icon" aria-hidden="true">🍜</div>
+      <h2 id="exitConfirmTitle">Вы действительно хотите выйти?</h2>
+      <p id="exitConfirmText">Лаборатория подождёт тебя. Продолжить изучать рецепты или закрыть Дошикологию?</p>
+      <div class="exit-confirm-actions">
+        <button class="btn primary" id="exitStayBtn" type="button">Остаться</button>
+        <button class="btn secondary" id="exitYesBtn" type="button">Да, выйти</button>
+      </div>
+    </section>
+  </div>
+  <script type="module" src="js/main.js?v=20261012-exitconfirm1"></script>
 </body>
 </html>
