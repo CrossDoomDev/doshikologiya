@@ -25,12 +25,10 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Install Android platforms and tools
         run: |
-          sdkmanager "platforms;android-36" "build-tools;35.0.0" "platform-tools"
+          echo "y" | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;35.0.0" "platform-tools"
 
       - name: Install project dependencies
         run: npm install --no-audit --no-fund
