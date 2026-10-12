@@ -5,7 +5,7 @@ import { applyCatalog, state } from "./core/state.js";
 import { shareRecipe, incomingRecipeId } from "./features/sharing.js?v=20261010-offline-share1";
 import { goTo } from "./core/router.js?v=20261011-more1";
 import { renderBanner, renderFeatured } from "./features/home.js";
-import { renderChips, renderRecipes, selectCategory, setSearch, toggleFavoritesOnly } from "./features/recipes.js?v=20261012-hidden-recipe-dates1";
+import { renderChips, renderRecipes, selectCategory, setSearch, toggleFavoritesOnly, setRecipeLayout } from "./features/recipes.js?v=20261012-recipe-layout1";
 import { renderPatrons } from "./features/support.js?v=20261011-home-feed1";
 import { renderNews } from "./features/news.js?v=20261012-dateonly1";
 import { openRecipe, closeRecipe, toggleFavorite } from "./features/recipe-modal.js?v=20261012-hidden-recipe-dates1";
@@ -48,6 +48,12 @@ function bindEvents() {
     if (route) {
       event.preventDefault();
       goTo(route.dataset.route);
+      return;
+    }
+
+    const layout = event.target.closest("[data-recipe-layout]");
+    if (layout) {
+      setRecipeLayout(layout.dataset.recipeLayout);
       return;
     }
 

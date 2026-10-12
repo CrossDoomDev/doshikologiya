@@ -1,4 +1,5 @@
 import { DEFAULT_CONFIG, STORAGE_KEYS } from "./config.js";
+import { readRecipeLayout } from "./recipe-layout.js";
 
 function loadFavorites() {
   try {
@@ -17,6 +18,7 @@ export const state = {
   currentCategory: "Все",
   currentSearch: "",
   showFavoritesOnly: false,
+  recipeLayout: readRecipeLayout(),
   currentRecipe: null,
   cookStepIndex: 0,
   favorites: loadFavorites()

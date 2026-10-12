@@ -6,7 +6,8 @@ export const DATA_URLS = Object.freeze({
 });
 
 export const STORAGE_KEYS = Object.freeze({
-  favorites: "doshikologiya:favorites"
+  favorites: "doshikologiya:favorites",
+  recipeLayout: "doshikologiya:recipe-layout"
 });
 
 export const DEFAULT_CONFIG = Object.freeze({

@@ -2,6 +2,7 @@ import { state, getAllCategories } from "../core/state.js";
 import { escapeHtml, getCategories } from "../core/utils.js";
 import { isFavorite } from "../core/favorites.js";
 import { latestRecipes } from "../core/chronology.js?v=20261012-dateonly1";
+import { RECIPE_LAYOUTS, saveRecipeLayout } from "../core/recipe-layout.js?v=20261012-recipe-layout1";
 
 function recipeCard(recipe) {
   const category = getCategories(recipe)[0];
@@ -56,6 +57,11 @@ export function renderRecipes() {
   const home = latestRecipes(state.recipes, homeLimit);
   const homeBox = document.getElementById("homeRecipes");
   const recipesBox = document.getElementById("recipesGrid");
+  recipesBox.dataset.layout = state.recipeLayout;
+  document.querySelectorAll("[data-recipe-layout]").forEach(button => {
+    const active = button.dataset.recipeLayout === state.recipeLayout;
+    button.setAttribute("aria-pressed", String(active));
+  });
 
   homeBox.innerHTML = home.length
     ? home.map(recentRecipeCard).join("")
@@ -65,6 +71,12 @@ export function renderRecipes() {
   recipesBox.innerHTML = filtered.length
     ? filtered.map(recipeCard).join("")
     : '<div class="empty-state">Лаборатория ничего не нашла. Возможно, рецепт засекречен.</div>';
+}
+
+export function setRecipeLayout(layout) {
+  if (!RECIPE_LAYOUTS.includes(layout) || layout === state.recipeLayout) return;
+  state.recipeLayout = saveRecipeLayout(layout);
+  renderRecipes();
 }
 
 export function renderChips() {

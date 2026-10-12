@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.webmanifest?v=3">
   <meta name="application-name" content="Дошикология">
   <meta name="apple-mobile-web-app-title" content="Дошикология">
-  <link rel="stylesheet" href="css/styles.css?v=20261012-hidden-recipe-dates1">
+  <link rel="stylesheet" href="css/styles.css?v=20261012-recipe-layout1">
 </head>
 <body>
   <div class="app-splash" id="appSplash" role="status" aria-live="polite" aria-label="Дошикология загружается">
@@ -114,8 +114,15 @@
           <button class="btn secondary" id="favoritesToggle" aria-pressed="false"><svg class="favorite-heart" viewBox="0 0 24 24" aria-hidden="true"><use href="images/ui/heart.svg#heart"></use></svg> <span class="favorite-filter-label">Только избранное</span></button>
         </div>
         <div class="chips" id="recipeCategoryChips"></div>
-        <div style="height:14px"></div>
-        <div class="grid" id="recipesGrid"></div>
+        <div class="recipe-layout-toolbar">
+          <span class="recipe-layout-label">Вид рецептов</span>
+          <div class="recipe-layout-options" role="group" aria-label="Режим отображения рецептов">
+            <button class="recipe-layout-option" type="button" data-recipe-layout="large" aria-pressed="true" title="Крупные карточки"><span class="layout-glyph" aria-hidden="true">▣</span><span>Крупно</span></button>
+            <button class="recipe-layout-option" type="button" data-recipe-layout="compact" aria-pressed="false" title="Компактный список"><span class="layout-glyph" aria-hidden="true">☷</span><span>Список</span></button>
+            <button class="recipe-layout-option" type="button" data-recipe-layout="grid" aria-pressed="false" title="Сетка рецептов"><span class="layout-glyph" aria-hidden="true">▦</span><span>Сетка</span></button>
+          </div>
+        </div>
+        <div class="grid" id="recipesGrid" data-layout="large"></div>
       </section>
 
       <section id="view-oracle" class="view hidden">
@@ -216,6 +223,22 @@
               <span class="more-version-icon" aria-hidden="true">📱</span>
             </div>
             <p class="more-hint">Новые рецепты загружаются здесь. После выпуска Android-версии обновления самого приложения будут доступны через RuStore.</p>
+          </section>
+
+          <section class="more-panel" aria-labelledby="moreAppearanceTitle">
+            <div class="more-panel-heading">
+              <span class="more-panel-icon" aria-hidden="true">▦</span>
+              <div>
+                <div class="section-overline">Настройки</div>
+                <h3 id="moreAppearanceTitle">Вид рецептов</h3>
+              </div>
+            </div>
+            <p class="more-hint recipe-layout-explain">Выбирай удобный способ просмотра каталога. Настройка сохранится на этом устройстве.</p>
+            <div class="recipe-layout-options" role="group" aria-label="Режим отображения рецептов">
+              <button class="recipe-layout-option" type="button" data-recipe-layout="large" aria-pressed="true" title="Крупные карточки"><span class="layout-glyph" aria-hidden="true">▣</span><span>Крупно</span></button>
+              <button class="recipe-layout-option" type="button" data-recipe-layout="compact" aria-pressed="false" title="Компактный список"><span class="layout-glyph" aria-hidden="true">☷</span><span>Список</span></button>
+              <button class="recipe-layout-option" type="button" data-recipe-layout="grid" aria-pressed="false" title="Сетка рецептов"><span class="layout-glyph" aria-hidden="true">▦</span><span>Сетка</span></button>
+            </div>
           </section>
 
           <section class="more-panel" aria-labelledby="moreSupportTitle">
@@ -438,6 +461,6 @@
       </div>
     </section>
   </div>
-  <script type="module" src="js/main.js?v=20261012-hidden-recipe-dates1"></script>
+  <script type="module" src="js/main.js?v=20261012-recipe-layout1"></script>
 </body>
 </html>
