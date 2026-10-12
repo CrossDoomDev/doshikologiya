@@ -711,8 +711,6 @@ button:focus-visible,
 .recipe-layout-option[aria-pressed="true"]{background:var(--amber);border-color:rgba(255,255,255,.15);color:#241607;box-shadow:0 3px 12px rgba(0,0,0,.18)}
 .recipe-layout-option:active{transform:scale(.96)}
 .recipe-layout-option:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
-#view-more .recipe-layout-explain{margin:0 0 14px}
-#view-more .recipe-layout-options{width:100%}
 
 /* Compact list: thumbnail on the left; open and favorite buttons remain accessible. */
 #recipesGrid[data-layout="compact"]{grid-template-columns:minmax(0,1fr);gap:9px}

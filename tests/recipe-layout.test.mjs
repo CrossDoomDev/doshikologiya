@@ -35,7 +35,7 @@ test("all three layouts keep favorite buttons, recipe opening, search and newest
     currentSearch: state.currentSearch,
     showFavoritesOnly: state.showFavoritesOnly
   };
-  const buttons = ["large", "compact", "grid", "large", "compact", "grid"].map(recipeLayout => ({
+  const buttons = ["large", "compact", "grid"].map(recipeLayout => ({
     dataset: { recipeLayout },
     attributes: {},
     setAttribute(name, value) { this.attributes[name] = value; }
@@ -87,14 +87,17 @@ test("all three layouts keep favorite buttons, recipe opening, search and newest
   }
 });
 
-test("settings and catalog offer the same accessible switch, responsive variants preserve homepage feed", () => {
+test("recipe layout switch exists only in the catalog, responsive variants preserve homepage feed", () => {
   const index = fs.readFileSync(new URL("../index.html", import.meta.url), "utf8");
   const css = fs.readFileSync(new URL("../css/styles.css", import.meta.url), "utf8");
   const main = fs.readFileSync(new URL("../js/main.js", import.meta.url), "utf8");
   for (const mode of RECIPE_LAYOUTS) {
-    assert.equal(index.split('data-recipe-layout="' + mode + '"').length - 1, 2);
+    assert.equal(index.split('data-recipe-layout="' + mode + '"').length - 1, 1);
   }
   assert.ok(index.includes('id="recipesGrid" data-layout="large"'));
+  assert.ok(index.includes('class="recipe-layout-toolbar"'));
+  assert.ok(!index.includes('id="moreAppearanceTitle"'));
+  assert.ok(!css.includes("#view-more .recipe-layout-options"));
   assert.ok(css.includes('#recipesGrid[data-layout="compact"]'));
   // Regression: the global .dosh-action-btn has min-width:250px.
   // Compact rows must override it and reserve a separate grid column for the book icon.
