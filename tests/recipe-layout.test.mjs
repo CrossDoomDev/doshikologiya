@@ -99,12 +99,15 @@ test("recipe layout switch exists only in the catalog, responsive variants prese
   assert.ok(!index.includes('id="moreAppearanceTitle"'));
   assert.ok(!css.includes("#view-more .recipe-layout-options"));
   assert.ok(css.includes('#recipesGrid[data-layout="compact"]'));
-  // Regression: the global .dosh-action-btn has min-width:250px.
-  // Compact rows must override it and reserve a separate grid column for the book icon.
-  assert.ok(css.includes('#recipesGrid[data-layout="compact"] .card-open{position:static;grid-column:2;'));
-  assert.ok(css.includes('min-width:0;max-width:36px;width:36px;height:36px'));
-  assert.ok(css.includes('#recipesGrid[data-layout="compact"] .recipe-body{display:grid;grid-template-columns:minmax(0,1fr) 36px;'));
+  // The global .dosh-action-btn has min-width:250px. In compact mode it
+  // becomes a centered text button BELOW the cooking-time metadata.
+  assert.ok(css.includes('#recipesGrid[data-layout="compact"] .recipe-body{display:flex;flex-direction:column;'));
+  assert.ok(css.includes('#recipesGrid[data-layout="compact"] .card-open{position:static;align-self:center;'));
+  assert.ok(css.includes('min-width:0;max-width:164px;width:min(100%,164px)'));
+  assert.ok(css.includes('#recipesGrid[data-layout="compact"] .card-open .btn-emoji{display:none}'));
   assert.ok(!css.includes('#recipesGrid[data-layout="compact"] .card-open{position:absolute;'));
+  assert.ok(!css.includes('grid-row:1 / span 3'));
+  assert.ok(fs.readFileSync(new URL("../js/features/recipes.js", import.meta.url), "utf8").includes("Открыть протокол</button>"));
   assert.ok(css.includes('#recipesGrid[data-layout="grid"]'));
   assert.ok(css.includes('grid-template-columns:repeat(2,minmax(0,1fr))'));
   assert.ok(main.includes('setRecipeLayout(layout.dataset.recipeLayout)'));
