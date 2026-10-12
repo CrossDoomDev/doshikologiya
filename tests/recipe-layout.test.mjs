@@ -96,6 +96,12 @@ test("settings and catalog offer the same accessible switch, responsive variants
   }
   assert.ok(index.includes('id="recipesGrid" data-layout="large"'));
   assert.ok(css.includes('#recipesGrid[data-layout="compact"]'));
+  // Regression: the global .dosh-action-btn has min-width:250px.
+  // Compact rows must override it and reserve a separate grid column for the book icon.
+  assert.ok(css.includes('#recipesGrid[data-layout="compact"] .card-open{position:static;grid-column:2;'));
+  assert.ok(css.includes('min-width:0;max-width:36px;width:36px;height:36px'));
+  assert.ok(css.includes('#recipesGrid[data-layout="compact"] .recipe-body{display:grid;grid-template-columns:minmax(0,1fr) 36px;'));
+  assert.ok(!css.includes('#recipesGrid[data-layout="compact"] .card-open{position:absolute;'));
   assert.ok(css.includes('#recipesGrid[data-layout="grid"]'));
   assert.ok(css.includes('grid-template-columns:repeat(2,minmax(0,1fr))'));
   assert.ok(main.includes('setRecipeLayout(layout.dataset.recipeLayout)'));
