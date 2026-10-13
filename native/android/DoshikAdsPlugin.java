@@ -39,6 +39,7 @@ public class DoshikAdsPlugin extends Plugin {
     private String currentUnit = LIVE_UNIT;
     private int lastAdWidthDp = 0;
     private int lastAdHeightDp = 0;
+    private boolean demoCheckRequested = false;
 
     private void mark(String state) {
         nativeState = state;
@@ -61,6 +62,25 @@ public class DoshikAdsPlugin extends Plugin {
             result.put("heightDp", lastAdHeightDp);
             result.put("error", nativeError);
             call.resolve(result);
+        });
+    }
+
+    // Manual SDK check against Yandex's official demo unit. The real unit remains
+    // the default after an app restart; no automatic fallback to demo ads.
+    @PluginMethod
+    public void checkDemo(PluginCall call) {
+        getActivity().runOnUiThread(() -> {
+            if (!sdkReady) { call.reject("Yandex SDK has not been initialized yet"); return; }
+            if (demoCheckRequested) { call.reject("Demo request was already sent during this session"); return; }
+            demoCheckRequested = true;
+            int availableWidth = lastAdWidthDp > 0 ? lastAdWidthDp : 320;
+            dispose();
+            nativeError = "";
+            loaded = false;
+            wantsVisible = false;
+            mark("demo_requested");
+            createBanner(availableWidth);
+            call.resolve();
         });
     }
 
@@ -138,7 +158,7 @@ public class DoshikAdsPlugin extends Plugin {
             @Override public void onImpression(@Nullable ImpressionData data) { }
         });
         final boolean debug = (activity.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
-        currentUnit = debug ? DEMO_UNIT : LIVE_UNIT;
+        currentUnit = debug || demoCheckRequested ? DEMO_UNIT : LIVE_UNIT;
         mark("request_sent");
         try {
             banner.loadAd(new AdRequest.Builder(currentUnit).build());

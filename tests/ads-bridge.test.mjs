@@ -22,11 +22,13 @@ test("Android native bridge works without a JavaScript plugin proxy", async () =
   assert.deepEqual(await ad.load({ width: 320 }), { ok: true });
   await ad.position({ visible: false });
   await ad.getStatus();
+  await ad.checkDemo();
   await ad.addListener("loaded", () => {});
   assert.deepEqual(requests.map(r => [r.name, r.method]), [
     ["DoshikAds", "load"],
     ["DoshikAds", "position"],
-    ["DoshikAds", "getStatus"]
+    ["DoshikAds", "getStatus"],
+    ["DoshikAds", "checkDemo"]
   ]);
   assert.equal(listeners[0].event, "loaded");
   assert.equal(listeners[0].name, "DoshikAds");

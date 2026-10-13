@@ -26,7 +26,8 @@ export function resolveAdsBridge(cap = globalThis.Capacitor) {
       position: options => cap.nativePromise("DoshikAds", "position", options),
       addListener: (event, callback) =>
         Promise.resolve(cap.addListener("DoshikAds", event, callback)),
-      getStatus: () => cap.nativePromise("DoshikAds", "getStatus", {})
+      getStatus: () => cap.nativePromise("DoshikAds", "getStatus", {}),
+      checkDemo: () => cap.nativePromise("DoshikAds", "checkDemo", {})
     };
   }
   return bridgeProxy;
@@ -136,8 +137,9 @@ export async function getAdsDiagnostics() {
   const rect = slot?.getBoundingClientRect();
   return [
     "Дошикология — проверка рекламы РСЯ",
-    "Версия: 1.1.2",
-    "Рекламный блок: R-M-20184115-1",
+    "Версия: 1.1.3",
+    "Рабочий рекламный блок: R-M-20184115-1",
+    "Активный ID SDK: " + (nativeStatus?.adUnit || "нет"),
     "Android: " + (native ? "да" : "нет"),
     "Capacitor nativePromise: " + (typeof globalThis.Capacitor?.nativePromise === "function" ? "есть" : "нет"),
     "Мост DoshikAds: " + (plugin ? "есть" : "НЕТ"),
@@ -160,12 +162,24 @@ export function initAdsDiagnostics() {
   const output = document.getElementById("adsDiagnosticsReport");
   const refreshButton = document.getElementById("adsDiagnosticsRefreshBtn");
   const copyButton = document.getElementById("adsDiagnosticsCopyBtn");
+  const demoButton = document.getElementById("adsDiagnosticsDemoBtn");
   refreshButton?.addEventListener("click", async () => {
     refreshButton.disabled = true;
     output.value = "Проверяем…";
     try { output.value = await getAdsDiagnostics(); }
     catch(error) { output.value = "Ошибка диагностики: " + String(error?.message || error); }
     finally { refreshButton.disabled = false; }
+  });
+  demoButton?.addEventListener("click", async () => {
+    const plugin = nativePlugin();
+    if (!plugin?.checkDemo) { output.value = "Метод проверки тестового баннера недоступен"; return; }
+    demoButton.disabled = true;
+    status = "loading";
+    diagnosticError = "";
+    output.value = "Отправляем тестовый запрос. Подожди несколько секунд, затем нажми «Проверить состояние».";
+    try { await plugin.checkDemo(); }
+    catch(error) { status = "failed"; diagnosticError = String(error?.message || error); }
+    finally { demoButton.disabled = false; }
   });
   copyButton?.addEventListener("click", async () => {
     output.focus();

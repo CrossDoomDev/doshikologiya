@@ -250,9 +250,10 @@
                 <h3 id="adsDiagnosticsTitle">Диагностика рекламы РСЯ</h3>
               </div>
             </div>
-            <p class="more-hint">Для проверки сначала открой любой рецепт и запусти режим готовки, затем вернись сюда. Проверка не загружает новые рекламные объявления.</p>
+            <p class="more-hint">Для проверки сначала открой любой рецепт и запусти режим готовки, затем вернись сюда. Кнопка «Проверить состояние» не запрашивает новую рекламу. Кнопка «Проверить демобаннер» отправит один запрос официальному тестовому блоку Яндекса. До перезапуска приложения будет использоваться тестовый блок без дохода.</p>
             <div class="ad-diagnostics-controls">
               <button class="btn secondary" type="button" id="adsDiagnosticsRefreshBtn">Проверить состояние</button>
+              <button class="btn secondary" type="button" id="adsDiagnosticsDemoBtn">Проверить демобаннер</button>
               <button class="btn secondary" type="button" id="adsDiagnosticsCopyBtn">Скопировать отчёт</button>
             </div>
             <textarea id="adsDiagnosticsReport" class="ad-diagnostics-output" readonly rows="10" aria-label="Состояние рекламного SDK">Нажми «Проверить состояние».</textarea>
@@ -448,6 +449,6 @@
       </div>
     </section>
   </div>
-  <script type="module" src="js/main.js?v=20261014-adsdiag2"></script>
+  <script type="module" src="js/main.js?v=20261014-adsdiag3"></script>
 </body>
 </html>
