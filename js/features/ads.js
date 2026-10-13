@@ -9,6 +9,7 @@ let lastNativeVisible = false;
 let positionSerial = 0;
 let scrolling = false;
 let scrollSettledTimer = null;
+let lastOverlayScrollTop = 0;
 const SCROLL_SETTLE_MS = 300;
 let diagnosticError = "";
 let bridgeDiagnostics = "Не проверялся";
@@ -89,6 +90,10 @@ function schedulePosition() {
     syncPosition();
   });
 }
+// React only to actual scroll displacement, never to touchstart or button taps.
+export function didCookingScroll(before, after) {
+  return Number.isFinite(before) && Number.isFinite(after) && Math.abs(after - before) >= 1;
+}
 function hideWhileMoving() {
   scrolling = true;
   // Hide *before* the DOM moves, not by following it frame-by-frame.
@@ -150,9 +155,16 @@ export function initCookingAds() {
   const success = document.getElementById("cookSuccess");
   new MutationObserver(refresh).observe(overlay, { attributes: true, attributeFilter: ["class"] });
   new MutationObserver(refresh).observe(success, { attributes: true, attributeFilter: ["class"] });
-  overlay.addEventListener("scroll", hideWhileMoving, { passive: true, capture: true });
-  overlay.addEventListener("touchstart", hideWhileMoving, { passive: true, capture: true });
-  overlay.addEventListener("wheel", hideWhileMoving, { passive: true, capture: true });
+  // touchstart fires for taps and navigation buttons: do not hide the ad.
+  // wheel also fires without movement; the scroll event is authoritative.
+  lastOverlayScrollTop = overlay.scrollTop;
+  overlay.addEventListener("scroll", () => {
+    const nextScrollTop = overlay.scrollTop;
+    if (didCookingScroll(lastOverlayScrollTop, nextScrollTop)) {
+      hideWhileMoving();
+    }
+    lastOverlayScrollTop = nextScrollTop;
+  }, { passive: true });
   window.addEventListener("resize", hideWhileMoving, { passive: true });
   document.addEventListener("visibilitychange", refresh);
   window.addEventListener("pagehide", () => {
@@ -178,7 +190,7 @@ export async function getAdsDiagnostics() {
   const rect = slot?.getBoundingClientRect();
   return [
     "Дошикология — проверка рекламы РСЯ",
-    "Версия: 1.1.4",
+    "Версия: 1.1.5",
     "Рабочий рекламный блок: R-M-20184115-1",
     "Активный ID SDK: " + (nativeStatus?.adUnit || "нет"),
     "Android: " + (native ? "да" : "нет"),

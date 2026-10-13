@@ -827,3 +827,16 @@ button:focus-visible,
 /* This HTML element reserves *exactly* the native banner's space in the flow.
    On active scrolling, Android hides the overlay instead of letting it drift. */
 .cook-ad.android-ad-slot{margin-inline:0;max-width:100%;min-width:0;box-sizing:border-box;}
+
+/* Native-app touch UX: labels, captions, buttons and cards are not selectable.
+   Editable search fields preserve caret and selection for typing. */
+html,body,body *,body *::before,body *::after{
+  -webkit-user-select:none!important;
+  user-select:none!important;
+  -webkit-touch-callout:none!important;
+}
+input:not([readonly]),textarea:not([readonly]),[contenteditable="true"]{
+  -webkit-user-select:text!important;
+  user-select:text!important;
+}
+img,a,button{-webkit-user-drag:none;user-drag:none}

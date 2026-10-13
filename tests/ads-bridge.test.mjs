@@ -58,3 +58,25 @@ test("native inline ad is visible only wholly inside the safe viewport", () => {
   assert.equal(isSlotFullyVisible({ ...rect, right: 368 }, 360, 720, 180), false);
   assert.equal(isSlotFullyVisible({ ...rect, height: 0 }, 360, 720, 180), false);
 });
+
+import { didCookingScroll } from "../js/features/ads.js";
+import { readFileSync } from "node:fs";
+
+test("tap without actual scroll does not hide the native banner", () => {
+  assert.equal(didCookingScroll(200, 200), false);
+  assert.equal(didCookingScroll(200, 200.4), false);
+  assert.equal(didCookingScroll(200, 201), true);
+  assert.equal(didCookingScroll(200, 170), true);
+});
+
+test("HTML body and legal pages disable selection of noneditable text", () => {
+  for (const stylesheet of ["css/styles.css", "css/legal.css"]) {
+    const css = readFileSync(new URL("../" + stylesheet, import.meta.url), "utf8");
+    assert.match(css, /body \*::after/);
+    assert.match(css, /-webkit-user-select:none!important/);
+    assert.match(css, /-webkit-touch-callout:none!important/);
+  }
+  const adJS = readFileSync(new URL("../js/features/ads.js", import.meta.url), "utf8");
+  assert.doesNotMatch(adJS, /addEventListener\(["']touchstart["'],\s*hideWhileMoving/);
+  assert.doesNotMatch(adJS, /addEventListener\(["']wheel["'],\s*hideWhileMoving/);
+});

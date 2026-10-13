@@ -18,7 +18,7 @@ if (!gradle.includes("com.yandex.android:mobileads:")) {
 }
 if (!gradle.includes("com.yandex.android:mobileads:8.5.0")) throw new Error("Could not inject ads Gradle dependency.");
 // Preserve installed-app upgrade compatibility: same package/signature, increased versionCode.
-gradle = gradle.replace(/versionCode\s+\d+/, "versionCode 6").replace(/versionName\s+['\"][^'\"]+['\"]/, 'versionName "1.1.4"');
+gradle = gradle.replace(/versionCode\s+\d+/, "versionCode 7").replace(/versionName\s+['\"][^'\"]+['\"]/, 'versionName "1.1.5"');
 // Install the QA build side-by-side with the signed RuStore app (do not overwrite user data).
 if (!gradle.includes('applicationIdSuffix ".demo"')) {
   gradle = gradle.replace(/buildTypes\s*\{/, 'buildTypes {\n        debug { applicationIdSuffix ".demo"; versionNameSuffix "-demo" }');
