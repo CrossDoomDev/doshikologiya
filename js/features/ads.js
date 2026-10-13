@@ -6,10 +6,29 @@ let bannerHeight = 0;
 let syncQueued = false;
 let sentAt = 0;
 let lastPosition = "";
-function nativePlugin() {
-  if (globalThis.Capacitor?.isNativePlatform?.() !== true) return null;
-  return globalThis.Capacitor?.Plugins?.DoshikAds || null;
+// Capacitor injects nativePromise/addListener into Android WebView even when
+// the unbundled JS page has not registered @capacitor/core's JS plugin proxy.
+// This app has no JS bundler; do not assume Capacitor.Plugins.DoshikAds exists.
+let bridgeOwner = null;
+let bridgeProxy = null;
+export function resolveAdsBridge(cap = globalThis.Capacitor) {
+  if (cap?.isNativePlatform?.() !== true) return null;
+  if (cap.Plugins?.DoshikAds) return cap.Plugins.DoshikAds;
+  if (typeof cap.nativePromise !== "function" || typeof cap.addListener !== "function") {
+    return null;
+  }
+  if (bridgeOwner !== cap || !bridgeProxy) {
+    bridgeOwner = cap;
+    bridgeProxy = {
+      load: options => cap.nativePromise("DoshikAds", "load", options),
+      position: options => cap.nativePromise("DoshikAds", "position", options),
+      addListener: (event, callback) =>
+        Promise.resolve(cap.addListener("DoshikAds", event, callback))
+    };
+  }
+  return bridgeProxy;
 }
+function nativePlugin() { return resolveAdsBridge(); }
 function active() {
   return document.getElementById("cookOverlay")?.classList.contains("open")
     && !document.getElementById("cookSuccess")?.classList.contains("open")
