@@ -144,7 +144,7 @@ export function initCookingAds() {
     status = "failed";
     diagnosticError = String(event?.message || "SDK вернул ошибку без описания");
     slot.hidden = true;
-    schedulePosition(true);
+    schedulePosition();
   });
   const overlay = document.getElementById("cookOverlay");
   const success = document.getElementById("cookSuccess");
