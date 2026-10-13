@@ -10,7 +10,7 @@ function recipeCard(recipe) {
 
   return `<article class="recipe-card">
     <div class="recipe-media">
-      <img class="recipe-image" src="${escapeHtml(recipe.image || "")}" alt="${escapeHtml(recipe.title)}" loading="lazy">
+      <img class="recipe-image" src="${escapeHtml(recipe.image || "")}" alt="${escapeHtml(recipe.title)}" loading="lazy" decoding="async">
       <button class="favorite-btn ${favorite ? "on" : ""}" data-favorite="${escapeHtml(recipe.id)}" aria-label="${favorite ? "Убрать из избранного" : "Добавить в избранное"}" aria-pressed="${favorite ? "true" : "false"}">
         <svg class="favorite-heart" viewBox="0 0 24 24" aria-hidden="true"><use href="images/ui/heart.svg#heart"></use></svg>
       </button>
@@ -33,23 +33,62 @@ function recentRecipeCard(recipe) {
     </span>
   </button>`;
 }
+// Keep the DOM small: Android WebView only paints the first page of the archive.
+const PAGE_SIZE = 18;
+let visibleRecipes = [];
+let renderedCount = 0;
+let observer = null;
+let searchTimer = null;
+let cachedSearchIndex = new WeakMap();
+
+function searchText(recipe) {
+  let text = cachedSearchIndex.get(recipe);
+  if (text === undefined) {
+    text = [recipe.title, recipe.description, recipe.story, ...getCategories(recipe),
+      ...(Array.isArray(recipe.ingredients) ? recipe.ingredients : [])].join(" ").toLowerCase();
+    cachedSearchIndex.set(recipe, text);
+  }
+  return text;
+}
+
 function filteredRecipes() {
   const query = state.currentSearch.trim().toLowerCase();
+  return state.recipes.filter(recipe =>
+    (state.currentCategory === "Все" || getCategories(recipe).includes(state.currentCategory)) &&
+    (!state.showFavoritesOnly || isFavorite(recipe.id)) &&
+    (!query || searchText(recipe).includes(query))
+  );
+}
 
-  return state.recipes.filter(recipe => {
-    const categories = getCategories(recipe);
-    const byCategory = state.currentCategory === "Все" || categories.includes(state.currentCategory);
-    const haystack = [
-      recipe.title,
-      recipe.description,
-      recipe.story,
-      ...categories,
-      ...(Array.isArray(recipe.ingredients) ? recipe.ingredients : [])
-    ].join(" ").toLowerCase();
-    const bySearch = !query || haystack.includes(query);
-    const byFavorite = !state.showFavoritesOnly || isFavorite(recipe.id);
-    return byCategory && bySearch && byFavorite;
-  });
+function appendRecipePage() {
+  const box = document.getElementById("recipesGrid");
+  if (!box || renderedCount >= visibleRecipes.length) return;
+  const next = visibleRecipes.slice(renderedCount, renderedCount + PAGE_SIZE);
+  box.insertAdjacentHTML("beforeend", next.map(recipeCard).join(""));
+  renderedCount += next.length;
+  if (renderedCount >= visibleRecipes.length) {
+    observer?.disconnect();
+    observer = null;
+    document.getElementById("recipesLoadMore")?.remove();
+  }
+}
+
+function attachPagination() {
+  const box = document.getElementById("recipesGrid");
+  if (renderedCount >= visibleRecipes.length) return;
+  const button = document.createElement("button");
+  button.id = "recipesLoadMore";
+  button.type = "button";
+  button.className = "btn secondary recipes-load-more";
+  button.textContent = "Показать ещё рецепты";
+  button.addEventListener("click", appendRecipePage);
+  box.after(button);
+  if ("IntersectionObserver" in window) {
+    observer = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) appendRecipePage();
+    }, { rootMargin: "350px 0px" });
+    observer.observe(button);
+  }
 }
 
 export function renderRecipes() {
@@ -57,20 +96,25 @@ export function renderRecipes() {
   const home = latestRecipes(state.recipes, homeLimit);
   const homeBox = document.getElementById("homeRecipes");
   const recipesBox = document.getElementById("recipesGrid");
+  if (!homeBox || !recipesBox) return;
+  observer?.disconnect();
+  observer = null;
+  document.getElementById("recipesLoadMore")?.remove();
   recipesBox.dataset.layout = state.recipeLayout;
   document.querySelectorAll("[data-recipe-layout]").forEach(button => {
-    const active = button.dataset.recipeLayout === state.recipeLayout;
-    button.setAttribute("aria-pressed", String(active));
+    button.setAttribute("aria-pressed", String(button.dataset.recipeLayout === state.recipeLayout));
   });
-
   homeBox.innerHTML = home.length
     ? home.map(recentRecipeCard).join("")
     : '<div class="empty-state">Архив рецептов пока недоступен.</div>';
 
-  const filtered = filteredRecipes();
-  recipesBox.innerHTML = filtered.length
-    ? filtered.map(recipeCard).join("")
+  visibleRecipes = filteredRecipes();
+  renderedCount = 0;
+  recipesBox.innerHTML = visibleRecipes.length
+    ? ""
     : '<div class="empty-state">Лаборатория ничего не нашла. Возможно, рецепт засекречен.</div>';
+  appendRecipePage();
+  attachPagination();
 }
 
 export function setRecipeLayout(layout) {
@@ -96,7 +140,8 @@ export function selectCategory(category) {
 
 export function setSearch(value) {
   state.currentSearch = String(value || "");
-  renderRecipes();
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(renderRecipes, 160);
 }
 
 export function toggleFavoritesOnly() {
