@@ -21,10 +21,12 @@ test("Android native bridge works without a JavaScript plugin proxy", async () =
   assert.ok(ad, "Native Capacitor methods must be sufficient");
   assert.deepEqual(await ad.load({ width: 320 }), { ok: true });
   await ad.position({ visible: false });
+  await ad.getStatus();
   await ad.addListener("loaded", () => {});
   assert.deepEqual(requests.map(r => [r.name, r.method]), [
     ["DoshikAds", "load"],
-    ["DoshikAds", "position"]
+    ["DoshikAds", "position"],
+    ["DoshikAds", "getStatus"]
   ]);
   assert.equal(listeners[0].event, "loaded");
   assert.equal(listeners[0].name, "DoshikAds");

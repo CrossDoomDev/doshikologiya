@@ -33,6 +33,36 @@ public class DoshikAdsPlugin extends Plugin {
     private int lastLeft = 0, lastTop = 0;
     private int bannerWidth = 0, bannerHeight = 0;
     private boolean requestStarted = false;
+    private boolean sdkReady = false;
+    private String nativeState = "idle";
+    private String nativeError = "";
+    private String currentUnit = LIVE_UNIT;
+    private int lastAdWidthDp = 0;
+    private int lastAdHeightDp = 0;
+
+    private void mark(String state) {
+        nativeState = state;
+        android.util.Log.d("DoshikAds", "Native ad stage: " + state);
+    }
+
+    @PluginMethod
+    public void getStatus(PluginCall call) {
+        getActivity().runOnUiThread(() -> {
+            JSObject result = new JSObject();
+            result.put("state", nativeState);
+            result.put("sdkReady", sdkReady);
+            result.put("requestStarted", requestStarted);
+            result.put("adUnit", currentUnit);
+            result.put("loaded", loaded);
+            result.put("wantedVisible", wantsVisible);
+            result.put("viewExists", banner != null);
+            result.put("viewVisible", banner != null && banner.getVisibility() == View.VISIBLE);
+            result.put("widthDp", lastAdWidthDp);
+            result.put("heightDp", lastAdHeightDp);
+            result.put("error", nativeError);
+            call.resolve(result);
+        });
+    }
 
     @PluginMethod
     public void load(PluginCall call) {
@@ -43,11 +73,14 @@ public class DoshikAdsPlugin extends Plugin {
                 return;
             }
             requestStarted = true;
+            mark("sdk_initializing");
             // Do not infer consent from installing the app.
             YandexAds.setUserConsent(false);
             YandexAds.setLocationTracking(false);
             YandexAds.initialize(activity, () -> activity.runOnUiThread(() -> {
-                if (activity.isFinishing() || activity.isDestroyed()) return;
+                if (activity.isFinishing() || activity.isDestroyed()) { mark("activity_destroyed"); return; }
+                sdkReady = true;
+                mark("sdk_initialized");
                 createBanner(call.getInt("width", 320));
             }));
             call.resolve();
@@ -60,6 +93,8 @@ public class DoshikAdsPlugin extends Plugin {
         DisplayMetrics metrics = activity.getResources().getDisplayMetrics();
         FrameLayout root = activity.findViewById(android.R.id.content);
         if (root == null) {
+            nativeError = "Android root content view not found";
+            mark("failed");
             notifyListeners("failed", new JSObject());
             return;
         }
@@ -68,6 +103,8 @@ public class DoshikAdsPlugin extends Plugin {
         BannerAdSize size = BannerAdSize.sticky(activity, widthDp);
         bannerWidth = Math.round(size.getWidth() * metrics.density);
         bannerHeight = Math.round(size.getHeight() * metrics.density);
+        lastAdWidthDp = size.getWidth();
+        lastAdHeightDp = size.getHeight();
         banner = new BannerAdView(activity);
         banner.setAdSize(size);
         banner.setVisibility(View.INVISIBLE);
@@ -80,6 +117,7 @@ public class DoshikAdsPlugin extends Plugin {
                     return;
                 }
                 loaded = true;
+                mark("loaded");
                 JSObject result = new JSObject();
                 result.put("height", size.getHeight());
                 notifyListeners("loaded", result);
@@ -88,6 +126,8 @@ public class DoshikAdsPlugin extends Plugin {
             @Override
             public void onAdFailedToLoad(@NonNull AdRequestError error) {
                 loaded = false;
+                nativeError = String.valueOf(error);
+                mark("failed");
                 if (banner != null) banner.setVisibility(View.GONE);
                 JSObject result = new JSObject();
                 result.put("message", error.toString());
@@ -98,7 +138,17 @@ public class DoshikAdsPlugin extends Plugin {
             @Override public void onImpression(@Nullable ImpressionData data) { }
         });
         final boolean debug = (activity.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
-        banner.loadAd(new AdRequest.Builder(debug ? DEMO_UNIT : LIVE_UNIT).build());
+        currentUnit = debug ? DEMO_UNIT : LIVE_UNIT;
+        mark("request_sent");
+        try {
+            banner.loadAd(new AdRequest.Builder(currentUnit).build());
+        } catch (Exception exception) {
+            nativeError = exception.toString();
+            mark("failed");
+            JSObject result = new JSObject();
+            result.put("message", nativeError);
+            notifyListeners("failed", result);
+        }
     }
 
     @PluginMethod

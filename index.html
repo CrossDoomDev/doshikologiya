@@ -242,6 +242,22 @@
             </details>
           </section>
 
+          <section class="more-panel hidden" id="adsDiagnosticsSection" aria-labelledby="adsDiagnosticsTitle">
+            <div class="more-panel-heading">
+              <span class="more-panel-icon" aria-hidden="true">📡</span>
+              <div>
+                <div class="section-overline">Техническая проверка</div>
+                <h3 id="adsDiagnosticsTitle">Диагностика рекламы РСЯ</h3>
+              </div>
+            </div>
+            <p class="more-hint">Для проверки сначала открой любой рецепт и запусти режим готовки, затем вернись сюда. Проверка не загружает новые рекламные объявления.</p>
+            <div class="ad-diagnostics-controls">
+              <button class="btn secondary" type="button" id="adsDiagnosticsRefreshBtn">Проверить состояние</button>
+              <button class="btn secondary" type="button" id="adsDiagnosticsCopyBtn">Скопировать отчёт</button>
+            </div>
+            <textarea id="adsDiagnosticsReport" class="ad-diagnostics-output" readonly rows="10" aria-label="Состояние рекламного SDK">Нажми «Проверить состояние».</textarea>
+          </section>
+
           <section class="more-panel" aria-labelledby="moreLegalTitle">
             <div class="more-panel-heading">
               <span class="more-panel-icon" aria-hidden="true">§</span>
@@ -432,6 +448,6 @@
       </div>
     </section>
   </div>
-  <script type="module" src="js/main.js?v=20261013-layout-fast2"></script>
+  <script type="module" src="js/main.js?v=20261014-adsdiag2"></script>
 </body>
 </html>
