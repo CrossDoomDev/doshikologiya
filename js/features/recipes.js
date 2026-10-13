@@ -121,7 +121,13 @@ export function renderRecipes() {
 export function setRecipeLayout(layout) {
   if (!RECIPE_LAYOUTS.includes(layout) || layout === state.recipeLayout) return;
   state.recipeLayout = saveRecipeLayout(layout);
-  renderRecipes();
+  // Switching layouts only changes CSS. Preserve existing DOM, decoded images,
+  // pagination progress and scroll position instead of rebuilding every card.
+  const recipesBox = document.getElementById("recipesGrid");
+  if (recipesBox) recipesBox.dataset.layout = layout;
+  document.querySelectorAll("[data-recipe-layout]").forEach(button => {
+    button.setAttribute("aria-pressed", String(button.dataset.recipeLayout === layout));
+  });
 }
 
 export function renderChips() {
