@@ -8,6 +8,10 @@ on:
       - '.github/workflows/android-release.yml'
       - 'privacy.html'
       - 'terms.html'
+      - 'js/features/ads.js'
+      - 'scripts/install-yandex-ads.mjs'
+      - 'data/config.json'
+      - 'native/android/DoshikAdsPlugin.java'
 
 permissions:
   contents: read
