@@ -4,8 +4,12 @@ const SLOT_ID = "cookingAdSlot";
 let status = "idle";
 let bannerHeight = 0;
 let syncQueued = false;
-let sentAt = 0;
 let lastPosition = "";
+let lastNativeVisible = false;
+let positionSerial = 0;
+let scrolling = false;
+let scrollSettledTimer = null;
+const SCROLL_SETTLE_MS = 300;
 let diagnosticError = "";
 let bridgeDiagnostics = "Не проверялся";
 // Capacitor injects nativePromise/addListener into Android WebView even when
@@ -38,34 +42,63 @@ function active() {
     && !document.getElementById("cookSuccess")?.classList.contains("open")
     && document.visibilityState !== "hidden";
 }
-function syncPosition(force = false) {
-  const slot = document.getElementById(SLOT_ID);
+// AdView cannot be inserted into HTML itself. While a user scrolls we hide the
+// Android layer, and only restore it once the HTML slot has stopped moving.
+// This prevents a delayed native position update from floating over content.
+export function isSlotFullyVisible(rect, viewportWidth, viewportHeight, headerBottom = 0) {
+  return !!rect && rect.width > 0 && rect.height > 0
+    && rect.left >= 0 && rect.right <= viewportWidth
+    && rect.top >= headerBottom + 8 && rect.bottom <= viewportHeight - 6;
+}
+function sendPosition(visible, rect = null, force = false) {
   const plugin = nativePlugin();
-  if (!slot || !plugin) return;
-  const visible = status === "loaded" && active();
-  if (!visible) {
-    lastPosition = "";
-    void plugin.position({ visible: false }).catch(() => {});
+  if (!plugin) return;
+  const key = visible && rect
+    ? [Math.round(rect.left), Math.round(rect.top), Math.round(rect.width), Math.round(rect.height), window.innerWidth].join("|")
+    : "hidden";
+  if (!force && key === lastPosition && visible === lastNativeVisible) return;
+  lastPosition = key;
+  lastNativeVisible = visible;
+  // Sequence is checked in Android, so a delayed "show" cannot override a hide.
+  const params = visible && rect
+    ? { visible: true, left: rect.left, top: rect.top,
+        width: rect.width, height: rect.height,
+        viewportWidth: window.innerWidth, sequence: ++positionSerial }
+    : { visible: false, sequence: ++positionSerial };
+  void plugin.position(params).catch(error => {
+    diagnosticError = "Ошибка позиционирования: " + String(error?.message || error);
+  });
+}
+function syncPosition() {
+  const slot = document.getElementById(SLOT_ID);
+  if (!slot || !nativePlugin()) return;
+  if (status !== "loaded" || !active() || scrolling) {
+    sendPosition(false);
     return;
   }
   const rect = slot.getBoundingClientRect();
-  const within = rect.top >= 0 && rect.bottom <= window.innerHeight
-    && rect.left >= 0 && rect.right <= window.innerWidth;
-  const details = {
-    visible: within,
-    left: rect.left, top: rect.top, viewportWidth: window.innerWidth
-  };
-  const hash = `${within}|${Math.round(rect.left)}|${Math.round(rect.top)}|${window.innerWidth}`;
-  const now = Date.now();
-  if (!force && (hash === lastPosition || now - sentAt < 90)) return;
-  sentAt = now;
-  lastPosition = hash;
-  void plugin.position(details).catch(() => {});
+  const headerBottom = document.getElementById("cookTop")?.getBoundingClientRect().bottom || 0;
+  const fullyVisible = isSlotFullyVisible(rect, window.innerWidth, window.innerHeight, headerBottom);
+  sendPosition(fullyVisible, fullyVisible ? rect : null);
 }
-function schedulePosition(force = false) {
+function schedulePosition() {
   if (syncQueued) return;
   syncQueued = true;
-  requestAnimationFrame(() => { syncQueued = false; syncPosition(force); });
+  requestAnimationFrame(() => {
+    syncQueued = false;
+    syncPosition();
+  });
+}
+function hideWhileMoving() {
+  scrolling = true;
+  // Hide *before* the DOM moves, not by following it frame-by-frame.
+  sendPosition(false);
+  if (scrollSettledTimer !== null) clearTimeout(scrollSettledTimer);
+  scrollSettledTimer = setTimeout(() => {
+    scrollSettledTimer = null;
+    scrolling = false;
+    schedulePosition();
+  }, SCROLL_SETTLE_MS);
 }
 function refresh() {
   const slot = document.getElementById(SLOT_ID);
@@ -73,8 +106,14 @@ function refresh() {
   if (!slot || !plugin) return;
   if (active() && status === "idle") {
     status = "loading";
-    const rect = slot.parentElement.getBoundingClientRect();
-    void plugin.load({ width: Math.round(rect.width) }).catch(error => {
+    const parent = slot.parentElement;
+    const style = getComputedStyle(parent);
+    const parentWidth = parent.getBoundingClientRect().width;
+    // Width of .cook-box includes padding; ad must fit the actual HTML slot.
+    const innerWidth = parentWidth
+      - parseFloat(style.paddingLeft || "0") - parseFloat(style.paddingRight || "0")
+      - parseFloat(style.borderLeftWidth || "0") - parseFloat(style.borderRightWidth || "0");
+    void plugin.load({ width: Math.max(120, Math.floor(innerWidth)) }).catch(error => {
       console.warn("Не удалось инициализировать рекламный блок:", error);
       status = "failed";
       diagnosticError = String(error?.message || error);
@@ -84,7 +123,7 @@ function refresh() {
   const show = active() && status === "loaded";
   slot.hidden = !show;
   if (show) slot.style.height = `${bannerHeight}px`;
-  schedulePosition(true);
+  schedulePosition();
 }
 export function initCookingAds() {
   const plugin = nativePlugin();
@@ -111,12 +150,14 @@ export function initCookingAds() {
   const success = document.getElementById("cookSuccess");
   new MutationObserver(refresh).observe(overlay, { attributes: true, attributeFilter: ["class"] });
   new MutationObserver(refresh).observe(success, { attributes: true, attributeFilter: ["class"] });
-  overlay.addEventListener("scroll", () => schedulePosition(), { passive: true, capture: true });
-  window.addEventListener("resize", () => schedulePosition(true), { passive: true });
+  overlay.addEventListener("scroll", hideWhileMoving, { passive: true, capture: true });
+  overlay.addEventListener("touchstart", hideWhileMoving, { passive: true, capture: true });
+  overlay.addEventListener("wheel", hideWhileMoving, { passive: true, capture: true });
+  window.addEventListener("resize", hideWhileMoving, { passive: true });
   document.addEventListener("visibilitychange", refresh);
   window.addEventListener("pagehide", () => {
     slot.hidden = true;
-    void plugin.position({ visible: false }).catch(() => {});
+    sendPosition(false, null, true);
   });
   refresh();
 }
@@ -137,7 +178,7 @@ export async function getAdsDiagnostics() {
   const rect = slot?.getBoundingClientRect();
   return [
     "Дошикология — проверка рекламы РСЯ",
-    "Версия: 1.1.3",
+    "Версия: 1.1.4",
     "Рабочий рекламный блок: R-M-20184115-1",
     "Активный ID SDK: " + (nativeStatus?.adUnit || "нет"),
     "Android: " + (native ? "да" : "нет"),
@@ -150,6 +191,8 @@ export async function getAdsDiagnostics() {
     "Место рекламы: " + (slot ? (slot.hidden ? "скрыто" : "показано") : "не найдено"),
     "Место на экране: " + (rect ? "Y=" + Math.round(rect.top) + ".." + Math.round(rect.bottom) : "—"),
     "Высота баннера (dp): " + bannerHeight,
+    "Прокрутка в процессе: " + (scrolling ? "да" : "нет"),
+    "Native layer: " + (lastNativeVisible ? "привязан к месту" : "скрыт"),
     "Нативный статус: " + (nativeStatus ? JSON.stringify(nativeStatus, null, 2) : "нет ответа"),
     "Ошибка вызова статуса: " + (nativeError || "нет")
   ].join("\n");

@@ -39,6 +39,9 @@ public class DoshikAdsPlugin extends Plugin {
     private String currentUnit = LIVE_UNIT;
     private int lastAdWidthDp = 0;
     private int lastAdHeightDp = 0;
+    private int lastPositionSequence = 0;
+    private int slotWidthPx = 0;
+    private int slotHeightPx = 0;
     private boolean demoCheckRequested = false;
 
     private void mark(String state) {
@@ -61,6 +64,9 @@ public class DoshikAdsPlugin extends Plugin {
             result.put("widthDp", lastAdWidthDp);
             result.put("heightDp", lastAdHeightDp);
             result.put("error", nativeError);
+            result.put("lastPositionSequence", lastPositionSequence);
+            result.put("slotWidthPx", slotWidthPx);
+            result.put("slotHeightPx", slotHeightPx);
             call.resolve(result);
         });
     }
@@ -174,18 +180,29 @@ public class DoshikAdsPlugin extends Plugin {
     @PluginMethod
     public void position(PluginCall call) {
         getActivity().runOnUiThread(() -> {
+            int incomingSequence = call.getInt("sequence", 0);
+            if (incomingSequence < lastPositionSequence) {
+                call.resolve();
+                return;
+            }
+            lastPositionSequence = incomingSequence;
             wantsVisible = call.getBoolean("visible", false);
             if (wantsVisible) {
-                DisplayMetrics metrics = getActivity().getResources().getDisplayMetrics();
                 View web = getBridge().getWebView();
                 float scale = (float) web.getWidth() / Math.max(1, call.getInt("viewportWidth", 1));
                 int[] webPos = new int[2];
                 int[] rootPos = new int[2];
                 web.getLocationOnScreen(webPos);
-                View root = getActivity().findViewById(android.R.id.content);
-                root.getLocationOnScreen(rootPos);
-                lastLeft = webPos[0] - rootPos[0] + Math.round(call.getFloat("left", 0f) * scale);
-                lastTop = webPos[1] - rootPos[1] + Math.round(call.getFloat("top", 0f) * scale);
+                FrameLayout root = getActivity().findViewById(android.R.id.content);
+                if (root == null) {
+                    wantsVisible = false;
+                } else {
+                    root.getLocationOnScreen(rootPos);
+                    lastLeft = webPos[0] - rootPos[0] + Math.round(call.getFloat("left", 0f) * scale);
+                    lastTop = webPos[1] - rootPos[1] + Math.round(call.getFloat("top", 0f) * scale);
+                    slotWidthPx = Math.round(call.getFloat("width", 0f) * scale);
+                    slotHeightPx = Math.round(call.getFloat("height", 0f) * scale);
+                }
             }
             reposition();
             call.resolve();
@@ -194,7 +211,15 @@ public class DoshikAdsPlugin extends Plugin {
 
     private void reposition() {
         if (banner == null) return;
-        if (!loaded || !wantsVisible) {
+        FrameLayout root = getActivity().findViewById(android.R.id.content);
+        // Fail closed: the advertisement must never cover text, controls,
+        // the cooking header, or pixels outside its own reserved slot.
+        boolean fitsSlot = slotWidthPx >= bannerWidth - 2 && slotHeightPx >= bannerHeight - 2;
+        boolean fitsScreen = root != null
+            && lastLeft >= 0 && lastTop >= 0
+            && lastLeft + bannerWidth <= root.getWidth()
+            && lastTop + bannerHeight <= root.getHeight();
+        if (!loaded || !wantsVisible || !fitsSlot || !fitsScreen) {
             banner.setVisibility(View.INVISIBLE);
             return;
         }

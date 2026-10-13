@@ -823,3 +823,7 @@ button:focus-visible,
 /* Visible only in the installed Android app for troubleshooting native ad delivery. */
 .ad-diagnostics-controls{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
 .ad-diagnostics-output{display:block;width:100%;padding:14px;min-height:195px;background:#130f0d;color:var(--cream);border:1px solid var(--line-hot);border-radius:14px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;line-height:1.6;resize:vertical;overflow:auto;user-select:text;-webkit-user-select:text}
+
+/* This HTML element reserves *exactly* the native banner's space in the flow.
+   On active scrolling, Android hides the overlay instead of letting it drift. */
+.cook-ad.android-ad-slot{margin-inline:0;max-width:100%;min-width:0;box-sizing:border-box;}

@@ -47,3 +47,14 @@ test("Web browser does not request native ads", () => {
   assert.equal(resolveAdsBridge({ isNativePlatform: () => false }), null);
   assert.equal(resolveAdsBridge(null), null);
 });
+
+import { isSlotFullyVisible } from "../js/features/ads.js";
+
+test("native inline ad is visible only wholly inside the safe viewport", () => {
+  const rect = { left: 12, right: 332, top: 280, bottom: 380, width: 320, height: 100 };
+  assert.equal(isSlotFullyVisible(rect, 360, 720, 180), true);
+  assert.equal(isSlotFullyVisible({ ...rect, top: 160 }, 360, 720, 180), false);
+  assert.equal(isSlotFullyVisible({ ...rect, bottom: 721 }, 360, 720, 180), false);
+  assert.equal(isSlotFullyVisible({ ...rect, right: 368 }, 360, 720, 180), false);
+  assert.equal(isSlotFullyVisible({ ...rect, height: 0 }, 360, 720, 180), false);
+});
