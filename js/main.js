@@ -34,6 +34,19 @@ function renderServiceInfo() {
   }
 }
 
+// Suppress Android long-press selection handles/context menu throughout the
+// reading interface, but never interfere with typing in editable search fields.
+function preventTextSelectionOnLongPress() {
+  const editable = target => target instanceof Element
+    && Boolean(target.closest('input:not([readonly]), textarea:not([readonly]), [contenteditable="true"]'));
+  document.addEventListener("selectstart", event => {
+    if (!editable(event.target)) event.preventDefault();
+  }, { capture: true });
+  document.addEventListener("contextmenu", event => {
+    if (!editable(event.target)) event.preventDefault();
+  }, { capture: true });
+}
+
 function nativeAndroid() {
   return globalThis.Capacitor?.isNativePlatform?.() === true;
 }
@@ -159,6 +172,7 @@ function bindEvents() {
 async function boot() {
   initSplash();
   initPressFeedback();
+  preventTextSelectionOnLongPress();
   bindEvents();
   initBackNavigation({ closeCookSuccess, closeCookMode, closeRecipe, goTo });
   initCookingLayout();
