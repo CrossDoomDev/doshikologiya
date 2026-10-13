@@ -42,6 +42,13 @@ jobs:
       - name: Sync Android assets
         run: npx cap sync android
 
+      - name: Generate branded Android launcher icons
+        run: |
+          npm run android:icons
+          test -s android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+          test -s android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
+          test -s android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+
       - name: Set release version
         run: |
           python3 - <<'PY'
