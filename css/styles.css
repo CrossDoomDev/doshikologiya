@@ -772,3 +772,13 @@ button:focus-visible,
   #recipesGrid[data-layout="grid"] .card-open{font-size:9px}
 }
 @media(prefers-reduced-motion:reduce){.recipe-layout-option{transition:none}}
+
+/* Keep offscreen recipe cards cheap to paint on Android WebView. */
+#recipesGrid .recipe-card{content-visibility:auto;contain-intrinsic-size:auto 330px}
+#recipesGrid[data-layout="compact"] .recipe-card{contain-intrinsic-size:auto 112px}
+#recipesGrid[data-layout="grid"] .recipe-card{contain-intrinsic-size:auto 245px}
+.recipes-load-more{display:block;margin:20px auto 28px;min-height:44px}
+@media (hover:none) and (pointer:coarse){
+  #recipesGrid .recipe-card:hover{transform:none}
+  #recipesGrid .recipe-card:hover .recipe-image{transform:none}
+}
