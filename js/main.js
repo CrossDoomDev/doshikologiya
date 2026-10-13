@@ -6,7 +6,7 @@ import { applyCatalog, state } from "./core/state.js";
 import { shareRecipe, incomingRecipeId } from "./features/sharing.js?v=20261010-offline-share1";
 import { goTo } from "./core/router.js?v=20261011-more1";
 import { renderBanner, renderFeatured } from "./features/home.js";
-import { renderChips, renderRecipes, selectCategory, setSearch, toggleFavoritesOnly, setRecipeLayout } from "./features/recipes.js?v=20261012-recipe-layout1";
+import { renderChips, renderRecipes, selectCategory, setSearch, toggleFavoritesOnly, setRecipeLayout, resumeRecipePagination } from "./features/recipes.js?v=20261013-recipe-perf1";
 import { renderPatrons } from "./features/support.js?v=20261011-home-feed1";
 import { renderNews } from "./features/news.js?v=20261012-dateonly1";
 import { openRecipe, closeRecipe, toggleFavorite } from "./features/recipe-modal.js?v=20261012-hidden-recipe-dates1";
@@ -69,6 +69,7 @@ function bindEvents() {
     if (route) {
       event.preventDefault();
       goTo(route.dataset.route);
+      if (route.dataset.route === "recipes") resumeRecipePagination();
       if (route.dataset.route === "more") void refreshServiceContacts();
       return;
     }
@@ -169,6 +170,7 @@ async function boot() {
     if (Object.keys(savedContacts).length) state.config = applyServiceContacts(state.config, savedContacts);
   }
   renderAll();
+  if (!document.getElementById("view-recipes")?.classList.contains("hidden")) resumeRecipePagination();
   initRecipeUpdates(catalog);
   hideSplash();
   // Sync the support address and donation link independently of recipe updates.
