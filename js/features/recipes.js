@@ -87,7 +87,8 @@ function attachPagination() {
     observer = new IntersectionObserver(entries => {
       if (entries.some(entry => entry.isIntersecting)) appendRecipePage();
     }, { rootMargin: "350px 0px" });
-    observer.observe(button);
+    // A hidden tab should not eagerly load the entire archive.
+    if (!document.getElementById("view-recipes")?.classList.contains("hidden")) observer.observe(button);
   }
 }
 
@@ -150,4 +151,9 @@ export function toggleFavoritesOnly() {
   button.querySelector(".favorite-filter-label").textContent = state.showFavoritesOnly ? "Показываем избранное" : "Только избранное";
   button.setAttribute("aria-pressed", String(state.showFavoritesOnly));
   renderRecipes();
+}
+
+export function resumeRecipePagination() {
+  const button = document.getElementById("recipesLoadMore");
+  if (button && observer) observer.observe(button);
 }
