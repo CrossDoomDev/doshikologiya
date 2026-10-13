@@ -782,3 +782,35 @@ button:focus-visible,
   #recipesGrid .recipe-card:hover{transform:none}
   #recipesGrid .recipe-card:hover .recipe-image{transform:none}
 }
+
+/* Android recipe archive: avoid per-card GPU blur and costly paint effects. */
+@media (pointer:coarse) {
+  #view-recipes .recipe-card,
+  #view-recipes .recipe-card:hover {
+    box-shadow:none;
+    transform:none;
+    transition:none;
+  }
+  #view-recipes .recipe-image,
+  #view-recipes .recipe-card:hover .recipe-image {
+    filter:none;
+    transform:none;
+    transition:none;
+  }
+  #view-recipes .favorite-btn,
+  #view-recipes .card-category,
+  #view-recipes .tag,
+  #view-recipes .btn.secondary {
+    -webkit-backdrop-filter:none;
+    backdrop-filter:none;
+  }
+  #view-recipes .favorite-btn {background:#241b14;}
+  #view-recipes .card-category {background:#241b14;}
+  #view-recipes .tag {background:#251c15;}
+  #view-recipes .recipe-card .dosh-action-btn {
+    box-shadow:none;
+    filter:none;
+    transition:none;
+  }
+  #view-recipes .recipe-media::after {height:24%;}
+}
