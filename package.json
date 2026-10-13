@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "scripts": {
     "android:prepare": "node scripts/prepare-android.mjs",
-    "android:icons": "node scripts/generate-android-icons.mjs"
+    "android:icons": "node scripts/generate-android-icons.mjs",
+    "android:ads": "node scripts/install-yandex-ads.mjs"
   },
   "dependencies": {
     "@capacitor/core": "8.5.2",

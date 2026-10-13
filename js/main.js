@@ -13,6 +13,7 @@ import { openRecipe, closeRecipe, toggleFavorite } from "./features/recipe-modal
 import { openDonation } from "./features/donations.js";
 import { initCookingLayout, openCookMode, closeCookMode, navigateCookStep, closeCookSuccess, updateCookSuccessFavorite } from "./features/cooking.js?v=20261012-android-back1";
 import { renderDailyIndex, runOracle } from "./features/oracle.js?v=20261010-oracle-art2";
+import { initCookingAds } from "./features/ads.js";
 import { initSplash, hideSplash } from "./features/splash.js?v=20261009-motion2";
 import { initPressFeedback } from "./features/press-feedback.js?v=20261009-motion2";
 
@@ -161,6 +162,7 @@ async function boot() {
   bindEvents();
   initBackNavigation({ closeCookSuccess, closeCookMode, closeRecipe, goTo });
   initCookingLayout();
+  initCookingAds();
   goTo(location.hash.replace("#", "") || "home");
 
   const catalog = await loadCatalog();

@@ -814,3 +814,7 @@ button:focus-visible,
   }
   #view-recipes .recipe-media::after {height:24%;}
 }
+
+/* Native banner occupies the previously hidden cooking placeholder only after ad load. */
+.cook-ad.android-ad-slot{box-sizing:border-box;padding:0;border:0;background:none;box-shadow:none;overflow:visible;pointer-events:none;width:100%}
+.cook-ad.android-ad-slot::after,.cook-ad.android-ad-slot > *{display:none!important}

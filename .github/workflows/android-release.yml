@@ -44,6 +44,7 @@ jobs:
           npx cap add android
           npx cap sync android
           npm run android:icons
+          npm run android:ads
       - name: Restore signing keystore and configure release
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}

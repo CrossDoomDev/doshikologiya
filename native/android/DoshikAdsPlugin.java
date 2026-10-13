@@ -1,0 +1,154 @@
+package ru.doshikologiya.app;
+
+import android.app.Activity;
+import android.content.pm.ApplicationInfo;
+import android.util.DisplayMetrics;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import com.getcapacitor.JSObject;
+import com.getcapacitor.Plugin;
+import com.getcapacitor.PluginCall;
+import com.getcapacitor.PluginMethod;
+import com.getcapacitor.annotation.CapacitorPlugin;
+import com.yandex.mobile.ads.banner.BannerAdEventListener;
+import com.yandex.mobile.ads.banner.BannerAdSize;
+import com.yandex.mobile.ads.banner.BannerAdView;
+import com.yandex.mobile.ads.common.AdRequest;
+import com.yandex.mobile.ads.common.AdRequestError;
+import com.yandex.mobile.ads.common.ImpressionData;
+import com.yandex.mobile.ads.common.YandexAds;
+
+// The native ad is positioned directly above the existing HTML cooking ad slot.
+// The WebView remains unchanged: on no-fill/failure the slot stays hidden.
+@CapacitorPlugin(name = "DoshikAds")
+public class DoshikAdsPlugin extends Plugin {
+    private static final String LIVE_UNIT = "R-M-20184115-1";
+    private static final String DEMO_UNIT = "demo-banner-yandex";
+    private BannerAdView banner;
+    private boolean loaded = false;
+    private boolean wantsVisible = false;
+    private int lastLeft = 0, lastTop = 0;
+    private int bannerWidth = 0, bannerHeight = 0;
+    private boolean requestStarted = false;
+
+    @PluginMethod
+    public void load(PluginCall call) {
+        Activity activity = getActivity();
+        activity.runOnUiThread(() -> {
+            if (requestStarted) {
+                call.resolve();
+                return;
+            }
+            requestStarted = true;
+            // Do not infer consent from installing the app.
+            YandexAds.setUserConsent(false);
+            YandexAds.setLocationTracking(false);
+            YandexAds.initialize(activity, () -> activity.runOnUiThread(() -> {
+                if (activity.isFinishing() || activity.isDestroyed()) return;
+                createBanner(call.getInt("width", 320));
+            }));
+            call.resolve();
+        });
+    }
+
+    private void createBanner(int cssWidth) {
+        if (banner != null) return;
+        Activity activity = getActivity();
+        DisplayMetrics metrics = activity.getResources().getDisplayMetrics();
+        FrameLayout root = activity.findViewById(android.R.id.content);
+        if (root == null) {
+            notifyListeners("failed", new JSObject());
+            return;
+        }
+        int maxWidthDp = Math.round(getBridge().getWebView().getWidth() / metrics.density);
+        int widthDp = Math.max(120, Math.min(cssWidth, maxWidthDp));
+        BannerAdSize size = BannerAdSize.sticky(activity, widthDp);
+        bannerWidth = Math.round(size.getWidth() * metrics.density);
+        bannerHeight = Math.round(size.getHeight() * metrics.density);
+        banner = new BannerAdView(activity);
+        banner.setAdSize(size);
+        banner.setVisibility(View.INVISIBLE);
+        root.addView(banner, new FrameLayout.LayoutParams(bannerWidth, bannerHeight));
+        banner.setBannerAdEventListener(new BannerAdEventListener() {
+            @Override
+            public void onAdLoaded() {
+                if (activity.isDestroyed()) {
+                    dispose();
+                    return;
+                }
+                loaded = true;
+                JSObject result = new JSObject();
+                result.put("height", size.getHeight());
+                notifyListeners("loaded", result);
+                reposition();
+            }
+            @Override
+            public void onAdFailedToLoad(@NonNull AdRequestError error) {
+                loaded = false;
+                if (banner != null) banner.setVisibility(View.GONE);
+                JSObject result = new JSObject();
+                result.put("message", error.toString());
+                notifyListeners("failed", result);
+                // No immediate retry: Yandex discourages repeated failed requests.
+            }
+            @Override public void onAdClicked() { }
+            @Override public void onImpression(@Nullable ImpressionData data) { }
+        });
+        final boolean debug = (activity.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+        banner.loadAd(new AdRequest.Builder(debug ? DEMO_UNIT : LIVE_UNIT).build());
+    }
+
+    @PluginMethod
+    public void position(PluginCall call) {
+        getActivity().runOnUiThread(() -> {
+            wantsVisible = call.getBoolean("visible", false);
+            if (wantsVisible) {
+                DisplayMetrics metrics = getActivity().getResources().getDisplayMetrics();
+                View web = getBridge().getWebView();
+                float scale = (float) web.getWidth() / Math.max(1, call.getInt("viewportWidth", 1));
+                int[] webPos = new int[2];
+                int[] rootPos = new int[2];
+                web.getLocationOnScreen(webPos);
+                View root = getActivity().findViewById(android.R.id.content);
+                root.getLocationOnScreen(rootPos);
+                lastLeft = webPos[0] - rootPos[0] + Math.round(call.getFloat("left", 0f) * scale);
+                lastTop = webPos[1] - rootPos[1] + Math.round(call.getFloat("top", 0f) * scale);
+            }
+            reposition();
+            call.resolve();
+        });
+    }
+
+    private void reposition() {
+        if (banner == null) return;
+        if (!loaded || !wantsVisible) {
+            banner.setVisibility(View.INVISIBLE);
+            return;
+        }
+        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) banner.getLayoutParams();
+        params.width = bannerWidth;
+        params.height = bannerHeight;
+        params.leftMargin = lastLeft;
+        params.topMargin = lastTop;
+        banner.setLayoutParams(params);
+        banner.setVisibility(View.VISIBLE);
+    }
+
+    private void dispose() {
+        if (banner == null) return;
+        banner.destroy();
+        ViewGroup parent = (ViewGroup) banner.getParent();
+        if (parent != null) parent.removeView(banner);
+        banner = null;
+        loaded = false;
+    }
+
+    @Override
+    protected void handleOnDestroy() {
+        dispose();
+        super.handleOnDestroy();
+    }
+}
