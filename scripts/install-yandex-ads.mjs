@@ -14,11 +14,11 @@ if (![gradlePath, activityPath, manifestPath].every(fs.existsSync)) {
 }
 let gradle = fs.readFileSync(gradlePath, "utf8");
 if (!gradle.includes("com.yandex.android:mobileads:")) {
-  gradle = gradle.replace(/dependencies\\s*\\{/, "dependencies {\\n    implementation 'com.yandex.android:mobileads:8.5.0'");
+  gradle = gradle.replace(/dependencies\s*\{/, "dependencies {\n    implementation 'com.yandex.android:mobileads:8.5.0'");
 }
 if (!gradle.includes("com.yandex.android:mobileads:8.5.0")) throw new Error("Could not inject ads Gradle dependency.");
 // Preserve installed-app upgrade compatibility: same package/signature, increased versionCode.
-gradle = gradle.replace(/versionCode\\s+\\d+/, "versionCode 2").replace(/versionName\\s+['\"][^'\"]+['\"]/, 'versionName "1.1.0"');
+gradle = gradle.replace(/versionCode\s+\d+/, "versionCode 2").replace(/versionName\s+['\"][^'\"]+['\"]/, 'versionName "1.1.0"');
 fs.writeFileSync(gradlePath, gradle);
 let activity = fs.readFileSync(activityPath, "utf8");
 if (!activity.includes("registerPlugin(DoshikAdsPlugin.class)")) {
@@ -36,7 +36,7 @@ fs.writeFileSync(activityPath, activity);
 fs.copyFileSync(path.join(root, "native", "android", "DoshikAdsPlugin.java"), pluginTarget);
 let manifest = fs.readFileSync(manifestPath, "utf8");
 if (!manifest.includes("com.yandex.mobile.ads.AUTOMATIC_SDK_INITIALIZATION")) {
-  manifest = manifest.replace(/(<application\\b[^>]*>)/, '$1\\n        <meta-data android:name="com.yandex.mobile.ads.AUTOMATIC_SDK_INITIALIZATION" android:value="false" />');
+  manifest = manifest.replace(/(<application\b[^>]*>)/, '$1\n        <meta-data android:name="com.yandex.mobile.ads.AUTOMATIC_SDK_INITIALIZATION" android:value="false" />');
 }
 fs.writeFileSync(manifestPath, manifest);
 console.log("Installed Yandex Ads SDK and native cooking-slot bridge. Debug=demo unit; release=R-M-20184115-1");
