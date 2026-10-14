@@ -108,7 +108,7 @@ jobs:
               manifest = z.read('AndroidManifest.xml')
               assert 'ru.doshikologiya.app'.encode('utf-16le') in manifest
               assert 'ru.doshikologiya.app.demo'.encode('utf-16le') not in manifest
-              assert '1.1.5'.encode('utf-16le') in manifest
+              assert '1.1.6'.encode('utf-16le') in manifest
               dex = b''.join(z.read(n) for n in z.namelist() if n.startswith('classes') and n.endswith('.dex'))
               assert b'R-M-20184115-1' in dex
           print("Signed production APK contains correct package, version, and live ad unit")

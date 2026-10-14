@@ -42,6 +42,10 @@ public class DoshikAdsPlugin extends Plugin {
     private int lastPositionSequence = 0;
     private int slotWidthPx = 0;
     private int slotHeightPx = 0;
+    private String hideReason = "not requested";
+    private int lastRootWidthPx = 0;
+    private int lastRootHeightPx = 0;
+    private int lastRequestWidthDp = 0;
     private boolean demoCheckRequested = false;
 
     private void mark(String state) {
@@ -67,6 +71,14 @@ public class DoshikAdsPlugin extends Plugin {
             result.put("lastPositionSequence", lastPositionSequence);
             result.put("slotWidthPx", slotWidthPx);
             result.put("slotHeightPx", slotHeightPx);
+            result.put("bannerWidthPx", bannerWidth);
+            result.put("bannerHeightPx", bannerHeight);
+            result.put("rootWidthPx", lastRootWidthPx);
+            result.put("rootHeightPx", lastRootHeightPx);
+            result.put("bannerLeftPx", lastLeft);
+            result.put("bannerTopPx", lastTop);
+            result.put("requestedWidthDp", lastRequestWidthDp);
+            result.put("hideReason", hideReason);
             call.resolve(result);
         });
     }
@@ -79,13 +91,13 @@ public class DoshikAdsPlugin extends Plugin {
             if (!sdkReady) { call.reject("Yandex SDK has not been initialized yet"); return; }
             if (demoCheckRequested) { call.reject("Demo request was already sent during this session"); return; }
             demoCheckRequested = true;
-            int availableWidth = lastAdWidthDp > 0 ? lastAdWidthDp : 320;
+            int availableWidth = lastRequestWidthDp > 0 ? lastRequestWidthDp : 320;
             dispose();
             nativeError = "";
             loaded = false;
             wantsVisible = false;
             mark("demo_requested");
-            createBanner(availableWidth);
+            createBanner(availableWidth, 0);
             call.resolve();
         });
     }
@@ -107,13 +119,13 @@ public class DoshikAdsPlugin extends Plugin {
                 if (activity.isFinishing() || activity.isDestroyed()) { mark("activity_destroyed"); return; }
                 sdkReady = true;
                 mark("sdk_initialized");
-                createBanner(call.getInt("width", 320));
+                createBanner(call.getInt("width", 320), call.getInt("viewportWidth", 360));
             }));
             call.resolve();
         });
     }
 
-    private void createBanner(int cssWidth) {
+    private void createBanner(int cssWidth, int viewportWidthCss) {
         if (banner != null) return;
         Activity activity = getActivity();
         DisplayMetrics metrics = activity.getResources().getDisplayMetrics();
@@ -124,8 +136,15 @@ public class DoshikAdsPlugin extends Plugin {
             notifyListeners("failed", new JSObject());
             return;
         }
-        int maxWidthDp = Math.round(getBridge().getWebView().getWidth() / metrics.density);
-        int widthDp = Math.max(120, Math.min(cssWidth, maxWidthDp));
+        View web = getBridge().getWebView();
+        int maxWidthDp = Math.round(web.getWidth() / metrics.density);
+        // The WebView layout uses CSS px while Yandex requires dp. On some
+        // display/font scales these units are not exactly interchangeable.
+        float pxPerCss = viewportWidthCss > 0
+            ? ((float) web.getWidth() / viewportWidthCss) : metrics.density;
+        int widthDp = Math.max(120, Math.min(maxWidthDp,
+            Math.round(cssWidth * pxPerCss / metrics.density)));
+        lastRequestWidthDp = widthDp;
         BannerAdSize size = BannerAdSize.sticky(activity, widthDp);
         bannerWidth = Math.round(size.getWidth() * metrics.density);
         bannerHeight = Math.round(size.getHeight() * metrics.density);
@@ -146,6 +165,7 @@ public class DoshikAdsPlugin extends Plugin {
                 mark("loaded");
                 JSObject result = new JSObject();
                 result.put("height", size.getHeight());
+                result.put("width", size.getWidth());
                 notifyListeners("loaded", result);
                 reposition();
             }
@@ -209,24 +229,45 @@ public class DoshikAdsPlugin extends Plugin {
         });
     }
 
+
     private void reposition() {
-        if (banner == null) return;
+        if (banner == null) {
+            hideReason = "banner view missing";
+            return;
+        }
         FrameLayout root = getActivity().findViewById(android.R.id.content);
-        // Fail closed: the advertisement must never cover text, controls,
-        // the cooking header, or pixels outside its own reserved slot.
-        boolean fitsSlot = slotWidthPx >= bannerWidth - 2 && slotHeightPx >= bannerHeight - 2;
+        if (root != null) {
+            lastRootWidthPx = root.getWidth();
+            lastRootHeightPx = root.getHeight();
+        }
+        boolean fitsSlot = slotWidthPx >= bannerWidth - 4 && slotHeightPx >= bannerHeight - 4;
         boolean fitsScreen = root != null
             && lastLeft >= 0 && lastTop >= 0
             && lastLeft + bannerWidth <= root.getWidth()
             && lastTop + bannerHeight <= root.getHeight();
-        if (!loaded || !wantsVisible || !fitsSlot || !fitsScreen) {
+        // Keep the ad confined to its HTML placeholder; report exactly why
+        // it is hidden so layout regressions can be identified on device.
+        if (!loaded) hideReason = "ad not loaded";
+        else if (!wantsVisible) hideReason = "HTML slot not visible";
+        else if (!fitsSlot) {
+            hideReason = "banner larger than slot: banner=" + bannerWidth + "x"
+                + bannerHeight + ", slot=" + slotWidthPx + "x" + slotHeightPx;
+        } else if (!fitsScreen) {
+            hideReason = "banner outside Android viewport: x=" + lastLeft + " y="
+                + lastTop + " banner=" + bannerWidth + "x" + bannerHeight
+                + " root=" + lastRootWidthPx + "x" + lastRootHeightPx;
+        } else {
+            hideReason = "";
+        }
+        if (!hideReason.isEmpty()) {
             banner.setVisibility(View.INVISIBLE);
             return;
         }
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) banner.getLayoutParams();
         params.width = bannerWidth;
         params.height = bannerHeight;
-        params.leftMargin = lastLeft;
+        // Center the creative horizontally inside the allocated HTML area.
+        params.leftMargin = lastLeft + Math.max(0, (slotWidthPx - bannerWidth) / 2);
         params.topMargin = lastTop;
         banner.setLayoutParams(params);
         banner.setVisibility(View.VISIBLE);

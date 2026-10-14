@@ -80,3 +80,13 @@ test("HTML body and legal pages disable selection of noneditable text", () => {
   assert.doesNotMatch(adJS, /addEventListener\(["']touchstart["'],\s*hideWhileMoving/);
   assert.doesNotMatch(adJS, /addEventListener\(["']wheel["'],\s*hideWhileMoving/);
 });
+
+test("Banner width request leaves room for rounding, using true CSS-to-dp dimensions", () => {
+  const js = readFileSync(new URL("../js/features/ads.js", import.meta.url), "utf8");
+  const native = readFileSync(new URL("../native/android/DoshikAdsPlugin.java", import.meta.url), "utf8");
+  assert.match(js, /innerWidth - 10/);
+  assert.match(js, /viewportWidth: window\.innerWidth/);
+  assert.match(native, /pxPerCss \/ metrics\.density/);
+  assert.match(native, /result\.put\("hideReason", hideReason\)/);
+  assert.match(native, /result\.put\("width", size\.getWidth\(\)\)/);
+});

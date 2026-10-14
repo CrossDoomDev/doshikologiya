@@ -3,6 +3,8 @@
 const SLOT_ID = "cookingAdSlot";
 let status = "idle";
 let bannerHeight = 0;
+let bannerWidth = 0;
+let lastLayoutNote = "not measured";
 let syncQueued = false;
 let lastPosition = "";
 let lastNativeVisible = false;
@@ -55,7 +57,7 @@ function sendPosition(visible, rect = null, force = false) {
   const plugin = nativePlugin();
   if (!plugin) return;
   const key = visible && rect
-    ? [Math.round(rect.left), Math.round(rect.top), Math.round(rect.width), Math.round(rect.height), window.innerWidth].join("|")
+    ? [Math.round(rect.left), Math.round(rect.top), Math.round(rect.width), Math.round(rect.height), Math.round(bannerWidth), window.innerWidth].join("|")
     : "hidden";
   if (!force && key === lastPosition && visible === lastNativeVisible) return;
   lastPosition = key;
@@ -80,6 +82,14 @@ function syncPosition() {
   const rect = slot.getBoundingClientRect();
   const headerBottom = document.getElementById("cookTop")?.getBoundingClientRect().bottom || 0;
   const fullyVisible = isSlotFullyVisible(rect, window.innerWidth, window.innerHeight, headerBottom);
+  lastLayoutNote = [
+    "slot=" + Math.round(rect.width) + "x" + Math.round(rect.height),
+    "banner=" + Math.round(bannerWidth) + "x" + Math.round(bannerHeight),
+    "slotY=" + Math.round(rect.top) + ".." + Math.round(rect.bottom),
+    "headerBottom=" + Math.round(headerBottom),
+    "viewport=" + window.innerWidth + "x" + window.innerHeight,
+    "fullyVisible=" + fullyVisible
+  ].join(" ");
   sendPosition(fullyVisible, fullyVisible ? rect : null);
 }
 function schedulePosition() {
@@ -118,7 +128,10 @@ function refresh() {
     const innerWidth = parentWidth
       - parseFloat(style.paddingLeft || "0") - parseFloat(style.paddingRight || "0")
       - parseFloat(style.borderLeftWidth || "0") - parseFloat(style.borderRightWidth || "0");
-    void plugin.load({ width: Math.max(120, Math.floor(innerWidth)) }).catch(error => {
+    // Keep a small sizing margin to avoid dp/CSS rounding making a banner
+    // 1-2px wider than its slot. Android converts CSS pixels to dp explicitly.
+    const requestedWidth = Math.max(120, Math.floor(innerWidth - 10));
+    void plugin.load({ width: requestedWidth, viewportWidth: window.innerWidth }).catch(error => {
       console.warn("Не удалось инициализировать рекламный блок:", error);
       status = "failed";
       diagnosticError = String(error?.message || error);
@@ -141,6 +154,7 @@ export function initCookingAds() {
   void plugin.addListener("loaded", event => {
     diagnosticError = "";
     bannerHeight = Math.max(50, Number(event.height) || 50);
+    bannerWidth = Math.max(0, Number(event.width) || 0);
     status = "loaded";
     refresh();
   });
@@ -190,7 +204,7 @@ export async function getAdsDiagnostics() {
   const rect = slot?.getBoundingClientRect();
   return [
     "Дошикология — проверка рекламы РСЯ",
-    "Версия: 1.1.5",
+    "Версия: 1.1.6",
     "Рабочий рекламный блок: R-M-20184115-1",
     "Активный ID SDK: " + (nativeStatus?.adUnit || "нет"),
     "Android: " + (native ? "да" : "нет"),
@@ -202,7 +216,8 @@ export async function getAdsDiagnostics() {
     "Режим готовки открыт: " + (overlay?.classList.contains("open") ? "да" : "нет"),
     "Место рекламы: " + (slot ? (slot.hidden ? "скрыто" : "показано") : "не найдено"),
     "Место на экране: " + (rect ? "Y=" + Math.round(rect.top) + ".." + Math.round(rect.bottom) : "—"),
-    "Высота баннера (dp): " + bannerHeight,
+    "Размер баннера (dp): " + bannerWidth + "x" + bannerHeight,
+    "Проверка геометрии: " + lastLayoutNote,
     "Прокрутка в процессе: " + (scrolling ? "да" : "нет"),
     "Native layer: " + (lastNativeVisible ? "привязан к месту" : "скрыт"),
     "Нативный статус: " + (nativeStatus ? JSON.stringify(nativeStatus, null, 2) : "нет ответа"),
