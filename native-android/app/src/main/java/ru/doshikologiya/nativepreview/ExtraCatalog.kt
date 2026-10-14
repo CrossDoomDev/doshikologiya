@@ -13,6 +13,9 @@ internal data class ExtraCatalog(
     val donateUrl: String = "",
     val supportEmail: String = "",
     val featuredRecipeId: String = "",
+    val remoteConfigUrl: String = "",
+    val remoteRecipesUrl: String = "",
+    val remoteRecipeIndexUrl: String = "",
     val categoryOrder: List<String> = listOf("Все"),
     val homeRecipeLimit: Int = 5,
     val news: List<NewsItem> = emptyList(),
@@ -45,6 +48,9 @@ internal data class ExtraCatalog(
                 donateUrl = config.optString("donateUrl"),
                 supportEmail = config.optString("supportEmail"),
                 featuredRecipeId = config.optString("featuredRecipeId"),
+                remoteConfigUrl = config.optString("remoteConfigUrl"),
+                remoteRecipesUrl = config.optString("remoteRecipesUrl"),
+                remoteRecipeIndexUrl = config.optString("remoteRecipeIndexUrl"),
                 homeRecipeLimit = config.optInt("homeRecipeLimit", 5).coerceIn(1,5),
                 categoryOrder = config.optJSONArray("categoryOrder")?.let { a ->
                     (0 until a.length()).map { a.optString(it) }

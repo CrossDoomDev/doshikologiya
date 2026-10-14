@@ -12,6 +12,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.json.JSONObject
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.withLink
 
 internal data class NativeLegalSection(
     val title: String,
@@ -24,7 +29,7 @@ internal data class NativeLegalDocument(
 )
 
 @Composable
-internal fun LegalPage(kind: String) {
+internal fun LegalPage(kind: String, onOther: () -> Unit, onReturn: () -> Unit) {
     val context = LocalContext.current
     val document = remember(kind) {
         runCatching {
@@ -46,22 +51,35 @@ internal fun LegalPage(kind: String) {
         verticalArrangement = Arrangement.spacedBy(17.dp)) {
         PageTitle("Институт дошикологии · Документы",
             document?.title ?: "Документ недоступен",
-            document?.edition ?: "")
+            if (kind == "privacy") "Приложение «Дошикология» и его веб-версия"
+            else "Правила использования приложения «Дошикология»")
+        Text(document?.edition ?: "", color = Muted, fontSize = 13.sp)
         document?.sections?.forEach { section ->
             RoundedPanel(modifier = Modifier.fillMaxWidth()) {
                 Text(section.title, color = Cream, fontWeight = FontWeight.Black,
                     fontSize = 18.sp, lineHeight = 22.sp)
                 Spacer(Modifier.height(10.dp))
                 section.paragraphs.forEach { paragraph ->
-                    Text(paragraph, color = Muted, fontSize = 14.sp, lineHeight = 22.sp,
+                    Text(buildAnnotatedString {
+                        var position = 0
+                        val links = Regex("romantatabaev@gmail\\.com|crossdoomdev\\.github\\.io/doshikologiya|Политике конфиденциальности")
+                        links.findAll(paragraph).forEach { match ->
+                            append(paragraph.substring(position, match.range.first))
+                            val annotation = if (match.value == "Политике конфиденциальности")
+                                LinkAnnotation.Clickable("privacy", TextLinkStyles(SpanStyle(color = Amber))) { onOther() }
+                            else LinkAnnotation.Url(if ('@' in match.value) "mailto:" + match.value else "https://" + match.value + "/",
+                                TextLinkStyles(SpanStyle(color = Amber)))
+                            withLink(annotation) { append(match.value) }
+                            position = match.range.last + 1
+                        }
+                        append(paragraph.substring(position))
+                    }, color = Muted, fontSize = 14.sp, lineHeight = 22.sp,
                         modifier = Modifier.padding(bottom = 11.dp))
                 }
             }
         }
-        Text("Тексты соответствуют текущей веб-редакции документов. " +
-            "Перед выпуском Kotlin-приложения в RuStore необходимо обновить " +
-            "сведения об интеграции рекламного SDK.",
-            color = Muted, fontSize = 11.sp, lineHeight = 17.sp)
+        OutlineButton(if (kind == "privacy") "Пользовательское соглашение" else "Политика конфиденциальности", onOther)
+        OutlineButton("Вернуться в приложение", onReturn)
         Spacer(Modifier.height(14.dp))
     }
 }
