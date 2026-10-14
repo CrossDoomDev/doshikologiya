@@ -262,7 +262,8 @@ internal fun NativeHeader(label: String, back: () -> Unit) {
 }
 
 @Composable
-internal fun CookingHeader(title: String, back: () -> Unit) {
+internal fun CookingHeader(title: String, category: String,
+    steps: Int, back: () -> Unit) {
     Row(
         Modifier.fillMaxWidth().background(Color(0xFF18110C))
             .border(1.dp, Hairline).padding(horizontal = 14.dp, vertical = 12.dp),
@@ -272,6 +273,10 @@ internal fun CookingHeader(title: String, back: () -> Unit) {
             LabBadge("Режим готовки")
             Text(title, color = Cream, fontSize = 19.sp, fontWeight = FontWeight.Black,
                 maxLines = 2, overflow = TextOverflow.Ellipsis, lineHeight = 21.sp)
+            Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                TinyTag("🍜 " + category)
+                TinyTag("Шагов: " + steps)
+            }
         }
         OutlineButton("✕ Выйти", back)
     }

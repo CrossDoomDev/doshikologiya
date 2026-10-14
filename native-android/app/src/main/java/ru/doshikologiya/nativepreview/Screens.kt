@@ -414,11 +414,20 @@ internal fun DetailPage(recipe: Recipe, selected: Boolean, onFavorite: () -> Uni
                 Text(recipe.story, color = Cream, fontSize = 14.sp, lineHeight = 21.sp)
             }
             RoundedPanel {
-                Text("♥ Поддержать Институт дошикологии",
-                    color = AmberLight, fontWeight = FontWeight.Black, fontSize = 17.sp)
-                Text("Помоги лаборатории выпускать новые протоколы.", color = Muted)
-                Spacer(Modifier.height(10.dp))
-                GradientButton("Поддержать проект", onSupport, Modifier.fillMaxWidth())
+                Row(Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(11.dp)) {
+                    AssetPicture("sticker-heart.webp", Modifier.size(64.dp),
+                        ContentScale.Fit, fallback = false)
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text("Поддержать Институт дошикологии",
+                            color = AmberLight, fontWeight = FontWeight.Black, fontSize = 15.sp)
+                        Text("Если эксперимент удался — можно помочь лаборатории выпускать новые протоколы.",
+                            color = Muted, fontSize = 12.sp, lineHeight = 18.sp)
+                    }
+                }
+                Spacer(Modifier.height(12.dp))
+                PrimaryButton("Поддержать проект", onSupport, Modifier.fillMaxWidth())
             }
         }
     }

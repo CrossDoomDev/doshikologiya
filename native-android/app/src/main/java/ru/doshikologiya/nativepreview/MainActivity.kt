@@ -95,7 +95,7 @@ private fun DoshikNativeApp(adsReady: Boolean) {
     var confirmExit by remember { mutableStateOf(false) }
     var showSplash by remember { mutableStateOf(true) }
     LaunchedEffect(Unit) {
-        delay(1150)
+        delay(820)
         showSplash = false
     }
     fun toggleFavorite(id: String) {
@@ -134,7 +134,12 @@ private fun DoshikNativeApp(adsReady: Boolean) {
     ) {
         Column(Modifier.fillMaxSize()) {
             if (screen is Screen.Cooking) {
-                CookingHeader((screen as Screen.Cooking).recipe.title, ::goBack)
+                CookingHeader(
+                    (screen as Screen.Cooking).recipe.title,
+                    (screen as Screen.Cooking).recipe.category,
+                    (screen as Screen.Cooking).recipe.steps.size,
+                    ::goBack
+                )
             } else if (screen == Screen.LegalPrivacy || screen == Screen.LegalTerms) {
                 NativeHeader("Документы института", ::goBack)
             }
