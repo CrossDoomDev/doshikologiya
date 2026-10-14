@@ -14,6 +14,7 @@ internal data class ExtraCatalog(
     val supportEmail: String = "",
     val featuredRecipeId: String = "",
     val categoryOrder: List<String> = listOf("Все"),
+    val homeRecipeLimit: Int = 5,
     val news: List<NewsItem> = emptyList(),
     val patrons: List<PatronItem> = emptyList()
 ) {
@@ -28,14 +29,14 @@ internal data class ExtraCatalog(
                 val a = JSONArray(json("news.json"))
                 (0 until a.length()).map { i -> a.getJSONObject(i) }.map {
                     NewsItem(it.optString("title"), it.optString("text"),
-                        it.optString("publishedAt").take(10))
+                        it.optString("publishedAt"))
                 }
             }.getOrDefault(emptyList())
             val patrons = runCatching {
                 val a = JSONArray(json("patrons.json"))
                 (0 until a.length()).map { i -> a.getJSONObject(i) }.map {
                     PatronItem(it.optString("name"), it.optString("text"),
-                        it.optString("date").take(10), it.optString("amount"))
+                        it.optString("date"), it.optString("amount"))
                 }
             }.getOrDefault(emptyList())
             return ExtraCatalog(
@@ -44,6 +45,7 @@ internal data class ExtraCatalog(
                 donateUrl = config.optString("donateUrl"),
                 supportEmail = config.optString("supportEmail"),
                 featuredRecipeId = config.optString("featuredRecipeId"),
+                homeRecipeLimit = config.optInt("homeRecipeLimit", 5).coerceIn(1,5),
                 categoryOrder = config.optJSONArray("categoryOrder")?.let { a ->
                     (0 until a.length()).map { a.optString(it) }
                 } ?: listOf("Все"),

@@ -63,10 +63,12 @@ internal fun HomePage(recipes: List<Recipe>, content: ExtraCatalog,
             else recipes[(days % recipes.size).toInt()]
         }
     }
-    val newest = remember(recipes) { recipes.sortedWith(
-        compareByDescending<Recipe> { it.publishedAt }
-            .thenByDescending { recipes.indexOf(it) }
-    ).take(5) }
+    val newest = remember(recipes, content.homeRecipeLimit) {
+        NativeChronology.latestRecipes(recipes, content.homeRecipeLimit)
+    }
+    val recentNews = remember(content.news) {
+        NativeChronology.latestNews(content.news, 3)
+    }
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(10.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -116,13 +118,15 @@ internal fun HomePage(recipes: List<Recipe>, content: ExtraCatalog,
             Overline("Лента института")
             Text("Новости лаборатории", fontSize = 21.sp, fontWeight = FontWeight.Black,
                 color = Cream)
-            if (content.news.isEmpty()) {
+            if (recentNews.isEmpty()) {
                 Text("Здесь скоро появятся новости института. Пока мы готовим первую сводку. 🍜",
                     color = Muted, fontSize = 13.sp)
             }
-            content.news.take(3).forEach {
+            recentNews.forEach {
                 Spacer(Modifier.height(9.dp))
                 HorizontalDivider(color = Hairline)
+                Text(NativeChronology.formatDate(it.date), color = Muted,
+                    fontSize = 11.sp)
                 Text(it.title, color = Cream, fontWeight = FontWeight.Bold, fontSize = 14.sp,
                     modifier = Modifier.padding(top = 8.dp))
                 Text(it.text, color = Muted, fontSize = 12.sp,
@@ -760,10 +764,7 @@ internal fun WallPage(content: ExtraCatalog, onSupport: () -> Unit) {
             Spacer(Modifier.height(12.dp))
             GradientButton("Поддержать и войти в историю", onSupport, Modifier.fillMaxWidth())
         }
-        content.patrons.sortedWith(compareByDescending<PatronItem> {
-            val pieces = it.date.split(".")
-            if (pieces.size == 3) pieces[2] + pieces[1] + pieces[0] else ""
-        }).forEachIndexed { index, patron ->
+        NativeChronology.newestPatrons(content.patrons).forEachIndexed { index, patron ->
             RoundedPanel {
                 Row(horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth()) {
@@ -773,7 +774,8 @@ internal fun WallPage(content: ExtraCatalog, onSupport: () -> Unit) {
                     Text(patron.amount, color = AmberLight, fontSize = 12.sp,
                         fontWeight = FontWeight.Black)
                 }
-                Text(patron.date, color = Muted, fontSize = 11.sp)
+                Text(NativeChronology.formatDate(patron.date),
+                    color = Muted, fontSize = 11.sp)
                 Spacer(Modifier.height(9.dp))
                 Text(patron.text, color = Muted, lineHeight = 20.sp, fontSize = 14.sp)
             }
