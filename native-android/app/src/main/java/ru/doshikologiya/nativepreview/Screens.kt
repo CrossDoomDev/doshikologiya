@@ -38,6 +38,7 @@ import com.yandex.mobile.ads.common.AdRequest
 import com.yandex.mobile.ads.common.AdRequestError
 import com.yandex.mobile.ads.common.ImpressionData
 import java.time.LocalDate
+import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneOffset
 import androidx.compose.animation.core.*
@@ -678,8 +679,17 @@ internal fun WallPage(content: ExtraCatalog, onSupport: () -> Unit) {
 }
 
 @Composable
-internal fun MorePage(content: ExtraCatalog, onSupport: () -> Unit) {
+internal fun MorePage(content: ExtraCatalog, recipes: List<Recipe>,
+    onCatalogUpdated: (List<Recipe>) -> Unit, onSupport: () -> Unit
+) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var pending by remember { mutableStateOf<RemoteRecipePreview?>(null) }
+    var updateBusy by remember { mutableStateOf(false) }
+    var updateStatus by remember { mutableStateOf(
+        "Рецепты доступны без интернета. Проверка новых протоколов — только по твоему запросу."
+    ) }
+    var updateProgress by remember { mutableFloatStateOf(0f) }
     var faqExpanded by remember { mutableStateOf(false) }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(13.dp)) {
@@ -689,11 +699,59 @@ internal fun MorePage(content: ExtraCatalog, onSupport: () -> Unit) {
             Overline("Архив института")
             Text("📚 Обновление рецептов", color = Cream, fontSize = 18.sp,
                 fontWeight = FontWeight.Black)
-            Text("Рецепты доступны без интернета. Проверка новых протоколов — только по твоему запросу. Перенос загрузки новых записей ещё выполняется.",
-                color = Muted, fontSize = 13.sp, lineHeight = 20.sp)
+            Text(updateStatus, color = Muted, fontSize = 13.sp, lineHeight = 20.sp)
             Spacer(Modifier.height(10.dp))
-            OutlineButton("Версия Kotlin 0.3.0 · тестовая",
-                {}, Modifier.fillMaxWidth(), enabled = false)
+            OutlineButton(if (updateBusy) "Проверяем архив…" else "↻ Проверить обновления",
+                onClick = {
+                    if (!updateBusy) {
+                        updateBusy = true
+                        pending = null
+                        updateStatus = "🔎 Проверяем новые и изменённые рецепты…"
+                        scope.launch {
+                            try {
+                                val result = RemoteRecipeUpdater.check(recipes)
+                                pending = result.takeIf { it.added + it.updated > 0 }
+                                updateStatus = if (pending == null)
+                                    "✓ Новых и изменённых рецептов нет. Всё уже на устройстве."
+                                else "Найдены изменения (новых: " + result.added +
+                                    ", обновлённых: " + result.updated + "). Получить обновление?"
+                            } catch (e: Exception) {
+                                updateStatus = "Не удалось проверить архив. Проверь интернет и попробуй снова."
+                            } finally { updateBusy = false }
+                        }
+                    }
+                }, modifier = Modifier.fillMaxWidth(), enabled = !updateBusy)
+            pending?.let { preview ->
+                Spacer(Modifier.height(9.dp))
+                GradientButton("↓ Получить обновление (" + (preview.added + preview.updated) + ")",
+                    onClick = {
+                        if (!updateBusy) {
+                            updateBusy = true
+                            updateStatus = "📥 Загружаем и сохраняем новые протоколы…"
+                            updateProgress = 0f
+                            scope.launch {
+                                try {
+                                    val saved = RemoteRecipeUpdater.install(context, preview) {
+                                        done, total ->
+                                        updateProgress = done.toFloat() / total.coerceAtLeast(1)
+                                    }
+                                    onCatalogUpdated(saved)
+                                    pending = null
+                                    updateStatus = "✓ Архив обновлён. Рецепты доступны без интернета."
+                                } catch (e: Exception) {
+                                    updateStatus = "Не удалось установить обновление. Проверь интернет и память устройства."
+                                } finally { updateBusy = false }
+                            }
+                        }
+                    }, modifier = Modifier.fillMaxWidth(), enabled = !updateBusy)
+            }
+            if (updateBusy && updateProgress > 0f) {
+                Spacer(Modifier.height(9.dp))
+                LinearProgressIndicator(progress = { updateProgress },
+                    modifier = Modifier.fillMaxWidth(), color = Amber)
+            }
+            Spacer(Modifier.height(10.dp))
+            Text("Kotlin 0.4.0 · тестовая версия", color = Muted, fontSize = 11.sp)
         }
         RoundedPanel {
             Overline("Связь с лабораторией")

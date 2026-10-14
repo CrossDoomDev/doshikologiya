@@ -69,12 +69,12 @@ internal sealed interface Screen {
 private fun DoshikNativeApp(adsReady: Boolean) {
     val context = LocalContext.current
     // Catalog loading never depends on SDK/network or UI initialization.
-    val recipes = remember(context) {
+    var recipes by remember(context) { mutableStateOf(
         runCatching { RecipeCatalog.load(context) }.getOrElse {
             Log.e("DoshikNative", "Offline catalog could not be loaded", it)
             emptyList()
         }
-    }
+    ) }
     val content = remember(context) { ExtraCatalog.load(context) }
     val prefs = remember(context) { context.getSharedPreferences("native_favorites", 0) }
     val favorites = remember {
@@ -157,7 +157,10 @@ private fun DoshikNativeApp(adsReady: Boolean) {
                     )
                     Screen.Oracle -> OraclePage(recipes) { openDetail(it, Screen.Oracle) }
                     Screen.Wall -> WallPage(content, onSupport = { openExternal(context, content.donateUrl) })
-                    Screen.More -> MorePage(content, onSupport = {
+                    Screen.More -> MorePage(
+                        content = content, recipes = recipes,
+                        onCatalogUpdated = { recipes = it },
+                        onSupport = {
                         if (content.supportEmail.isNotBlank()) {
                             openExternal(context, "mailto:" + content.supportEmail)
                         }
