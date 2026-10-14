@@ -37,6 +37,9 @@ dependencies {
     implementation("androidx.compose.material:material-icons-core")
     debugImplementation("androidx.compose.ui:ui-tooling")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
+    // Native SDK, not a WebView or mock banner. Keep Compose and core versions in sync.
+    implementation("com.yandex.android:mobileads:8.5.0")
+    implementation("com.yandex.android:mobileads-compose:8.5.0")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
     testImplementation("org.robolectric:robolectric:4.14.1")
