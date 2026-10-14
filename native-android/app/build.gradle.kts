@@ -7,30 +7,20 @@ android {
     namespace = "ru.doshikologiya.nativepreview"
     compileSdk = 35
     defaultConfig {
-        // Separate from existing RuStore application: safe side-by-side install.
+        // Preview remains independent of the published app.
         applicationId = "ru.doshikologiya.nativepreview"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0-native-preview"
+        versionCode = 2
+        versionName = "0.2.0-native-preview"
     }
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-            // NOT the production RuStore signing configuration.
-        }
-    }
+    buildTypes { release { isMinifyEnabled = false } }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions { jvmTarget = "17" }
-    buildFeatures {
-        compose = true
-        buildConfig = true
-    }
-    // Shared DATA ONLY (no HTML, CSS, JS, Capacitor, or WebView).
-    // Android assets: recipes.json, config.json, recipes/*.webp, etc.
+    buildFeatures { compose = true; buildConfig = true }
     sourceSets.getByName("main").assets.srcDirs("../../data", "../../images")
 }
 dependencies {
@@ -40,6 +30,7 @@ dependencies {
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.material:material-icons-extended")
     debugImplementation("androidx.compose.ui:ui-tooling")
     implementation("com.yandex.android:mobileads:8.5.0")
 }
