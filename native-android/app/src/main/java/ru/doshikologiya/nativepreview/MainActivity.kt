@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.core.view.WindowCompat
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -23,6 +24,17 @@ class MainActivity : ComponentActivity() {
     private var adsReady by mutableStateOf(false)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Android 15+ draws apps beneath system bars by default. Let Compose
+        // manage the safe viewport in one place instead of adding hard-coded
+        // dp offsets to individual screens.
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        WindowCompat.getInsetsController(window, window.decorView).apply {
+            isAppearanceLightStatusBars = false
+            isAppearanceLightNavigationBars = false
+        }
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            window.isNavigationBarContrastEnforced = false
+        }
         YandexAds.setUserConsent(false)
         YandexAds.setLocationTracking(false)
         if (BuildConfig.DEBUG) {
@@ -99,7 +111,14 @@ private fun DoshikNativeApp(adsReady: Boolean) {
         else -> current
     }
     val homeScreen = screen == Screen.Home
-    Box(Modifier.fillMaxSize().background(Night)) {
+    // This is the SINGLE safe-area boundary for all native screens, tabs
+    // and the splash. Draw the background beneath system bars, but keep
+    // interactive content below status bar and above Android navigation.
+    Box(
+        Modifier.fillMaxSize().background(Night)
+            .safeDrawingPadding()
+            .imePadding()
+    ) {
         Column(Modifier.fillMaxSize()) {
             if (screen is Screen.Cooking) {
                 CookingHeader((screen as Screen.Cooking).recipe.title, ::goBack)
