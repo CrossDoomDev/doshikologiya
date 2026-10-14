@@ -48,7 +48,11 @@ jobs:
           for file in sources.rglob('*.kt'):
               text=file.read_text()
               assert 'android.webkit.WebView' not in text
-              assert 'com.yandex' not in text
+              # Yandex ads are only allowed in the isolated native cooking slot.
+              if file.name == 'CookingAdBanner.kt':
+                  assert 'com.yandex.mobile.ads' in text
+              else:
+                  assert 'com.yandex.mobile.ads' not in text
           PY
       - uses: actions/upload-artifact@v4
         if: always()
