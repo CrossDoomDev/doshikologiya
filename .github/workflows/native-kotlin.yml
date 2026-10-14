@@ -1,0 +1,53 @@
+name: Doshikologiya Kotlin Preview
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/native-kotlin]
+    paths:
+      - 'native-android/**'
+      - '.github/workflows/native-kotlin.yml'
+      - 'data/**'
+      - 'images/**'
+
+permissions:
+  contents: read
+
+jobs:
+  kotlin-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Verify independent source and recipe assets
+        run: |
+          test -f native-android/settings.gradle.kts
+          test -f native-android/app/src/main/java/ru/doshikologiya/nativepreview/MainActivity.kt
+          python3 - <<'PY'
+          import json
+          with open('data/recipes.json', encoding='utf-8') as stream:
+              recipes=json.load(stream)
+          assert len(recipes) == 50, f'Expected 50 recipes, got {len(recipes)}'
+          print('Bundled catalog:', len(recipes), 'recipes')
+          PY
+      - name: Compile Android Kotlin preview (no Capacitor)
+        working-directory: native-android
+        run: gradle :app:assembleDebug --no-daemon --stacktrace
+      - name: Verify APK with bundled recipes
+        run: |
+          APK=native-android/app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          unzip -l "$APK" | grep -q 'assets/recipes.json'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: doshikologiya-kotlin-preview-debug
+          path: native-android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7
