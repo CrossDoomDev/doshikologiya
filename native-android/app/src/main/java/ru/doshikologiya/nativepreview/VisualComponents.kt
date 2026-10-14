@@ -66,7 +66,9 @@ internal fun AssetPicture(
     fallback: Boolean = true
 ) {
     val context = LocalContext.current
-    val image by produceState<ImageBitmap?>(initialValue = null, key1 = path) {
+    val revision = RecipeCatalog.revision
+    val image by produceState<ImageBitmap?>(initialValue = null,
+        key1 = path, key2 = revision) {
         value = withContext(Dispatchers.IO) { RecipeCatalog.image(context, path) }
     }
     Box(modifier, contentAlignment = Alignment.Center) {

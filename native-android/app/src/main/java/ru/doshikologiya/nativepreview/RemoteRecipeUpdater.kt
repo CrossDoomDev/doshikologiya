@@ -49,22 +49,43 @@ internal object RemoteRecipeUpdater {
         // Never replace the cached catalog before downloaded photographs finish.
         // If connection fails, the previous 50+ recipes remain fully usable.
         val total = preview.changed.size.coerceAtLeast(1)
-        preview.changed.forEachIndexed { i, recipe ->
-            val path = recipe.imagePath
-            if (validAssetPath.matches(path)) {
-                val src = ORIGIN + "images/" + path
-                val bytes = fetchBytes(src, MAX_IMAGE_BYTES)
-                val target = File(context.filesDir, "recipe-images/" + path)
+        // Stage all images first, just like the browser's cacheRemoteImages
+        // does before it installs the catalog. A failed download never
+        // replaces the live photos or changes the installed JSON.
+        val staging = File(context.filesDir, "recipe-images-staging-" + System.nanoTime())
+        val pendingFiles = mutableListOf<Pair<File, File>>()
+        try {
+            preview.changed.forEachIndexed { i, recipe ->
+                val path = recipe.imagePath
+                if (validAssetPath.matches(path)) {
+                    val src = ORIGIN + "images/" + path
+                    val bytes = fetchBytes(src, MAX_IMAGE_BYTES)
+                    val candidate = File(staging, path)
+                    candidate.parentFile?.mkdirs()
+                    candidate.writeBytes(bytes)
+                    val bounds = android.graphics.BitmapFactory.Options().apply {
+                        inJustDecodeBounds = true
+                    }
+                    android.graphics.BitmapFactory.decodeFile(candidate.absolutePath, bounds)
+                    require(bounds.outWidth > 0 && bounds.outHeight > 0) {
+                        "Неверное изображение рецепта"
+                    }
+                    val target = File(context.filesDir, "recipe-images/" + path)
+                    pendingFiles += candidate to target
+                }
+                withContext(Dispatchers.Main) { onProgress(i + 1, total) }
+            }
+            pendingFiles.forEach { (candidate, target) ->
                 target.parentFile?.mkdirs()
-                val temp = File(target.parentFile, target.name + ".part")
-                temp.writeBytes(bytes)
-                if (!temp.renameTo(target)) {
-                    temp.delete()
-                    error("Не удалось сохранить изображение")
+                if (!candidate.renameTo(target)) {
+                    // Atomic replacement is supported on Android when both
+                    // files are on the same app-data volume; do not silently
+                    // declare an update successful otherwise.
+                    error("Не удалось переместить скачанное изображение")
                 }
             }
-            // The callback is invoked on the main thread to update Compose.
-            withContext(Dispatchers.Main) { onProgress(i + 1, total) }
+        } finally {
+            staging.deleteRecursively()
         }
         RecipeCatalog.install(context, preview.json)
         RecipeCatalog.load(context)

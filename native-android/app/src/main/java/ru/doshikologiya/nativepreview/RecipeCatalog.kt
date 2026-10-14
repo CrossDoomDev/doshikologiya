@@ -7,6 +7,9 @@ import androidx.compose.ui.graphics.asImageBitmap
 import org.json.JSONArray
 import android.util.AtomicFile
 import java.io.File
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
 
 data class Recipe(
     val id: String,
@@ -26,6 +29,12 @@ data class Recipe(
 )
 
 object RecipeCatalog {
+    // Increment only after a complete catalog install. Compose uses this
+    // revision as its image decoding key, so updated image bytes become visible
+    // immediately even when the relative filename did not change.
+    var revision by mutableIntStateOf(0)
+        private set
+
     fun load(context: Context): List<Recipe> {
         val bundled = parse(context.assets.open("recipes.json")
             .bufferedReader().use { it.readText() })
@@ -77,6 +86,7 @@ object RecipeCatalog {
         try {
             stream.write(json.toByteArray(Charsets.UTF_8))
             atomic.finishWrite(stream)
+            revision++
         } catch (e: Exception) {
             atomic.failWrite(stream)
             throw e
@@ -92,16 +102,22 @@ object RecipeCatalog {
         return try {
             val cached = File(context.filesDir, "recipe-images/" + path)
             val safe = path.matches(Regex("^recipes/[a-z0-9-]+\\.webp$"))
-            fun openImage() = if (safe && cached.isFile) cached.inputStream()
-                else context.assets.open(path)
-            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-            openImage().use { BitmapFactory.decodeStream(it, null, bounds) }
-            var sample = 1
-            while (bounds.outWidth / sample > 1100 || bounds.outHeight / sample > 1100)
-                sample *= 2
-            val options = BitmapFactory.Options().apply { inSampleSize = sample }
-            openImage().use { BitmapFactory.decodeStream(it, null, options) }
-                ?.asImageBitmap()
+            fun decode(openStream: () -> java.io.InputStream): ImageBitmap? {
+                val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                openStream().use { BitmapFactory.decodeStream(it, null, bounds) }
+                if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
+                var sample = 1
+                while (bounds.outWidth / sample > 1100 || bounds.outHeight / sample > 1100)
+                    sample *= 2
+                val options = BitmapFactory.Options().apply { inSampleSize = sample }
+                return openStream().use { BitmapFactory.decodeStream(it, null, options) }
+                    ?.asImageBitmap()
+            }
+            val bundled: () -> java.io.InputStream = { context.assets.open(path) }
+            if (safe && cached.isFile) {
+                runCatching { decode { cached.inputStream() } }.getOrNull()
+                    ?: decode(bundled)
+            } else decode(bundled)
         } catch (_: Exception) {
             null
         }
