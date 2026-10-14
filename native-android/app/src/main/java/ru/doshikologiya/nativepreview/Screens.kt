@@ -42,7 +42,7 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneOffset
 import androidx.compose.animation.core.*
-import androidx.compose.ui.draw.graphicsLayer
+import androidx.compose.ui.graphics.graphicsLayer
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import android.media.AudioManager
@@ -192,9 +192,10 @@ internal fun LibraryPage(
             (category == "Все" || category in recipe.categories) &&
             (!onlyFavorites || recipe.id in favorites) &&
             (query.isBlank() ||
-                listOf(recipe.title,recipe.description,recipe.story) +
-                    recipe.categories + recipe.ingredients
-                    .any { it.contains(query, ignoreCase = true) })
+                (listOf(recipe.title, recipe.description, recipe.story) +
+                    recipe.categories + recipe.ingredients).any {
+                    it.contains(query, ignoreCase = true)
+                })
         }
     }
     Column(Modifier.fillMaxSize()) {
