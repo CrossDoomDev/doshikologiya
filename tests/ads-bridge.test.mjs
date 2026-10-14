@@ -90,3 +90,25 @@ test("Banner width request leaves room for rounding, using true CSS-to-dp dimens
   assert.match(native, /result\.put\("hideReason", hideReason\)/);
   assert.match(native, /result\.put\("width", size\.getWidth\(\)\)/);
 });
+
+import { visibleAdIntersection } from "../js/features/ads.js";
+
+test("ad scroll clipping exposes partial top and bottom, not only fully visible ads", () => {
+  const base = { left: 20, right: 320, width: 300, height: 100, top: 180, bottom: 280 };
+  assert.deepEqual(visibleAdIntersection(base, 360, 640, 200),
+    { left: 20, right: 320, top: 200, bottom: 280, width: 300, height: 80 });
+  const bottom = { ...base, top: 590, bottom: 690 };
+  assert.deepEqual(visibleAdIntersection(bottom, 360, 640, 200),
+    { left: 20, right: 320, top: 590, bottom: 640, width: 300, height: 50 });
+  assert.equal(visibleAdIntersection({ ...base, top: 650, bottom: 750 }, 360, 640, 200), null);
+  assert.equal(visibleAdIntersection({ ...base, top: 100, bottom: 199 }, 360, 640, 200), null);
+});
+
+test("Android banner host clips the creative instead of hiding it on partial scroll", () => {
+  const native = readFileSync(new URL("../native/android/DoshikAdsPlugin.java", import.meta.url), "utf8");
+  const js = readFileSync(new URL("../js/features/ads.js", import.meta.url), "utf8");
+  assert.match(native, /bannerHost\.setClipChildren\(true\)/);
+  assert.match(native, /inner\.topMargin = adY - clipTop/);
+  assert.match(native, /lastVisibleHeightPx = Math\.max\(0, clipBottom - clipTop\)/);
+  assert.doesNotMatch(js, /SCROLL_SETTLE_MS|hideWhileMoving|sendPosition\(false\).*scroll/);
+});

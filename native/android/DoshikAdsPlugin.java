@@ -28,6 +28,10 @@ public class DoshikAdsPlugin extends Plugin {
     private static final String LIVE_UNIT = "R-M-20184115-1";
     private static final String DEMO_UNIT = "demo-banner-yandex";
     private BannerAdView banner;
+    private FrameLayout bannerHost;
+    private int lastVisibleHeightPx = 0;
+    private int lastClipTopPx = 0;
+    private int lastViewportBottomPx = 0;
     private boolean loaded = false;
     private boolean wantsVisible = false;
     private int lastLeft = 0, lastTop = 0;
@@ -64,7 +68,7 @@ public class DoshikAdsPlugin extends Plugin {
             result.put("loaded", loaded);
             result.put("wantedVisible", wantsVisible);
             result.put("viewExists", banner != null);
-            result.put("viewVisible", banner != null && banner.getVisibility() == View.VISIBLE);
+            result.put("viewVisible", bannerHost != null && bannerHost.getVisibility() == View.VISIBLE);
             result.put("widthDp", lastAdWidthDp);
             result.put("heightDp", lastAdHeightDp);
             result.put("error", nativeError);
@@ -79,6 +83,9 @@ public class DoshikAdsPlugin extends Plugin {
             result.put("bannerTopPx", lastTop);
             result.put("requestedWidthDp", lastRequestWidthDp);
             result.put("hideReason", hideReason);
+            result.put("visibleHeightPx", lastVisibleHeightPx);
+            result.put("clipTopPx", lastClipTopPx);
+            result.put("viewportBottomPx", lastViewportBottomPx);
             call.resolve(result);
         });
     }
@@ -152,8 +159,14 @@ public class DoshikAdsPlugin extends Plugin {
         lastAdHeightDp = size.getHeight();
         banner = new BannerAdView(activity);
         banner.setAdSize(size);
-        banner.setVisibility(View.INVISIBLE);
-        root.addView(banner, new FrameLayout.LayoutParams(bannerWidth, bannerHeight));
+        // The host clips the Android ad just like an HTML scroller clips a
+        // DOM element, including when only part of the banner remains onscreen.
+        bannerHost = new FrameLayout(activity);
+        bannerHost.setClipChildren(true);
+        bannerHost.setClipToPadding(true);
+        bannerHost.setVisibility(View.INVISIBLE);
+        bannerHost.addView(banner, new FrameLayout.LayoutParams(bannerWidth, bannerHeight));
+        root.addView(bannerHost, new FrameLayout.LayoutParams(bannerWidth, bannerHeight));
         banner.setBannerAdEventListener(new BannerAdEventListener() {
             @Override
             public void onAdLoaded() {
@@ -174,7 +187,7 @@ public class DoshikAdsPlugin extends Plugin {
                 loaded = false;
                 nativeError = String.valueOf(error);
                 mark("failed");
-                if (banner != null) banner.setVisibility(View.GONE);
+                if (bannerHost != null) bannerHost.setVisibility(View.GONE);
                 JSObject result = new JSObject();
                 result.put("message", error.toString());
                 notifyListeners("failed", result);
@@ -218,10 +231,15 @@ public class DoshikAdsPlugin extends Plugin {
                     wantsVisible = false;
                 } else {
                     root.getLocationOnScreen(rootPos);
-                    lastLeft = webPos[0] - rootPos[0] + Math.round(call.getFloat("left", 0f) * scale);
-                    lastTop = webPos[1] - rootPos[1] + Math.round(call.getFloat("top", 0f) * scale);
+                    int offsetX = webPos[0] - rootPos[0];
+                    int offsetY = webPos[1] - rootPos[1];
+                    lastLeft = offsetX + Math.round(call.getFloat("left", 0f) * scale);
+                    lastTop = offsetY + Math.round(call.getFloat("top", 0f) * scale);
                     slotWidthPx = Math.round(call.getFloat("width", 0f) * scale);
                     slotHeightPx = Math.round(call.getFloat("height", 0f) * scale);
+                    lastClipTopPx = offsetY + Math.round(call.getFloat("clipTop", 0f) * scale);
+                    lastViewportBottomPx = offsetY + Math.round(call.getInt("viewportHeight", 1) * scale);
+                    lastViewportBottomPx = Math.min(lastViewportBottomPx, offsetY + web.getHeight());
                 }
             }
             reposition();
@@ -229,9 +247,8 @@ public class DoshikAdsPlugin extends Plugin {
         });
     }
 
-
     private void reposition() {
-        if (banner == null) {
+        if (banner == null || bannerHost == null) {
             hideReason = "banner view missing";
             return;
         }
@@ -240,45 +257,50 @@ public class DoshikAdsPlugin extends Plugin {
             lastRootWidthPx = root.getWidth();
             lastRootHeightPx = root.getHeight();
         }
+        final int adX = lastLeft + Math.max(0, (slotWidthPx - bannerWidth) / 2);
+        final int adY = lastTop;
+        final int clipTop = Math.max(0, Math.max(lastClipTopPx, adY));
+        final int clipBottom = Math.min(Math.min(lastRootHeightPx, lastViewportBottomPx), adY + bannerHeight);
+        lastVisibleHeightPx = Math.max(0, clipBottom - clipTop);
         boolean fitsSlot = slotWidthPx >= bannerWidth - 4 && slotHeightPx >= bannerHeight - 4;
-        boolean fitsScreen = root != null
-            && lastLeft >= 0 && lastTop >= 0
-            && lastLeft + bannerWidth <= root.getWidth()
-            && lastTop + bannerHeight <= root.getHeight();
-        // Keep the ad confined to its HTML placeholder; report exactly why
-        // it is hidden so layout regressions can be identified on device.
+        boolean fitsHorizontally = root != null && adX >= 0 && adX + bannerWidth <= root.getWidth();
+        // Partial vertical visibility is intentional, just as it would be for
+        // an HTML element clipped by a scroll container.
         if (!loaded) hideReason = "ad not loaded";
-        else if (!wantsVisible) hideReason = "HTML slot not visible";
-        else if (!fitsSlot) {
-            hideReason = "banner larger than slot: banner=" + bannerWidth + "x"
-                + bannerHeight + ", slot=" + slotWidthPx + "x" + slotHeightPx;
-        } else if (!fitsScreen) {
-            hideReason = "banner outside Android viewport: x=" + lastLeft + " y="
-                + lastTop + " banner=" + bannerWidth + "x" + bannerHeight
-                + " root=" + lastRootWidthPx + "x" + lastRootHeightPx;
-        } else {
-            hideReason = "";
-        }
+        else if (!wantsVisible) hideReason = "HTML slot outside visible area";
+        else if (!fitsSlot) hideReason = "banner larger than slot: banner=" + bannerWidth + "x" + bannerHeight + ", slot=" + slotWidthPx + "x" + slotHeightPx;
+        else if (!fitsHorizontally) hideReason = "banner outside horizontal viewport";
+        else if (lastVisibleHeightPx <= 0) hideReason = "ad fully clipped by screen/header";
+        else hideReason = "";
         if (!hideReason.isEmpty()) {
-            banner.setVisibility(View.INVISIBLE);
+            bannerHost.setVisibility(View.INVISIBLE);
             return;
         }
-        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) banner.getLayoutParams();
-        params.width = bannerWidth;
-        params.height = bannerHeight;
-        // Center the creative horizontally inside the allocated HTML area.
-        params.leftMargin = lastLeft + Math.max(0, (slotWidthPx - bannerWidth) / 2);
-        params.topMargin = lastTop;
-        banner.setLayoutParams(params);
-        banner.setVisibility(View.VISIBLE);
+        FrameLayout.LayoutParams outer = (FrameLayout.LayoutParams) bannerHost.getLayoutParams();
+        outer.width = bannerWidth;
+        outer.height = lastVisibleHeightPx;
+        outer.leftMargin = adX;
+        outer.topMargin = clipTop;
+        bannerHost.setLayoutParams(outer);
+        FrameLayout.LayoutParams inner = (FrameLayout.LayoutParams) banner.getLayoutParams();
+        inner.width = bannerWidth;
+        inner.height = bannerHeight;
+        inner.leftMargin = 0;
+        inner.topMargin = adY - clipTop;
+        banner.setLayoutParams(inner);
+        bannerHost.setVisibility(View.VISIBLE);
     }
 
     private void dispose() {
-        if (banner == null) return;
-        banner.destroy();
-        ViewGroup parent = (ViewGroup) banner.getParent();
-        if (parent != null) parent.removeView(banner);
-        banner = null;
+        if (banner != null) {
+            banner.destroy();
+            banner = null;
+        }
+        if (bannerHost != null) {
+            ViewGroup parent = (ViewGroup) bannerHost.getParent();
+            if (parent != null) parent.removeView(bannerHost);
+            bannerHost = null;
+        }
         loaded = false;
     }
 

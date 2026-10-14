@@ -10,9 +10,8 @@ let lastPosition = "";
 let lastNativeVisible = false;
 let positionSerial = 0;
 let scrolling = false;
-let scrollSettledTimer = null;
-let lastOverlayScrollTop = 0;
-const SCROLL_SETTLE_MS = 300;
+let frameTrackingUntil = 0;
+let lastLayoutNote = "not measured";
 let diagnosticError = "";
 let bridgeDiagnostics = "Не проверялся";
 // Capacitor injects nativePromise/addListener into Android WebView even when
@@ -45,28 +44,37 @@ function active() {
     && !document.getElementById("cookSuccess")?.classList.contains("open")
     && document.visibilityState !== "hidden";
 }
-// AdView cannot be inserted into HTML itself. While a user scrolls we hide the
-// Android layer, and only restore it once the HTML slot has stopped moving.
-// This prevents a delayed native position update from floating over content.
+// Capacitor displays a separate Android BannerAdView over the HTML WebView.
+// The HTML slot controls its coordinates. Partial visibility is handled with
+// native viewport clipping, never by toggling the whole banner during scroll.
 export function isSlotFullyVisible(rect, viewportWidth, viewportHeight, headerBottom = 0) {
   return !!rect && rect.width > 0 && rect.height > 0
     && rect.left >= 0 && rect.right <= viewportWidth
     && rect.top >= headerBottom + 8 && rect.bottom <= viewportHeight - 6;
 }
-function sendPosition(visible, rect = null, force = false) {
+export function visibleAdIntersection(rect, viewportWidth, viewportHeight, headerBottom = 0) {
+  if (!rect || rect.width <= 0 || rect.height <= 0) return null;
+  const left = Math.max(0, rect.left);
+  const right = Math.min(viewportWidth, rect.right);
+  const top = Math.max(0, headerBottom, rect.top);
+  const bottom = Math.min(viewportHeight, rect.bottom);
+  if (right <= left || bottom <= top) return null;
+  return { left, right, top, bottom, width: right - left, height: bottom - top };
+}
+function sendPosition(visible, rect = null, clipTop = 0, force = false) {
   const plugin = nativePlugin();
   if (!plugin) return;
   const key = visible && rect
-    ? [Math.round(rect.left), Math.round(rect.top), Math.round(rect.width), Math.round(rect.height), Math.round(bannerWidth), window.innerWidth].join("|")
+    ? [Math.round(rect.left), Math.round(rect.top), Math.round(rect.width),
+       Math.round(rect.height), Math.round(clipTop), window.innerWidth, window.innerHeight].join("|")
     : "hidden";
   if (!force && key === lastPosition && visible === lastNativeVisible) return;
   lastPosition = key;
   lastNativeVisible = visible;
-  // Sequence is checked in Android, so a delayed "show" cannot override a hide.
   const params = visible && rect
-    ? { visible: true, left: rect.left, top: rect.top,
-        width: rect.width, height: rect.height,
-        viewportWidth: window.innerWidth, sequence: ++positionSerial }
+    ? { visible: true, left: rect.left, top: rect.top, width: rect.width,
+        height: rect.height, clipTop, viewportWidth: window.innerWidth,
+        viewportHeight: window.innerHeight, sequence: ++positionSerial }
     : { visible: false, sequence: ++positionSerial };
   void plugin.position(params).catch(error => {
     diagnosticError = "Ошибка позиционирования: " + String(error?.message || error);
@@ -75,22 +83,22 @@ function sendPosition(visible, rect = null, force = false) {
 function syncPosition() {
   const slot = document.getElementById(SLOT_ID);
   if (!slot || !nativePlugin()) return;
-  if (status !== "loaded" || !active() || scrolling) {
+  if (status !== "loaded" || !active()) {
     sendPosition(false);
     return;
   }
   const rect = slot.getBoundingClientRect();
   const headerBottom = document.getElementById("cookTop")?.getBoundingClientRect().bottom || 0;
-  const fullyVisible = isSlotFullyVisible(rect, window.innerWidth, window.innerHeight, headerBottom);
+  const visible = visibleAdIntersection(rect, window.innerWidth, window.innerHeight, headerBottom);
   lastLayoutNote = [
     "slot=" + Math.round(rect.width) + "x" + Math.round(rect.height),
     "banner=" + Math.round(bannerWidth) + "x" + Math.round(bannerHeight),
     "slotY=" + Math.round(rect.top) + ".." + Math.round(rect.bottom),
     "headerBottom=" + Math.round(headerBottom),
     "viewport=" + window.innerWidth + "x" + window.innerHeight,
-    "fullyVisible=" + fullyVisible
+    "visibleHeight=" + Math.round(visible?.height || 0)
   ].join(" ");
-  sendPosition(fullyVisible, fullyVisible ? rect : null);
+  sendPosition(Boolean(visible), visible ? rect : null, headerBottom);
 }
 function schedulePosition() {
   if (syncQueued) return;
@@ -100,20 +108,25 @@ function schedulePosition() {
     syncPosition();
   });
 }
-// React only to actual scroll displacement, never to touchstart or button taps.
 export function didCookingScroll(before, after) {
   return Number.isFinite(before) && Number.isFinite(after) && Math.abs(after - before) >= 1;
 }
-function hideWhileMoving() {
+// During kinetic scrolling, run visual updates on animation frames as well as
+// scroll events, allowing the Android view to track intermediate coordinates.
+function followScrollFrames() {
+  frameTrackingUntil = performance.now() + 180;
+  if (scrolling) return;
   scrolling = true;
-  // Hide *before* the DOM moves, not by following it frame-by-frame.
-  sendPosition(false);
-  if (scrollSettledTimer !== null) clearTimeout(scrollSettledTimer);
-  scrollSettledTimer = setTimeout(() => {
-    scrollSettledTimer = null;
-    scrolling = false;
+  const tick = () => {
     schedulePosition();
-  }, SCROLL_SETTLE_MS);
+    if (performance.now() < frameTrackingUntil && active()) {
+      requestAnimationFrame(tick);
+    } else {
+      scrolling = false;
+      schedulePosition();
+    }
+  };
+  requestAnimationFrame(tick);
 }
 function refresh() {
   const slot = document.getElementById(SLOT_ID);
@@ -175,15 +188,19 @@ export function initCookingAds() {
   overlay.addEventListener("scroll", () => {
     const nextScrollTop = overlay.scrollTop;
     if (didCookingScroll(lastOverlayScrollTop, nextScrollTop)) {
-      hideWhileMoving();
+      schedulePosition();
+      followScrollFrames();
     }
     lastOverlayScrollTop = nextScrollTop;
   }, { passive: true });
-  window.addEventListener("resize", hideWhileMoving, { passive: true });
+  window.addEventListener("resize", schedulePosition, { passive: true });
+  window.visualViewport?.addEventListener("resize", schedulePosition, { passive: true });
+  new ResizeObserver(schedulePosition).observe(slot);
+  new ResizeObserver(schedulePosition).observe(document.getElementById("cookTop"));
   document.addEventListener("visibilitychange", refresh);
   window.addEventListener("pagehide", () => {
     slot.hidden = true;
-    sendPosition(false, null, true);
+    sendPosition(false, null, 0, true);
   });
   refresh();
 }
@@ -204,7 +221,7 @@ export async function getAdsDiagnostics() {
   const rect = slot?.getBoundingClientRect();
   return [
     "Дошикология — проверка рекламы РСЯ",
-    "Версия: 1.1.6",
+    "Версия: 1.1.7",
     "Рабочий рекламный блок: R-M-20184115-1",
     "Активный ID SDK: " + (nativeStatus?.adUnit || "нет"),
     "Android: " + (native ? "да" : "нет"),
@@ -218,7 +235,7 @@ export async function getAdsDiagnostics() {
     "Место на экране: " + (rect ? "Y=" + Math.round(rect.top) + ".." + Math.round(rect.bottom) : "—"),
     "Размер баннера (dp): " + bannerWidth + "x" + bannerHeight,
     "Проверка геометрии: " + lastLayoutNote,
-    "Прокрутка в процессе: " + (scrolling ? "да" : "нет"),
+    "Отслеживание прокрутки: " + (scrolling ? "да" : "нет"),
     "Native layer: " + (lastNativeVisible ? "привязан к месту" : "скрыт"),
     "Нативный статус: " + (nativeStatus ? JSON.stringify(nativeStatus, null, 2) : "нет ответа"),
     "Ошибка вызова статуса: " + (nativeError || "нет")
