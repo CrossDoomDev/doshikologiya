@@ -42,10 +42,19 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneOffset
 import androidx.compose.animation.core.*
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import kotlin.math.roundToInt
 import androidx.compose.ui.graphics.graphicsLayer
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
- import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.platform.LocalInspectionMode
 
 internal enum class RecipeLayout { LARGE, LIST, GRID }
 
@@ -441,6 +450,17 @@ internal fun DetailPage(recipe: Recipe, selected: Boolean, onFavorite: () -> Uni
 internal fun CookingPage(recipe: Recipe, step: Int, adsReady: Boolean,
     previous: () -> Unit, next: () -> Unit, onExit: () -> Unit
 ) {
+    val scope = rememberCoroutineScope()
+    var stepLocked by remember { mutableStateOf(false) }
+    fun moveStep(action: () -> Unit) {
+        if (stepLocked) return
+        stepLocked = true
+        action()
+        scope.launch {
+            delay(420)
+            stepLocked = false
+        }
+    }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())
         .padding(horizontal = 16.dp, vertical = 13.dp),
         verticalArrangement = Arrangement.spacedBy(15.dp)) {
@@ -464,21 +484,48 @@ internal fun CookingPage(recipe: Recipe, step: Int, adsReady: Boolean,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.align(Alignment.BottomStart).padding(13.dp))
             }
-            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp))
-                .background(Color(0x12FFFFFF))
-                .border(1.dp, Hairline, RoundedCornerShape(20.dp))
-                .padding(horizontal = 14.dp, vertical = 23.dp),
-                horizontalAlignment = Alignment.CenterHorizontally) {
-                Overline("Шаг " + (step + 1) + " из " + recipe.steps.size)
-                Spacer(Modifier.height(14.dp))
-                Text(recipe.steps[step], color = Cream, fontWeight = FontWeight.Black,
-                    fontSize = 24.sp, lineHeight = 30.sp, textAlign = TextAlign.Center)
-                Spacer(Modifier.height(20.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-                    recipe.steps.indices.forEach { idx ->
-                        Box(Modifier.size(if (idx == step) 11.dp else 9.dp)
-                            .clip(CircleShape)
-                            .background(if (idx == step) Amber else Color(0x40FFFFFF)))
+            // JS cook-main animates out 170ms and in 240ms. Animate only
+            // this instruction card: the SDK's inline view stays in its
+            // regular scroll position instead of being recreated/moved.
+            AnimatedContent(
+                targetState = step,
+                label = "cookInstruction",
+                transitionSpec = {
+                    val forward = targetState > initialState
+                    val exitOffset: (Int) -> Int = { width ->
+                        ((if (forward) -0.18f else 0.18f) * width).roundToInt()
+                    }
+                    val enterOffset: (Int) -> Int = { width ->
+                        ((if (forward) 0.18f else -0.18f) * width).roundToInt()
+                    }
+                    val exit = slideOutHorizontally(tween(170), targetOffsetX = exitOffset) +
+                        fadeOut(tween(170)) + scaleOut(tween(170), targetScale = .985f)
+                    val enter = slideInHorizontally(
+                        animationSpec = tween(240, delayMillis = 170),
+                        initialOffsetX = enterOffset
+                    ) + fadeIn(tween(240, delayMillis = 170)) +
+                        scaleIn(tween(240, delayMillis = 170), initialScale = .985f)
+                    enter togetherWith exit
+                }
+            ) { shownStep ->
+                Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp))
+                    .background(Color(0x12FFFFFF))
+                    .border(1.dp, Hairline, RoundedCornerShape(20.dp))
+                    .padding(horizontal = 14.dp, vertical = 23.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally) {
+                    Overline("Шаг " + (shownStep + 1) + " из " + recipe.steps.size)
+                    Spacer(Modifier.height(14.dp))
+                    Text(recipe.steps[shownStep], color = Cream,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 24.sp, lineHeight = 30.sp,
+                        textAlign = TextAlign.Center)
+                    Spacer(Modifier.height(20.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+                        recipe.steps.indices.forEach { idx ->
+                            Box(Modifier.size(if (idx == shownStep) 11.dp else 9.dp)
+                                .clip(CircleShape)
+                                .background(if (idx == shownStep) Amber else Color(0x40FFFFFF)))
+                        }
                     }
                 }
             }
@@ -491,10 +538,10 @@ internal fun CookingPage(recipe: Recipe, step: Int, adsReady: Boolean,
                 }
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                OutlineButton("← Назад", previous, Modifier.weight(1f),
-                    enabled = step > 0)
-                PrimaryButton(if (step + 1 == recipe.steps.size) "Готово ✓" else "Далее →",
-                    next, Modifier.weight(1f))
+                OutlineButton("← Назад", { moveStep(previous) }, Modifier.weight(1f),
+                    enabled = step > 0 && !stepLocked)
+                PrimaryButton(if (step + 1 == recipe.steps.size) "Готово ✓" else "Дальше →",
+                    { moveStep(next) }, Modifier.weight(1f))
             }
         }
         Spacer(Modifier.height(25.dp))
@@ -641,7 +688,7 @@ internal fun OraclePage(recipes: List<Recipe>, open: (Recipe) -> Unit) {
             "Вселенная намекает: сейчас лучше довериться лапше, чем продолжать переговоры с холодильником.",
             "По расчётам Отдела вероятностей, этот выбор снижает риск ещё двадцать минут решать, что приготовить.",
             "Кармический баланс требует именно этого протокола. Мы тоже не поняли почему, но печать уже поставлена.",
-            "Сегодня твоя внутренняя энергия подозрительно хорошо резонирует с этим блюдом.",
+            "Сегодня твоя внутренняя энергия подозрительно хорошо резонирует с этим блюдом. Звучит научно — значит, работает.",
             "Судьба выбрала это первой. Оракул категорически отрицает использование виртуального кубика.",
             "Вероятность того, что ты будешь доволен этим решением, значительно выше вероятности придумать что-то лучше самостоятельно.",
             "Твой кулинарный маршрут на сегодня рассчитан. Спорить можно, но Оракул уже ушёл на обед.",
