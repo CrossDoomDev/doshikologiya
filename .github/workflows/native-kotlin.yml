@@ -4,11 +4,10 @@ on:
   workflow_dispatch:
   push:
     branches: [feature/native-kotlin]
-    paths:
-      - 'native-android/**'
-      - '.github/workflows/native-kotlin.yml'
-      - 'data/**'
-      - 'images/**'
+    paths: ['native-android/**', '.github/workflows/native-kotlin.yml', 'data/**', 'images/**', 'tests/**']
+  pull_request:
+    branches: [feature/native-kotlin]
+    paths: ['native-android/**', '.github/workflows/native-kotlin.yml', 'data/**', 'images/**', 'tests/**']
 
 permissions:
   contents: read
@@ -23,89 +22,43 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.11.1'
-      - name: Verify independent source and recipe assets
+      - name: Validate shared content and Capacitor behavior
         run: |
-          test -f native-android/settings.gradle.kts
-          test -f native-android/app/src/main/java/ru/doshikologiya/nativepreview/MainActivity.kt
-          python3 - <<'PY'
-          import json
-          with open('data/recipes.json', encoding='utf-8') as stream:
-              recipes=json.load(stream)
-          assert len(recipes) == 50, f'Expected 50 recipes, got {len(recipes)}'
-          print('Bundled catalog:', len(recipes), 'recipes')
-          PY
-      - name: Verify system bar safe area policy
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          source=Path('native-android/app/src/main/java/ru/doshikologiya/nativepreview/MainActivity.kt').read_text()
-          manifest=Path('native-android/app/src/main/AndroidManifest.xml').read_text()
-          assert 'WindowCompat.setDecorFitsSystemWindows(window, false)' in source
-          assert '.safeDrawingPadding()' in source
-          assert '.imePadding()' in source
-          assert 'windowSoftInputMode="adjustResize"' in manifest
-          assert 'WindowManager.LayoutParams.FLAG_FULLSCREEN' not in source
-          print('System status/navigation bars and IME are handled by Compose insets.')
-          PY
-      - name: Check Oracle sound and mascot parity
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          native=Path('native-android/app/src/main/java/ru/doshikologiya/nativepreview')
-          sound=(native/'MagicChime.kt').read_text()
-          screens=(native/'Screens.kt').read_text()
-          main=(native/'MainActivity.kt').read_text()
-          assert all(note in sound for note in ('523.25','659.25','783.99','1046.5','2.02','.115','.015'))
-          assert 'ToneGenerator(' not in screens
-          assert 'MagicChime.play()' in screens and 'MagicChime.play()' in main
-          assert 'Modifier.weight(1f)' in screens and 'sticker-wave.webp' in screens
-          assert 'sticker-chopsticks.webp' in screens
-          print('Chime synthesis, cooking success and sticker layout present.')
-          PY
-      - name: Verify five parity audit rounds
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-          root=Path('native-android/app/src/main/java/ru/doshikologiya/nativepreview')
-          scripts=Path('js')
-          screens=(root/'Screens.kt').read_text()
-          chrono=(root/'NativeChronology.kt').read_text()
-          catalog=(root/'RecipeCatalog.kt').read_text()
-          updater=(root/'RemoteRecipeUpdater.kt').read_text()
-          visuals=(root/'VisualComponents.kt').read_text()
-          magic=(root/'MagicChime.kt').read_text()
-          gradle=Path('native-android/app/build.gradle.kts').read_text()
-          oracle=(scripts/'features/oracle.js').read_text()
-          cooking=(scripts/'features/cooking.js').read_text()
-          assert 'NativeChronology.latestRecipes' in screens
-          assert 'NativeChronology.latestNews' in screens
-          assert 'NativeChronology.newestPatrons' in screens
-          assert 'formatDate(patron.date)' in screens
-          assert 'AnimatedContent(' in screens and 'tween(170)' in screens and 'tween(240, delayMillis = 170)' in screens
-          assert 'Дальше →' in screens and 'cook-main' in cooking
-          assert 'aspectRatio(4f / 3f)' in screens and 'height(500.dp)' in screens
-          assert 'Лаборатория ничего не нашла' in screens
-          assert 'recipe-images-staging-' in updater
-          assert 'revision++' in catalog and 'key2 = revision' in visuals
-          assert 'Работают ли рецепты без интернета?' in screens
-          assert 'BuildConfig.VERSION_NAME' in screens
-          assert 'Mage' not in magic or '523.25' in magic
-          assert 'runOracle()' in oracle
-          assert 'applicationId = "ru.doshikologiya.nativepreview"' in gradle
-          print('All five native parity regression checks passed.')
-          PY
-      - name: Compile Android Kotlin preview (no Capacitor)
+          node scripts/validate-data.mjs
+          node --test tests/*.test.mjs
+      - name: Test native behavior, render phone screens, lint and build
         working-directory: native-android
-        run: gradle :app:assembleDebug --no-daemon --stacktrace
-      - name: Verify APK with bundled recipes
+        run: gradle :app:testDebugUnitTest :app:lintDebug :app:assembleDebug --no-daemon --stacktrace
+      - name: Verify APK assets and native independence
         run: |
-          APK=native-android/app/build/outputs/apk/debug/app-debug.apk
-          test -s "$APK"
-          unzip -l "$APK" | grep -q 'assets/recipes.json'
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          apk=Path('native-android/app/build/outputs/apk/debug/app-debug.apk')
+          with ZipFile(apk) as z:
+              assert 'assets/recipes.json' in z.namelist()
+              assert 'assets/recipes-index.json' in z.namelist()
+          sources=Path('native-android/app/src/main/java')
+          for file in sources.rglob('*.kt'):
+              text=file.read_text()
+              assert 'android.webkit.WebView' not in text
+              assert 'com.yandex' not in text
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-parity-reports
+          path: |
+            native-android/app/build/reports/
+            native-android/app/build/parity-screenshots/
+          if-no-files-found: warn
+          retention-days: 7
       - uses: actions/upload-artifact@v4
         with:
           name: doshikologiya-kotlin-preview-debug

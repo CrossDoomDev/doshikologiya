@@ -8,6 +8,13 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.semantics.*
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items as gridItems
@@ -16,6 +23,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,18 +33,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
-import com.yandex.mobile.ads.banner.BannerAdEventListener
-import com.yandex.mobile.ads.banner.BannerAdSize
-import com.yandex.mobile.ads.banner.BannerAdView
-import com.yandex.mobile.ads.common.AdRequest
-import com.yandex.mobile.ads.common.AdRequestError
-import com.yandex.mobile.ads.common.ImpressionData
 import java.time.LocalDate
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -79,69 +81,63 @@ internal fun HomePage(recipes: List<Recipe>, content: ExtraCatalog,
         NativeChronology.latestNews(content.news, 3)
     }
     Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(10.dp),
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 10.dp, vertical = 13.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         if (featured != null) HeroCard(featured) { open(featured) }
-        else RoundedPanel { Text("Архив рецептов недоступен", color = Cream) }
+        else RoundedPanel {
+            Text("Архив рецептов временно недоступен", color = Cream)
+            Text("Лаборатория не смогла получить каталог. Попробуй обновить страницу чуть позже.", color = Muted)
+        }
         Row(
             Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp))
                 .background(Brush.horizontalGradient(listOf(Color(0xFF302113), Surface)))
-                .border(1.dp, Hairline, RoundedCornerShape(18.dp)).padding(12.dp),
+                .border(1.dp, Hairline, RoundedCornerShape(18.dp)).padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            AssetPicture("sticker-home-chef.webp", Modifier.size(63.dp),
+            AssetPicture("sticker-home-chef.webp", Modifier.size(58.dp),
                 ContentScale.Fit, fallback = false)
             Spacer(Modifier.width(9.dp))
             Column(Modifier.weight(1f)) {
                 Text(content.noteTitle, color = Cream, fontWeight = FontWeight.Black,
-                    fontSize = 14.sp)
-                Text(content.noteText, color = Muted, fontSize = 12.sp, lineHeight = 17.sp,
-                    maxLines = 4, overflow = TextOverflow.Ellipsis)
+                    fontSize = 16.sp)
+                Text(content.noteText, color = Muted, fontSize = 13.sp, lineHeight = 19.24.sp)
             }
         }
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom,
-            horizontalArrangement = Arrangement.SpaceBetween) {
-            Column {
-                Overline("Архив института")
-                Text("Последние пять рецептов", fontWeight = FontWeight.Black,
-                    color = Cream, fontSize = 21.sp)
-            }
-            Text("Все протоколы →", color = Amber, fontSize = 13.sp,
-                modifier = Modifier.clickable(onClick = all).padding(4.dp))
+        Column(Modifier.padding(top = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            PageTitle("Архив института", "Последние пять рецептов",
+                "Пять последних рецептов лаборатории. Листай ленту в сторону.", topSpace = false)
+            OutlineButton("Все протоколы →", all)
         }
-        Text("Пять последних рецептов лаборатории. Листай ленту в сторону.",
-            color = Muted, fontSize = 12.sp, lineHeight = 17.sp)
         Row(Modifier.horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             newest.forEach { recipe ->
-                Column(Modifier.width(175.dp).clip(RoundedCornerShape(18.dp))
+                Column(Modifier.width((LocalConfiguration.current.screenWidthDp * .6f).coerceAtLeast(162f).dp).clip(RoundedCornerShape(18.dp))
                     .background(Surface).border(1.dp, Hairline, RoundedCornerShape(18.dp))
                     .clickable { open(recipe) }) {
-                    AssetPicture(recipe.imagePath, Modifier.fillMaxWidth().height(125.dp))
+                    AssetPicture(recipe.imagePath, Modifier.fillMaxWidth().height(112.dp))
                     Text(recipe.title, color = Cream, fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp, maxLines = 2, lineHeight = 17.sp,
-                        modifier = Modifier.padding(12.dp))
+                        fontSize = 13.sp, maxLines = 2, lineHeight = 16.25.sp,
+                        modifier = Modifier.heightIn(min = 56.dp).padding(start = 11.dp, end = 11.dp, top = 10.dp, bottom = 12.dp))
                 }
             }
         }
-        RoundedPanel {
+        RoundedPanel(padding = 15) {
             Overline("Лента института")
-            Text("Новости лаборатории", fontSize = 21.sp, fontWeight = FontWeight.Black,
-                color = Cream)
-            if (recentNews.isEmpty()) {
-                Text("Здесь скоро появятся новости института. Пока мы готовим первую сводку. 🍜",
-                    color = Muted, fontSize = 13.sp)
-            }
+            Text("Новости лаборатории", fontSize = 21.sp, fontWeight = FontWeight.Black, color = Cream)
+            Text("Объявления и события", color = Muted, fontSize = 10.sp)
+            Spacer(Modifier.height(11.dp))
+            if (recentNews.isEmpty()) Text("Здесь скоро появятся новости института. Пока мы готовим первую сводку. 🍜",
+                color = Muted, fontSize = 12.sp, lineHeight = 18.6.sp)
             recentNews.forEach {
+                Column(Modifier.fillMaxWidth().background(Surface2, RoundedCornerShape(13.dp))
+                    .border(1.dp, Hairline, RoundedCornerShape(13.dp)).padding(horizontal = 14.dp, vertical = 12.dp)) {
+                    Text(NativeChronology.formatDate(it.date), color = Amber, fontSize = 11.sp)
+                    Text(it.title, color = Cream, fontWeight = FontWeight.Bold, fontSize = 15.sp,
+                        lineHeight = 19.5.sp, modifier = Modifier.padding(top = 4.dp, bottom = 5.dp))
+                    Text(it.text, color = Muted, fontSize = 13.sp, lineHeight = 19.5.sp)
+                }
                 Spacer(Modifier.height(9.dp))
-                HorizontalDivider(color = Hairline)
-                Text(NativeChronology.formatDate(it.date), color = Muted,
-                    fontSize = 11.sp)
-                Text(it.title, color = Cream, fontWeight = FontWeight.Bold, fontSize = 14.sp,
-                    modifier = Modifier.padding(top = 8.dp))
-                Text(it.text, color = Muted, fontSize = 12.sp,
-                    maxLines = 3, overflow = TextOverflow.Ellipsis)
             }
         }
         RoundedPanel {
@@ -168,42 +164,43 @@ internal fun HomePage(recipes: List<Recipe>, content: ExtraCatalog,
             Spacer(Modifier.height(17.dp))
             GradientButton("♥ Поддержать проект", donate, Modifier.fillMaxWidth())
         }
+        AppFooter()
     }
 }
 
 @Composable
 private fun HeroCard(recipe: Recipe, onClick: () -> Unit) {
-    Box(Modifier.fillMaxWidth().height(500.dp)
-        .clip(RoundedCornerShape(25.dp)).background(Surface)
-        .border(1.dp, Hairline, RoundedCornerShape(25.dp))) {
-        AssetPicture(recipe.imagePath, Modifier.fillMaxSize())
-        Box(Modifier.fillMaxSize().background(Brush.verticalGradient(
-            listOf(Color(0x20080604), Color(0x90080604), Color(0xF9080604)))))
-        Column(Modifier.align(Alignment.BottomStart).fillMaxWidth().padding(19.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Box(Modifier.fillMaxWidth().heightIn(min = 500.dp)
+        .clip(RoundedCornerShape(24.dp)).background(Surface)
+        .border(1.dp, Hairline, RoundedCornerShape(24.dp))) {
+        AssetPicture(recipe.imagePath, Modifier.matchParentSize())
+        Box(Modifier.matchParentSize().background(Brush.verticalGradient(
+            0f to Color(0x33080604), .46f to Color(0xB8080604), 1f to Color(0xF5080604))))
+        Column(Modifier.fillMaxWidth().heightIn(min = 500.dp).padding(22.dp),
+            verticalArrangement = Arrangement.Bottom) {
             LabBadge("Эксперимент дня")
-            Text(recipe.title, color = Cream, fontSize = 38.sp, lineHeight = 36.sp,
-                fontWeight = FontWeight.Black, maxLines = 4)
-            Text(recipe.description, color = Color(0xFFE9DCC9), fontSize = 14.sp,
-                lineHeight = 20.sp, maxLines = 4, overflow = TextOverflow.Ellipsis)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                TinyTag("⏱ " + recipe.time)
-                TinyTag("🔥 " + recipe.difficulty)
-                TinyTag("💸 " + recipe.cost)
-            }
-            Spacer(Modifier.height(7.dp))
-            // Unlike the old overlapping Box, allocate a real side-by-side
-            // slot so the mascot can never disappear underneath the button.
-            Row(
-                Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(7.dp)
-            ) {
-                GradientButton("📖 Открыть протокол", onClick, Modifier.weight(1f))
-                AssetPicture("sticker-wave.webp",
-                    Modifier.size(72.dp), ContentScale.Fit, fallback = false)
-            }
+            Spacer(Modifier.height(15.dp))
+            Text(recipe.title, color = Cream, fontSize = 38.sp, lineHeight = 35.72.sp,
+                letterSpacing = (-1.33).sp, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(16.dp))
+            Text(recipe.description, color = Color(0xFFE9DCC9), fontSize = 16.sp, lineHeight = 25.92.sp)
+            Spacer(Modifier.height(18.dp))
+            RecipeMeta(recipe, cost = true)
+            Spacer(Modifier.height(20.dp))
+            GradientButton("📖 Открыть протокол", onClick, Modifier.widthIn(max = 250.dp).fillMaxWidth())
         }
+        AssetPicture("sticker-wave.webp", Modifier.align(Alignment.BottomEnd)
+            .padding(end = 14.dp, bottom = 16.dp).size(72.dp), ContentScale.Fit, fallback = false)
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun RecipeMeta(recipe: Recipe, cost: Boolean = false) {
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        TinyTag("⏱ " + recipe.time)
+        TinyTag("🔥 " + recipe.difficulty)
+        if (cost) TinyTag("💸 " + recipe.cost)
     }
 }
 
@@ -221,115 +218,128 @@ internal fun LibraryPage(
         (listOf("Все") + categoryOrder.filter { it != "Все" } +
             recipes.flatMap { it.categories }).distinct()
     }
-    val filtered = remember(recipes, query, category, onlyFavorites, favorites) {
+    var searchQuery by remember { mutableStateOf(query.trim()) }
+    LaunchedEffect(query) { delay(160); searchQuery = query.trim() }
+    val filtered = remember(recipes, searchQuery, category, onlyFavorites, favorites) {
         recipes.filter { recipe ->
             (category == "Все" || category in recipe.categories) &&
             (!onlyFavorites || recipe.id in favorites) &&
-            (query.isBlank() ||
+            (searchQuery.isBlank() ||
                 (listOf(recipe.title, recipe.description, recipe.story) +
-                    recipe.categories + recipe.ingredients).any {
-                    it.contains(query, ignoreCase = true)
-                })
+                    recipe.categories + recipe.ingredients).joinToString(" ")
+                    .contains(searchQuery, ignoreCase = true))
         }
     }
-    Column(Modifier.fillMaxSize()) {
-        Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Box(Modifier.fillMaxWidth()) {
-                Column(Modifier.fillMaxWidth().padding(end = 82.dp)) {
-                    PageTitle("Архив института", "Лабораторные протоколы",
-                        "Ищи по названию или выбирай кафедру. Избранные рецепты сохраняются прямо на устройстве.")
+    val listState = rememberLazyGridState()
+    var previousFilter by rememberSaveable { mutableStateOf(listOf(query, category, onlyFavorites.toString())) }
+    LaunchedEffect(query, category, onlyFavorites) {
+        val filter = listOf(query, category, onlyFavorites.toString())
+        if (previousFilter != filter) listState.scrollToItem(0)
+        previousFilter = filter
+    }
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(if (layout == RecipeLayout.GRID) 2 else 1),
+        state = listState,
+        contentPadding = PaddingValues(start = 10.dp, end = 10.dp, top = 13.dp, bottom = 30.dp),
+        horizontalArrangement = Arrangement.spacedBy(11.dp),
+        verticalArrangement = Arrangement.spacedBy(if (layout == RecipeLayout.LIST) 9.dp else 16.dp)
+    ) {
+        item(key = "tools", span = { GridItemSpan(maxLineSpan) }) {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Box(Modifier.fillMaxWidth()) {
+                    Column(Modifier.fillMaxWidth().padding(end = 86.dp)) {
+                        PageTitle("Архив института", "Лабораторные протоколы",
+                            "Ищи по названию или выбирай кафедру. Избранные рецепты сохраняются прямо на устройстве.")
+                    }
+                    AssetPicture("sticker-chopsticks.webp", Modifier.align(Alignment.TopEnd)
+                        .size(82.dp), ContentScale.Fit, fallback = false)
                 }
-                AssetPicture("sticker-chopsticks.webp",
-                    Modifier.align(Alignment.TopEnd).size(79.dp),
-                    ContentScale.Fit, fallback = false)
-            }
-            OutlinedTextField(value = query, onValueChange = onQuery,
-                singleLine = true, modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(15.dp),
-                placeholder = { Text("🔎 Найти протокол…", color = Muted) })
-            OutlineButton(
-                if (onlyFavorites) "♥ Показываем избранное" else "♡ Только избранное",
-                onFavorites, modifier = Modifier.fillMaxWidth(),
-                selected = onlyFavorites
-            )
-            Row(Modifier.horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-                categories.forEach { name ->
-                    Box(Modifier.clip(CircleShape)
-                        .background(if (category == name) Amber else Surface)
-                        .border(1.dp, if (category == name) Amber else Hairline, CircleShape)
-                        .clickable { onCategory(name) }
-                        .padding(horizontal = 14.dp, vertical = 9.dp)) {
-                        Text(name, color = if (category == name) Night else Muted,
-                            fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Row(Modifier.fillMaxWidth().background(Surface, RoundedCornerShape(15.dp))
+                    .border(1.dp, Hairline, RoundedCornerShape(15.dp)).padding(horizontal = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Icon(androidx.compose.material.icons.Icons.Outlined.Search,
+                        contentDescription = null, tint = Muted, modifier = Modifier.size(18.dp))
+                    BasicTextField(value = query, onValueChange = onQuery, singleLine = true,
+                        textStyle = TextStyle(color = Cream, fontSize = 16.sp),
+                        cursorBrush = androidx.compose.ui.graphics.SolidColor(Amber),
+                        modifier = Modifier.weight(1f).padding(vertical = 13.dp)
+                            .semantics { contentDescription = "Найти протокол" },
+                        decorationBox = { input ->
+                            Box {
+                                if (query.isEmpty()) Text("Найти протокол…", color = Color(0xFF746858), fontSize = 16.sp)
+                                input()
+                            }
+                        })
+                }
+                OutlineButton(if (onlyFavorites) "♥ Показываем избранное" else "♡ Только избранное",
+                    onFavorites, modifier = Modifier.fillMaxWidth(), selected = onlyFavorites)
+                Row(Modifier.horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    categories.forEach { name ->
+                        Box(Modifier.clip(CircleShape)
+                            .background(if (category == name) Amber else Surface)
+                            .border(1.dp, Hairline, CircleShape)
+                            .clickable { onCategory(name) }
+                            .semantics { selected = category == name }
+                            .padding(horizontal = 12.dp, vertical = 9.dp)) {
+                            Text(name, color = if (category == name) Night else Muted,
+                                fontSize = 13.sp, fontWeight = FontWeight.ExtraBold)
+                        }
                     }
                 }
-            }
-            Row(verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("Вид рецептов", color = Muted, fontSize = 11.sp,
-                    modifier = Modifier.weight(1f))
-                listOf(
-                    RecipeLayout.LARGE to "▣ Крупно",
-                    RecipeLayout.LIST to "☷ Список",
-                    RecipeLayout.GRID to "▦ Сетка"
-                ).forEach { (mode, text) ->
-                    Box(Modifier.clip(RoundedCornerShape(9.dp))
-                        .background(if (layout == mode) Amber.copy(alpha = .17f) else Surface2)
-                        .border(1.dp, if (layout == mode) Amber else Hairline,
-                            RoundedCornerShape(9.dp))
-                        .clickable { onLayout(mode) }
-                        .padding(horizontal = 7.dp, vertical = 8.dp)) {
-                        Text(text, color = if (layout == mode) AmberLight else Muted,
-                            fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("Вид рецептов", color = Muted, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold)
+                    Row(Modifier.fillMaxWidth().background(Surface2, RoundedCornerShape(15.dp))
+                        .border(1.dp, Hairline, RoundedCornerShape(15.dp)).padding(3.dp),
+                        horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+                        listOf(RecipeLayout.LARGE to "▣ Крупно", RecipeLayout.LIST to "☷ Список",
+                            RecipeLayout.GRID to "▦ Сетка").forEach { (mode, label) ->
+                            Box(Modifier.weight(1f).heightIn(min = 40.dp)
+                                .clip(RoundedCornerShape(11.dp))
+                                .background(if (layout == mode) Amber else Color.Transparent)
+                                .clickable { onLayout(mode) }.semantics { selected = layout == mode }
+                                .padding(horizontal = 5.dp, vertical = 7.dp),
+                                contentAlignment = Alignment.Center) {
+                                Text(label, color = if (layout == mode) Color(0xFF241607) else Muted,
+                                    fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
+                            }
+                        }
                     }
                 }
             }
         }
-        if (filtered.isEmpty()) {
-            Box(
-                Modifier.fillMaxWidth().padding(12.dp)
-                    .border(1.dp, Hairline, RoundedCornerShape(18.dp))
-                    .background(Color(0x07FFFFFF), RoundedCornerShape(18.dp))
-                    .padding(horizontal = 20.dp, vertical = 36.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Лаборатория ничего не нашла. Возможно, рецепт засекречен.",
-                    color = Muted, fontSize = 14.sp, textAlign = TextAlign.Center,
-                    lineHeight = 22.sp)
-            }
-        } else if (layout == RecipeLayout.GRID) {
-            LazyVerticalGrid(columns = GridCells.Fixed(2),
-                contentPadding = PaddingValues(10.dp),
-                horizontalArrangement = Arrangement.spacedBy(9.dp),
-                verticalArrangement = Arrangement.spacedBy(11.dp)) {
-                gridItems(filtered, key = { it.id }) { recipe ->
-                    GridCard(recipe, recipe.id in favorites,
-                        { toggleFavorite(recipe.id) }, { open(recipe) })
-                }
-            }
-        } else {
-            LazyColumn(contentPadding = PaddingValues(horizontal = 11.dp, vertical = 5.dp),
-                verticalArrangement = Arrangement.spacedBy(11.dp)) {
-                items(filtered, key = { it.id }) { recipe ->
-                    if (layout == RecipeLayout.LARGE) LargeCard(recipe,
-                        recipe.id in favorites, { toggleFavorite(recipe.id) }, { open(recipe) })
-                    else ListCard(recipe, recipe.id in favorites,
-                        { toggleFavorite(recipe.id) }, { open(recipe) })
-                }
+        if (filtered.isEmpty()) item(span = { GridItemSpan(maxLineSpan) }) {
+            Text("Лаборатория ничего не нашла. Возможно, рецепт засекречен.",
+                color = Muted, fontSize = 16.sp, textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().border(1.dp, Hairline, RoundedCornerShape(18.dp))
+                    .padding(36.dp))
+        }
+        gridItems(filtered, key = { it.id }) { recipe ->
+            when (layout) {
+                RecipeLayout.LARGE -> LargeCard(recipe, recipe.id in favorites,
+                    { toggleFavorite(recipe.id) }, { open(recipe) })
+                RecipeLayout.LIST -> ListCard(recipe, recipe.id in favorites,
+                    { toggleFavorite(recipe.id) }, { open(recipe) })
+                RecipeLayout.GRID -> GridCard(recipe, recipe.id in favorites,
+                    { toggleFavorite(recipe.id) }, { open(recipe) })
             }
         }
+        item(span = { GridItemSpan(maxLineSpan) }) { AppFooter() }
     }
 }
 
 @Composable
-private fun Heart(selected: Boolean, onClick: () -> Unit) {
-    Box(Modifier.size(41.dp).clip(CircleShape).background(Color(0xDC140F0B))
-        .border(1.dp, if (selected) Amber else Color(0x44FFFFFF), CircleShape)
-        .clickable(onClick = onClick), contentAlignment = Alignment.Center) {
-        Text(if (selected) "♥" else "♡", color = if (selected) Amber else Cream,
-            fontSize = 26.sp)
+private fun Heart(selected: Boolean, onClick: () -> Unit, size: Int = 40) {
+    Box(Modifier.size(size.dp).clip(CircleShape)
+        .background(if (selected) Color(0xD124180A) else Color(0xB30F0B08))
+        .border(1.dp, if (selected) Amber.copy(alpha = .4f) else Color(0x29FFFFFF), CircleShape)
+        .clickable(onClick = onClick).semantics {
+            contentDescription = if (selected) "Убрать из избранного" else "Добавить в избранное"
+            this.selected = selected
+        }, contentAlignment = Alignment.Center) {
+        HeartGlyph(selected, if (selected) Amber else Color.White,
+            Modifier.size(if (size < 40) 20.dp else 23.dp))
     }
 }
 
@@ -344,13 +354,10 @@ private fun LargeCard(r: Recipe, fav: Boolean, toggle: () -> Unit, open: () -> U
             Box(Modifier.align(Alignment.TopEnd).padding(9.dp)) { Heart(fav, toggle) }
             Box(Modifier.align(Alignment.BottomStart).padding(10.dp)) { TinyTag(r.category) }
         }
-        Column(Modifier.padding(15.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
+        Column(Modifier.padding(17.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(r.title, color = Cream, fontSize = 19.sp, fontWeight = FontWeight.Black)
-            Text(r.description, color = Muted, fontSize = 13.sp, maxLines = 3,
-                lineHeight = 19.sp, overflow = TextOverflow.Ellipsis)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                TinyTag("⏱ " + r.time); TinyTag("🔥 " + r.difficulty)
-            }
+            Text(r.description, color = Muted, fontSize = 14.sp, lineHeight = 21.sp)
+            RecipeMeta(r)
             GradientButton("📖 Открыть протокол", open, Modifier.fillMaxWidth())
         }
     }
@@ -358,33 +365,61 @@ private fun LargeCard(r: Recipe, fav: Boolean, toggle: () -> Unit, open: () -> U
 
 @Composable
 private fun ListCard(r: Recipe, fav: Boolean, toggle: () -> Unit, open: () -> Unit) {
-    Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(17.dp))
-        .background(Surface).border(1.dp, Hairline, RoundedCornerShape(17.dp))
-        .clickable(onClick = open).padding(9.dp),
-        verticalAlignment = Alignment.CenterVertically) {
-        AssetPicture(r.imagePath, Modifier.size(98.dp).clip(RoundedCornerShape(12.dp)))
-        Spacer(Modifier.width(11.dp))
-        Column(Modifier.weight(1f)) {
-            Overline(r.category)
-            Text(r.title, color = Cream, fontWeight = FontWeight.Bold,
-                fontSize = 15.sp, maxLines = 2)
-            Text(r.time, color = Muted, fontSize = 11.sp)
+    val narrow = LocalConfiguration.current.screenWidthDp <= 355
+    Row(Modifier.fillMaxWidth().testTag("compact-card").height(IntrinsicSize.Min).clip(RoundedCornerShape(16.dp))
+        .background(Surface).border(1.dp, Hairline, RoundedCornerShape(16.dp))) {
+        RecipeMedia(r, fav, toggle, Modifier.width(if (narrow) 82.dp else 92.dp)
+            .fillMaxHeight().heightIn(min = 108.dp), small = true)
+        Column(Modifier.weight(1f).padding(horizontal = 12.dp, vertical = 9.dp),
+            verticalArrangement = Arrangement.spacedBy(5.dp)) {
+            Text(r.title, color = Cream, fontWeight = FontWeight.Bold, fontSize = 14.sp,
+                lineHeight = 17.5.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            if (!narrow) Text(r.description, color = Muted, fontSize = 11.sp,
+                maxLines = 1, overflow = TextOverflow.Ellipsis)
+            TinyTag("⏱ " + r.time, compact = true)
+            GradientButton("Открыть протокол", open,
+                Modifier.align(Alignment.CenterHorizontally).widthIn(max = 164.dp)
+                    .fillMaxWidth().heightIn(min = 38.dp), compact = true, fontSize = 12)
         }
-        Heart(fav, toggle)
+    }
+}
+
+@Composable
+private fun RecipeMedia(r: Recipe, fav: Boolean, toggle: () -> Unit,
+    modifier: Modifier, small: Boolean = false) {
+    Box(modifier) {
+        AssetPicture(r.imagePath, Modifier.matchParentSize())
+        Box(Modifier.align(Alignment.BottomCenter).fillMaxWidth().fillMaxHeight(.46f)
+            .background(Brush.verticalGradient(listOf(Color.Transparent, Color(0xC70C0907)))))
+        Box(Modifier.align(Alignment.TopEnd).padding(if (small) 6.dp else 10.dp)) {
+            Heart(fav, toggle, if (small) 34 else 40)
+        }
+        Text(r.category, color = Color(0xFFF0DFC7), fontSize = if (small) 10.sp else 11.sp,
+            fontWeight = FontWeight.ExtraBold, maxLines = 1, overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.align(Alignment.BottomStart).padding(6.dp)
+                .clip(CircleShape).background(Color(0xB8120D09))
+                .border(1.dp, Color(0x1FFFFFFF), CircleShape).padding(horizontal = 7.dp, vertical = 4.dp))
     }
 }
 
 @Composable
 private fun GridCard(r: Recipe, fav: Boolean, toggle: () -> Unit, open: () -> Unit) {
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(17.dp))
-        .background(Surface).border(1.dp, Hairline, RoundedCornerShape(17.dp))
-        .clickable(onClick = open)) {
-        Box(Modifier.fillMaxWidth().height(130.dp)) {
-            AssetPicture(r.imagePath, Modifier.fillMaxSize())
-            Box(Modifier.align(Alignment.TopEnd).padding(5.dp)) { Heart(fav, toggle) }
+    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp))
+        .background(Surface).border(1.dp, Hairline, RoundedCornerShape(22.dp))) {
+        RecipeMedia(r, fav, toggle, Modifier.fillMaxWidth().height(112.dp), small = true)
+        Column(Modifier.padding(horizontal = 8.dp, vertical = 10.dp)) {
+            Text(r.title, color = Cream, fontWeight = FontWeight.Bold, fontSize = 13.sp,
+                maxLines = 2, lineHeight = 16.25.sp, overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.heightIn(min = 32.dp))
+            Spacer(Modifier.height(6.dp))
+            Text(r.description, color = Muted, fontSize = 11.sp, lineHeight = 14.85.sp,
+                maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Spacer(Modifier.height(8.dp))
+            TinyTag("⏱ " + r.time, compact = true)
+            Spacer(Modifier.height(9.dp))
+            GradientButton("Открыть протокол", open, Modifier.fillMaxWidth(),
+                compact = true, fontSize = 10)
         }
-        Text(r.title, color = Cream, fontWeight = FontWeight.Bold, fontSize = 14.sp,
-            maxLines = 2, lineHeight = 17.sp, modifier = Modifier.padding(10.dp))
     }
 }
 
@@ -403,8 +438,7 @@ internal fun DetailPage(recipe: Recipe, selected: Boolean, onFavorite: () -> Uni
                 LabBadge("Лабораторный протокол")
                 Text(recipe.title, color = Cream, fontSize = 30.sp, lineHeight = 32.sp,
                     fontWeight = FontWeight.Black)
-                TinyTag("⏱ " + recipe.time + "   🔥 " + recipe.difficulty +
-                    "   💸 " + recipe.cost)
+                RecipeMeta(recipe, cost = true)
             }
             Box(Modifier.align(Alignment.TopEnd).padding(14.dp).size(44.dp)
                 .clip(CircleShape).background(Color(0xD0160C08))
@@ -413,7 +447,7 @@ internal fun DetailPage(recipe: Recipe, selected: Boolean, onFavorite: () -> Uni
                 Text("×", color = Color.White, fontSize = 26.sp)
             }
         }
-        Column(Modifier.padding(17.dp),
+        Column(Modifier.padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(13.dp)) {
             Text(recipe.description, color = Muted, fontSize = 15.sp, lineHeight = 22.sp)
             PrimaryButton("▶ Режим готовки", onCook, Modifier.fillMaxWidth())
@@ -422,6 +456,7 @@ internal fun DetailPage(recipe: Recipe, selected: Boolean, onFavorite: () -> Uni
             OutlineButton("📨 Поделиться протоколом", {
                 val intent = Intent(Intent.ACTION_SEND).apply {
                     type = "text/plain"
+                    putExtra(Intent.EXTRA_SUBJECT, "Дошикология: " + recipe.title)
                     putExtra(Intent.EXTRA_TEXT,
                         "🍜 Рассекречен лабораторный протокол «" + recipe.title +
                         "»! Проверь, выдержит ли твоя кухня этот эксперимент.\n" +
@@ -464,7 +499,7 @@ internal fun DetailPage(recipe: Recipe, selected: Boolean, onFavorite: () -> Uni
 }
 
 @Composable
-internal fun CookingPage(recipe: Recipe, step: Int, adsReady: Boolean,
+internal fun CookingPage(recipe: Recipe, step: Int,
     previous: () -> Unit, next: () -> Unit, onExit: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
@@ -479,19 +514,19 @@ internal fun CookingPage(recipe: Recipe, step: Int, adsReady: Boolean,
         }
     }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())
-        .padding(horizontal = 16.dp, vertical = 13.dp),
-        verticalArrangement = Arrangement.spacedBy(15.dp)) {
-        Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp))
+        .padding(horizontal = 18.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp)) {
+        Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(28.dp))
             .background(Surface).border(1.dp, Amber.copy(alpha = .17f),
-                RoundedCornerShape(24.dp)).padding(15.dp),
-            verticalArrangement = Arrangement.spacedBy(15.dp)) {
-            Box(Modifier.fillMaxWidth().height(7.dp).clip(CircleShape)
+                RoundedCornerShape(28.dp)).padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(18.dp)) {
+            Box(Modifier.fillMaxWidth().height(8.dp).clip(CircleShape)
                 .background(Color(0x30FFFFFF))) {
                 Box(Modifier.fillMaxWidth((step + 1).toFloat() / recipe.steps.size)
                     .fillMaxHeight().clip(CircleShape)
                     .background(Brush.horizontalGradient(listOf(Amber, Orange))))
             }
-            Box(Modifier.fillMaxWidth().height(191.dp)
+            Box(Modifier.fillMaxWidth().height(190.dp)
                 .clip(RoundedCornerShape(20.dp))) {
                 AssetPicture(recipe.imagePath, Modifier.fillMaxSize())
                 Box(Modifier.fillMaxSize().background(Brush.verticalGradient(
@@ -526,15 +561,16 @@ internal fun CookingPage(recipe: Recipe, step: Int, adsReady: Boolean,
                 }
             ) { shownStep ->
                 Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp))
-                    .background(Color(0x12FFFFFF))
+                    .background(Color(0x08FFFFFF))
                     .border(1.dp, Hairline, RoundedCornerShape(20.dp))
-                    .padding(horizontal = 14.dp, vertical = 23.dp),
+                    .padding(22.dp),
                     horizontalAlignment = Alignment.CenterHorizontally) {
                     Overline("Шаг " + (shownStep + 1) + " из " + recipe.steps.size)
                     Spacer(Modifier.height(14.dp))
                     Text(recipe.steps[shownStep], color = Cream,
-                        fontWeight = FontWeight.Black,
-                        fontSize = 24.sp, lineHeight = 30.sp,
+                        fontWeight = FontWeight.Normal, letterSpacing = (-.786).sp,
+                        fontSize = (LocalConfiguration.current.screenWidthDp * .08f).coerceIn(24f, 36f).sp,
+                        lineHeight = (LocalConfiguration.current.screenWidthDp * .0896f).coerceIn(26.88f, 40.32f).sp,
                         textAlign = TextAlign.Center)
                     Spacer(Modifier.height(20.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
@@ -546,14 +582,6 @@ internal fun CookingPage(recipe: Recipe, step: Int, adsReady: Boolean,
                     }
                 }
             }
-            if (BuildConfig.DEBUG) {
-                Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Overline("Тестовый inline-баннер Яндекса")
-                    if (adsReady) NarrowDemoBanner()
-                    else Text("Инициализируем тестовую рекламу…", color = Muted, fontSize = 11.sp)
-                }
-            }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 OutlineButton("← Назад", { moveStep(previous) }, Modifier.weight(1f),
                     enabled = step > 0 && !stepLocked)
@@ -562,36 +590,6 @@ internal fun CookingPage(recipe: Recipe, step: Int, adsReady: Boolean,
             }
         }
         Spacer(Modifier.height(25.dp))
-    }
-}
-
-@Composable
-private fun NarrowDemoBanner() {
-    val context = LocalContext.current
-    val widthDp = (LocalConfiguration.current.screenWidthDp - 76).coerceIn(180, 280)
-    var error by remember { mutableStateOf("") }
-    val view = remember(context, widthDp) {
-        BannerAdView(context).apply {
-            // Request a narrower inline creative, do not scale an existing ad.
-            setAdSize(BannerAdSize.inline(context, widthDp, 115))
-            setBannerAdEventListener(object : BannerAdEventListener {
-                override fun onAdLoaded() { error = "" }
-                override fun onAdFailedToLoad(e: AdRequestError) {
-                    error = e.toString().take(120)
-                }
-                override fun onAdClicked() {}
-                override fun onImpression(data: ImpressionData?) {}
-            })
-        }
-    }
-    DisposableEffect(view) {
-        view.loadAd(AdRequest.Builder("demo-banner-yandex").build())
-        onDispose { view.destroy() }
-    }
-    AndroidView(factory = { view }, modifier = Modifier.width(widthDp.dp))
-    if (error.isNotBlank()) {
-        Text("Демобаннер временно недоступен: " + error,
-            color = Muted, fontSize = 11.sp)
     }
 }
 
@@ -611,7 +609,7 @@ internal fun SuccessPage(
     )
     Box(
         Modifier.fillMaxSize()
-            .background(Color(0xFF0F0B08)).padding(17.dp),
+            .background(Color(0xFF0F0B08)).verticalScroll(rememberScrollState()).padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
         Box(
@@ -639,18 +637,18 @@ internal fun SuccessPage(
                 }
             }
             Column(
-                Modifier.fillMaxWidth().padding(20.dp),
+                Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Box(
-                    Modifier.size(104.dp).clip(CircleShape)
+                    Modifier.size(88.dp).clip(CircleShape)
                         .background(Brush.radialGradient(listOf(
                             AmberLight, Amber, Orange, Color(0xFF9B3E08))))
                         .border(5.dp, Color(0xC8FFE8B5), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    AssetPicture("sticker-party.webp", Modifier.size(88.dp),
+                    AssetPicture("sticker-party.webp", Modifier.size(76.dp),
                         ContentScale.Fit, fallback = false)
                 }
                 LabBadge("Протокол выполнен")
@@ -677,27 +675,19 @@ internal fun SuccessPage(
                     if (selected) "♥ В избранном" else "♡ Добавить в избранное",
                     onFavorite, Modifier.fillMaxWidth()
                 )
-                Row(Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(9.dp)) {
-                    OutlineButton("Вернуться к рецепту", onReturn, Modifier.weight(1f))
-                    PrimaryButton("Отлично! ✨", onDone, Modifier.weight(1f))
-                }
+                OutlineButton("Вернуться к рецепту", onReturn, Modifier.fillMaxWidth())
+                PrimaryButton("Отлично! ✨", onDone, Modifier.fillMaxWidth())
             }
         }
     }
 }
 
 @Composable
-internal fun OraclePage(recipes: List<Recipe>, open: (Recipe) -> Unit) {
-    val context = LocalContext.current
-    var chosen by remember { mutableStateOf<Recipe?>(null) }
-    var lastRecipeId by remember { mutableStateOf<String?>(null) }
-    var message by remember { mutableStateOf(
-        "Если холодильник смотрит на тебя так же растерянно, как ты на него — нажимай кнопку. Судьба сама выберет протокол."
-    ) }
-    var stage by remember { mutableStateOf("idle") }
-    var consultation by remember { mutableIntStateOf(0) }
-    var reason by remember { mutableStateOf("") }
+internal fun OraclePage(recipes: List<Recipe>, session: AppSession, open: (Recipe) -> Unit) {
+    val chosen = session.oracleRecipe
+    val stage = session.oracleStage
+    val message = session.oracleMessage
+    val reason = session.oracleReason
     val reasons = remember {
         listOf(
             "Звёзды, кипяток и остатки здравого смысла сошлись именно на этом варианте.",
@@ -712,25 +702,6 @@ internal fun OraclePage(recipes: List<Recipe>, open: (Recipe) -> Unit) {
             "Именно этот протокол сейчас находится в идеальной точке между «хочу поесть» и «не хочу больше думать»."
         )
     }
-    LaunchedEffect(consultation) {
-        if (consultation == 0) return@LaunchedEffect
-        stage = "thinking"
-        chosen = null
-        message = "📜 Раскрываем запечатанные хроники Института…"
-        delay(1000)
-        message = "Сопоставляем древние пророчества с запасами лапши…"
-        delay(1000)
-        message = "Последняя проверка знаков судьбы…"
-        delay(1000)
-        val pool = recipes.filter { it.id != lastRecipeId }.ifEmpty { recipes }
-        val selected = pool.randomOrNull()
-        chosen = selected
-        lastRecipeId = selected?.id
-        reason = reasons.random()
-        stage = "success"
-        message = "Оракул постановил"
-        if (selected != null) MagicChime.play()
-    }
     val transition = rememberInfiniteTransition(label = "oracleFloat")
     val floatY by transition.animateFloat(
         initialValue = -5f, targetValue = 5f,
@@ -739,11 +710,11 @@ internal fun OraclePage(recipes: List<Recipe>, open: (Recipe) -> Unit) {
             repeatMode = RepeatMode.Reverse
         ), label = "oracleBob"
     )
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(14.dp),
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 10.dp, vertical = 13.dp),
         verticalArrangement = Arrangement.spacedBy(15.dp)) {
         PageTitle("Отдел вероятностей", "Оракул лапши",
             "Не знаешь, что покушать? Доверься Оракулу. Он заглянет в твою кулинарную судьбу и выберет один рецепт из всего архива института.")
-        RoundedPanel {
+        RoundedPanel(padding = 22, surface = Color(0xFF19120C)) {
             LabBadge("Центральный оракул")
             val art = when (stage) {
                 "thinking" -> "oracle/mage-thinking.webp"
@@ -751,13 +722,13 @@ internal fun OraclePage(recipes: List<Recipe>, open: (Recipe) -> Unit) {
                 else -> "oracle/mage-idle.webp"
             }
             AssetPicture(
-                art, Modifier.fillMaxWidth().height(233.dp)
+                art, Modifier.align(Alignment.CenterHorizontally).padding(top = 16.dp, bottom = 24.dp).widthIn(max = 280.dp).fillMaxWidth().height(252.dp)
                     .graphicsLayer { translationY = if (stage == "thinking") floatY else 0f },
                 ContentScale.Fit, fallback = false
             )
-            RoundedPanel(padding = 14) {
+            RoundedPanel(padding = 17, surface = Color(0xFF120D09)) {
                 if (chosen == null) {
-                    Text(message, color = Cream, fontSize = 15.sp, lineHeight = 23.sp)
+                    Text(message, color = Color(0xFFF1E0C8), fontSize = 17.sp, lineHeight = 26.35.sp)
                 } else {
                     Row(
                         Modifier.fillMaxWidth(),
@@ -768,9 +739,9 @@ internal fun OraclePage(recipes: List<Recipe>, open: (Recipe) -> Unit) {
                             Modifier.size(92.dp).clip(RoundedCornerShape(15.dp)))
                         Column(Modifier.weight(1f)) {
                             Overline("Оракул постановил")
-                            Text(chosen!!.title, color = Cream, fontSize = 18.sp,
+                            Text(chosen!!.title, color = Cream, fontSize = 21.sp,
                                 fontWeight = FontWeight.Black)
-                            Text(reason, color = Muted, fontSize = 12.sp, lineHeight = 18.sp)
+                            Text(reason, color = Color(0xFFD8C6AF), fontSize = 14.sp, lineHeight = 21.sp)
                         }
                     }
                     Spacer(Modifier.height(12.dp))
@@ -779,36 +750,36 @@ internal fun OraclePage(recipes: List<Recipe>, open: (Recipe) -> Unit) {
                 }
             }
             Spacer(Modifier.height(12.dp))
-            GradientButton(
+            PrimaryButton(
                 if (stage == "thinking") "📜 Оракул изучает хроники…"
                 else if (stage == "success") "🔮 Спросить Оракула ещё раз"
                 else "🔮 Узнать, что мне есть",
-                { if (stage != "thinking" && recipes.isNotEmpty()) consultation++ },
+                { session.consult(recipes, reasons) },
                 Modifier.fillMaxWidth(), enabled = stage != "thinking" && recipes.isNotEmpty()
             )
         }
         NativeDailyIndex()
+        AppFooter()
     }
 }
 
 @Composable
 private fun NativeDailyIndex() {
     val today = remember { java.time.LocalDate.now() }
-    val seed = today.year * 10000L + today.monthValue * 100L + today.dayOfMonth
     val forecasts = listOf(
         "Сегодня допустимы импровизации, но третий пакетик приправы лаборатория официально не одобряет.",
         "Вероятность удачного эксперимента повышается после добавления яйца.",
         "День благоприятен для дешёвых решений, которые выглядят неожиданно дорого.",
         "Лаборатория рекомендует не спорить с человеком, у которого в руках кипяток."
     )
-    val index = 55 + (seed * 17 % 41).toInt()
+    val index = DailyOracle.index(today)
     RoundedPanel(modifier = Modifier.fillMaxWidth()) {
         Overline("Показатель дня")
         Text("Индекс дошикологии", color = Cream, fontWeight = FontWeight.Black,
             fontSize = 19.sp)
         Text(index.toString(), color = Amber, fontWeight = FontWeight.Black,
-            fontSize = 48.sp)
-        Text(forecasts[(seed % forecasts.size).toInt()],
+            fontSize = 74.sp, lineHeight = 67.sp, modifier = Modifier.padding(top = 24.dp, bottom = 12.dp))
+        Text(forecasts[DailyOracle.forecast(today)],
             color = Cream, fontSize = 14.sp, lineHeight = 21.sp)
         Spacer(Modifier.height(8.dp))
         Text("Примечание: индекс не является медицинским, финансовым или вообще каким-либо советом. Это число, которое красиво смотрится крупным шрифтом.",
@@ -818,21 +789,22 @@ private fun NativeDailyIndex() {
 
 @Composable
 internal fun WallPage(content: ExtraCatalog, onSupport: () -> Unit) {
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(14.dp),
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 10.dp, vertical = 13.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)) {
         PageTitle("Фонд исследований", "Стена меценатов",
             "Люди, благодаря которым в лаборатории не заканчиваются идеи, кипяток и домен.")
-        RoundedPanel {
-            AssetPicture("sticker-heart.webp", Modifier.size(100.dp),
+        RoundedPanel(padding = 26, radius = 30, borderColor = Amber.copy(alpha = .34f)) {
+            AssetPicture("sticker-heart.webp", Modifier.align(Alignment.CenterHorizontally).padding(bottom = 12.dp).size(96.dp),
                 ContentScale.Fit, fallback = false)
             Text("Поддержать НИИ лапши", color = Cream,
-                fontSize = 24.sp, fontWeight = FontWeight.Black)
+                fontSize = 26.sp, lineHeight = 26.52.sp, letterSpacing = (-.91).sp, fontWeight = FontWeight.Bold)
             Text("Не обязательно спасать мир. Иногда достаточно помочь сделать следующий рецепт, экран или эксперимент чуть лучше.",
-                color = Muted, lineHeight = 21.sp, fontSize = 14.sp)
+                color = Muted, lineHeight = 25.92.sp, fontSize = 16.sp)
             Spacer(Modifier.height(10.dp))
-            RoundedPanel(modifier = Modifier.fillMaxWidth(), padding = 13) {
+            RoundedPanel(modifier = Modifier.fillMaxWidth().padding(top = 8.dp), padding = 16, radius = 17,
+                surface = Color(0xFF372A17), borderColor = Amber.copy(alpha = .28f)) {
                 Text("🏛️ Оставь след в истории Дошикологии",
-                    color = Cream, fontWeight = FontWeight.Black, fontSize = 15.sp)
+                    color = AmberLight, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 Spacer(Modifier.height(6.dp))
                 Text("Поддержи институт — и твоё сообщение после модерации может попасть на Стену меценатов. Через годы потомки спросят: «Кто этот человек?» — и мы с гордостью ответим: «Он верил в лапшу раньше всех».",
                     color = Muted, fontSize = 13.sp, lineHeight = 20.sp)
@@ -859,92 +831,63 @@ internal fun WallPage(content: ExtraCatalog, onSupport: () -> Unit) {
                     Text(patron.amount, color = AmberLight, fontSize = 12.sp,
                         fontWeight = FontWeight.Black)
                 }
-                Text(NativeChronology.formatDate(patron.date),
+                Text(if (patron.date.isBlank()) "" else NativeChronology.formatDate(patron.date),
                     color = Muted, fontSize = 11.sp)
                 Spacer(Modifier.height(9.dp))
                 Text(patron.text, color = Muted, lineHeight = 20.sp, fontSize = 14.sp)
             }
         }
+        AppFooter()
     }
 }
 
 @Composable
 internal fun MorePage(content: ExtraCatalog, recipes: List<Recipe>,
-    onCatalogUpdated: (List<Recipe>) -> Unit,
+    session: AppSession,
     onPrivacy: () -> Unit, onTerms: () -> Unit, onSupport: () -> Unit
 ) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    var pending by remember { mutableStateOf<RemoteRecipePreview?>(null) }
-    var updateBusy by remember { mutableStateOf(false) }
-    var updateStatus by remember { mutableStateOf(
-        "Рецепты доступны без интернета. Проверка новых протоколов — только по твоему запросу."
-    ) }
-    var updateProgress by remember { mutableFloatStateOf(0f) }
-    var faqExpanded by remember { mutableStateOf(false) }
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(14.dp),
-        verticalArrangement = Arrangement.spacedBy(13.dp)) {
+    val pending = session.pending
+    val updateBusy = session.updateAction.isNotEmpty()
+    var faqExpanded by rememberSaveable { mutableStateOf(false) }
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 10.dp, vertical = 13.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp)) {
         PageTitle("Служба института", "Ещё",
             "Обновления, поддержка и документы — всё важное в одном месте.")
-        RoundedPanel {
-            Overline("Архив института")
-            Text("📚 Обновление рецептов", color = Cream, fontSize = 18.sp,
-                fontWeight = FontWeight.Black)
-            Text(updateStatus, color = Muted, fontSize = 13.sp, lineHeight = 20.sp)
+        RoundedPanel(padding = 20, surface = Surface) {
+          RoundedPanel(padding = 18, surface = Surface2, radius = 16) {
+            Text("📚 Обновление рецептов", color = Cream, fontSize = 15.sp,
+                fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(6.dp))
+            Text(session.updateStatus, color = Muted, fontSize = 13.sp, lineHeight = 20.sp)
             Spacer(Modifier.height(10.dp))
-            OutlineButton(if (updateBusy) "Проверяем архив…" else "↻ Проверить обновления",
-                onClick = {
-                    if (!updateBusy) {
-                        updateBusy = true
-                        pending = null
-                        updateStatus = "🔎 Проверяем новые и изменённые рецепты…"
-                        scope.launch {
-                            try {
-                                val result = RemoteRecipeUpdater.check(recipes)
-                                pending = result.takeIf { it.added + it.updated > 0 }
-                                updateStatus = if (pending == null)
-                                    "✓ Новых и изменённых рецептов нет. Всё уже на устройстве."
-                                else "Найдены изменения (новых: " + result.added +
-                                    ", обновлённых: " + result.updated + "). Получить обновление?"
-                            } catch (e: Exception) {
-                                updateStatus = "Не удалось проверить архив. Проверь интернет и попробуй снова."
-                            } finally { updateBusy = false }
-                        }
-                    }
-                }, modifier = Modifier.fillMaxWidth(), enabled = !updateBusy)
+            OutlineButton(if (session.updateAction == "checking") "Проверяем обновления…" else "↻ Проверить обновления",
+                { session.check(content, recipes) }, Modifier.fillMaxWidth(), enabled = !updateBusy)
             pending?.let { preview ->
                 Spacer(Modifier.height(9.dp))
-                GradientButton("↓ Получить обновление (" + (preview.added + preview.updated) + ")",
-                    onClick = {
-                        if (!updateBusy) {
-                            updateBusy = true
-                            updateStatus = "📥 Загружаем и сохраняем новые протоколы…"
-                            updateProgress = 0f
-                            scope.launch {
-                                try {
-                                    val saved = RemoteRecipeUpdater.install(context, preview) {
-                                        done, total ->
-                                        updateProgress = done.toFloat() / total.coerceAtLeast(1)
-                                    }
-                                    onCatalogUpdated(saved)
-                                    pending = null
-                                    updateStatus = "✓ Архив обновлён. Рецепты доступны без интернета."
-                                } catch (e: Exception) {
-                                    updateStatus = "Не удалось установить обновление. Проверь интернет и память устройства."
-                                } finally { updateBusy = false }
-                            }
-                        }
-                    }, modifier = Modifier.fillMaxWidth(), enabled = !updateBusy)
+                PrimaryButton(if (session.updateAction == "downloading") "Получаем обновление…"
+                    else if (session.retryDownload) "↻ Повторить загрузку"
+                    else "↓ Получить обновление (${preview.added + preview.updated})",
+                    { session.install(context, content, recipes) }, Modifier.fillMaxWidth(), enabled = !updateBusy)
             }
-            if (updateBusy && updateProgress > 0f) {
+            session.updateProgress?.let { progress ->
                 Spacer(Modifier.height(9.dp))
-                LinearProgressIndicator(progress = { updateProgress },
-                    modifier = Modifier.fillMaxWidth(), color = Amber)
-                Text("Загружаем фотографии · " + (updateProgress * 100).toInt() + "%",
-                    color = Muted, fontSize = 12.sp)
+                Text(progress.label, color = Cream, fontSize = 12.sp,
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
+                if (progress.total > 0) {
+                    val fraction = progress.done.toFloat() / progress.total
+                    Text(if (!updateBusy) "Готово" else "${progress.done} из ${progress.total} · ${(fraction * 100).roundToInt()}%",
+                        color = Muted, fontSize = 12.sp)
+                    LinearProgressIndicator(progress = { fraction }, modifier = Modifier.fillMaxWidth(), color = Amber)
+                } else {
+                    Text("Подождите…", color = Muted, fontSize = 12.sp)
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth(), color = Amber)
+                }
             }
-            Spacer(Modifier.height(10.dp))
-            Row(Modifier.fillMaxWidth(),
+          }
+            Spacer(Modifier.height(12.dp))
+            Row(Modifier.fillMaxWidth().background(Color(0x06FFFFFF), RoundedCornerShape(14.dp))
+                .border(1.dp, Hairline, RoundedCornerShape(14.dp)).padding(horizontal = 16.dp, vertical = 14.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically) {
                 Column {
@@ -955,18 +898,17 @@ internal fun MorePage(content: ExtraCatalog, recipes: List<Recipe>,
                 }
                 Text("📱", fontSize = 29.sp)
             }
+            Spacer(Modifier.height(12.dp))
             Text("Новые рецепты загружаются здесь. После выпуска Android-версии обновления самого приложения будут доступны через RuStore.",
                 color = Muted, fontSize = 12.sp, lineHeight = 19.sp)
         }
-        RoundedPanel {
-            Overline("Связь с лабораторией")
-            Text("✉ Помощь и поддержка", color = Cream, fontSize = 18.sp,
-                fontWeight = FontWeight.Black)
-            Spacer(Modifier.height(9.dp))
+        RoundedPanel(padding = 20, surface = Surface) {
+            MoreHeading("✉", "Связь с лабораторией", "Помощь и поддержка")
+            Spacer(Modifier.height(16.dp))
             if (content.supportEmail.isNotBlank()) {
-                OutlineButton("Написать разработчику →", onSupport, Modifier.fillMaxWidth())
+                MoreLink("✉", "Написать разработчику", "Личное обращение по электронной почте", onSupport)
             } else {
-                Text("Почта поддержки пока не настроена.", color = Muted)
+                Text("Электронная почта поддержки временно недоступна.", color = Muted)
             }
             Spacer(Modifier.height(9.dp))
             OutlineButton(if (faqExpanded) "Частые вопросы  ⌃" else "Частые вопросы  ⌄",
@@ -989,21 +931,18 @@ internal fun MorePage(content: ExtraCatalog, recipes: List<Recipe>,
                 }
             }
         }
-        RoundedPanel {
-            Overline("Документы")
-            Text("§ Информация", color = Cream, fontSize = 18.sp,
-                fontWeight = FontWeight.Black)
+        RoundedPanel(padding = 20, surface = Surface) {
+            MoreHeading("§", "Документы", "Информация")
+            Spacer(Modifier.height(16.dp))
+            MoreLink("♢", "Политика конфиденциальности", "Локальные данные, CloudTips и обращения", onPrivacy)
             Spacer(Modifier.height(9.dp))
-            OutlineButton("Политика конфиденциальности  ›",
-                onPrivacy, Modifier.fillMaxWidth())
-            Spacer(Modifier.height(9.dp))
-            OutlineButton("Пользовательское соглашение  ›",
-                onTerms, Modifier.fillMaxWidth())
+            MoreLink("▤", "Пользовательское соглашение", "Правила использования Дошикологии", onTerms)
             Spacer(Modifier.height(16.dp))
             Text("О Дошикологии", color = Cream, fontWeight = FontWeight.Black,
                 fontSize = 15.sp)
             Text("Институт лапши быстрого приготовления: рецепты, немного магии и кухонные эксперименты. Приложение бесплатно и не требует регистрации.",
                 color = Muted, fontSize = 13.sp, lineHeight = 20.sp)
         }
+        AppFooter()
     }
 }

@@ -25,7 +25,8 @@ data class Recipe(
     val cost: String = "",
     val categories: List<String> = emptyList(),
     val publishedAt: String = "",
-    val imageSource: String = ""
+    val imageSource: String = "",
+    val sourceJson: String = ""
 )
 
 object RecipeCatalog {
@@ -39,7 +40,8 @@ object RecipeCatalog {
         val bundled = parse(context.assets.open("recipes.json")
             .bufferedReader().use { it.readText() })
         val cached = runCatching {
-            val file = File(context.filesDir, "recipes-cache.json")
+            val file = activeDirectory(context)?.let { File(it, "recipes.json") }
+                ?: File(context.filesDir, "recipes-cache.json")
             if (file.exists()) parse(file.readText()) else emptyList()
         }.getOrDefault(emptyList())
         // Same merge semantics as js/core/offline-catalog.js: new recipes
@@ -51,11 +53,14 @@ object RecipeCatalog {
 
     fun parse(json: String): List<Recipe> {
         val input = JSONArray(json)
+        val seen = mutableSetOf<String>()
         return (0 until input.length()).mapNotNull { index ->
-            val item = input.getJSONObject(index)
+            val item = input.optJSONObject(index) ?: return@mapNotNull null
             val steps = item.optJSONArray("steps").asStrings()
             val id = item.optString("id")
-            if (!id.matches(Regex("^[a-z0-9-]{1,100}$")) || steps.isEmpty()) return@mapNotNull null
+            if (!id.matches(Regex("^[a-z0-9-]+$")) || steps.isEmpty() ||
+                item.optString("title").isBlank() || item.optJSONArray("ingredients").asStrings().isEmpty() ||
+                !seen.add(id)) return@mapNotNull null
             val originalImage = item.optString("image")
             Recipe(
                 id = id,
@@ -71,27 +76,32 @@ object RecipeCatalog {
                 cost = item.optString("cost"),
                 categories = item.optJSONArray("categories").asStrings(),
                 publishedAt = item.optString("publishedAt"),
-                imageSource = originalImage
+                imageSource = originalImage,
+                sourceJson = RecipeUpdates.stringify(item)
             )
         }
     }
 
-    fun install(context: Context, json: String) {
-        val parsed = parse(json)
-        require(parsed.size >= 50 && parsed.size <= 500 && parsed.distinctBy { it.id }.size == parsed.size) {
-            "Неверный формат нового архива"
-        }
-        val atomic = AtomicFile(File(context.filesDir, "recipes-cache.json"))
-        val stream = atomic.startWrite()
+    internal fun activeDirectory(context: Context): File? = runCatching {
+        val pointer = AtomicFile(File(context.filesDir, "recipes-active"))
+        val name = pointer.openRead().bufferedReader().use { it.readText() }
+        require(name.matches(Regex("catalog-[0-9]+")))
+        File(context.filesDir, name).takeIf { File(it, "recipes.json").isFile }
+    }.getOrNull()
+
+    internal fun activate(context: Context, directory: File) {
+        val pointer = AtomicFile(File(context.filesDir, "recipes-active"))
+        val stream = pointer.startWrite()
         try {
-            stream.write(json.toByteArray(Charsets.UTF_8))
-            atomic.finishWrite(stream)
-            revision++
+            stream.write(directory.name.toByteArray(Charsets.UTF_8))
+            pointer.finishWrite(stream)
         } catch (e: Exception) {
-            atomic.failWrite(stream)
+            pointer.failWrite(stream)
             throw e
         }
     }
+
+    internal fun refreshImages() { revision++ }
 
     private fun JSONArray?.asStrings(): List<String> =
         if (this == null) emptyList()
@@ -100,7 +110,7 @@ object RecipeCatalog {
     fun image(context: Context, path: String): ImageBitmap? {
         if (path.isBlank()) return null
         return try {
-            val cached = File(context.filesDir, "recipe-images/" + path)
+            val cached = File(activeDirectory(context) ?: context.filesDir, "recipe-images/" + path)
             val safe = path.matches(Regex("^recipes/[a-z0-9-]+\\.webp$"))
             fun decode(openStream: () -> java.io.InputStream): ImageBitmap? {
                 val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }

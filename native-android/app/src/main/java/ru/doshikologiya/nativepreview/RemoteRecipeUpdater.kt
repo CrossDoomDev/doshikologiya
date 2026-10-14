@@ -1,119 +1,99 @@
 package ru.doshikologiya.nativepreview
 
 import android.content.Context
+import android.graphics.BitmapFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.ByteArrayOutputStream
+import kotlinx.coroutines.ensureActive
 import java.io.File
-import java.net.HttpURLConnection
-import java.net.URL
+import java.net.URI
+import kotlin.coroutines.coroutineContext
 
-internal data class RemoteRecipePreview(
-    val json: String,
-    val items: List<Recipe>,
-    val added: Int,
-    val updated: Int,
-    val changed: List<Recipe>
-)
+internal data class UpdateProgress(val label: String, val done: Int = 0, val total: Int = 0)
 
 internal object RemoteRecipeUpdater {
-    // A fixed trusted HTTPS source; never accept arbitrary URL values from
-    // recipes or user input. This is the same repository as GitHub Pages.
-    private const val ORIGIN = "https://crossdoomdev.github.io/doshikologiya/"
-    private const val CATALOG = ORIGIN + "data/recipes.json"
     private val validAssetPath = Regex("^recipes/[a-z0-9-]+\\.webp$")
-    private const val MAX_CATALOG_BYTES = 2_000_000
-    private const val MAX_IMAGE_BYTES = 5_000_000
 
-    suspend fun check(current: List<Recipe>): RemoteRecipePreview =
+    suspend fun check(content: ExtraCatalog, current: List<Recipe>,
+        fetch: (String, Int) -> ByteArray = { url, limit -> PublicHttp.bytes(url, limit) }
+    ): RemoteRecipePreview =
         withContext(Dispatchers.IO) {
-            val json = fetchBytes(CATALOG, MAX_CATALOG_BYTES).toString(Charsets.UTF_8)
-            val items = RecipeCatalog.parse(json)
-            require(items.size >= 50 && items.size <= 500)
-            require(items.distinctBy { it.id }.size == items.size)
-            val before = current.associateBy { it.id }
-            val changed = items.filter { before[it.id] != it }
-            RemoteRecipePreview(
-                json = json,
-                items = items,
-                added = changed.count { it.id !in before },
-                updated = changed.count { it.id in before },
-                changed = changed
-            )
+            if (content.remoteRecipeIndexUrl.isNotBlank()) {
+                RecipeUpdates.diff(current, fetch(content.remoteRecipeIndexUrl, 2_000_000)
+                    .toString(Charsets.UTF_8))
+            } else {
+                val items = RecipeCatalog.parse(fetch(content.remoteRecipesUrl, 2_000_000)
+                    .toString(Charsets.UTF_8))
+                require(items.isNotEmpty())
+                val before = current.associateBy { it.id }
+                val changes = items.filter { before[it.id]?.sourceJson != it.sourceJson }
+                RemoteRecipePreview(changes.count { it.id !in before },
+                    changes.count { it.id in before }, changed = changes)
+            }
         }
 
-    suspend fun install(
-        context: Context, preview: RemoteRecipePreview,
-        onProgress: (Int, Int) -> Unit
+    suspend fun install(context: Context, content: ExtraCatalog, current: List<Recipe>,
+        preview: RemoteRecipePreview,
+        fetch: (String, Int) -> ByteArray = { url, limit -> PublicHttp.bytes(url, limit) },
+        onProgress: (UpdateProgress) -> Unit
     ): List<Recipe> = withContext(Dispatchers.IO) {
-        // Never replace the cached catalog before downloaded photographs finish.
-        // If connection fails, the previous 50+ recipes remain fully usable.
-        val total = preview.changed.size.coerceAtLeast(1)
-        // Stage all images first, just like the browser's cacheRemoteImages
-        // does before it installs the catalog. A failed download never
-        // replaces the live photos or changes the installed JSON.
+        suspend fun progress(label: String, done: Int = 0, total: Int = 0) =
+            withContext(Dispatchers.Main) { onProgress(UpdateProgress(label, done, total)) }
+        progress("Загружаем рецепты", 0, preview.entries.size)
+        val changed = if (preview.entries.isEmpty()) preview.changed else
+            preview.entries.mapIndexed { i, entry ->
+                coroutineContext.ensureActive()
+                val url = URI(content.remoteRecipeIndexUrl).resolve(entry.path).toString()
+                val recipe = RecipeUpdates.verify(entry,
+                    fetch(url, 200_000).toString(Charsets.UTF_8))
+                progress("Загружаем рецепты", i + 1, preview.entries.size)
+                recipe
+            }
+        require(changed.isNotEmpty())
+        val merged = RecipeUpdates.merge(current, changed)
+        // JSON and photographs belong to a single generation. Only the atomic
+        // pointer is published, so download, disk or process failure cannot leave
+        // the old catalog paired with partially replaced photographs.
         val staging = File(context.filesDir, "recipe-images-staging-" + System.nanoTime())
-        val pendingFiles = mutableListOf<Pair<File, File>>()
+        val installed = File(context.filesDir, "catalog-" + System.nanoTime())
+        var activated = false
         try {
-            preview.changed.forEachIndexed { i, recipe ->
+            check(staging.mkdirs())
+            val oldImages = File(RecipeCatalog.activeDirectory(context) ?: context.filesDir, "recipe-images")
+            if (oldImages.exists()) check(oldImages.copyRecursively(File(staging, "recipe-images")))
+            progress("Загружаем фотографии", 0, changed.size)
+            changed.forEachIndexed { i, recipe ->
+                coroutineContext.ensureActive()
                 val path = recipe.imagePath
-                if (validAssetPath.matches(path)) {
-                    val src = ORIGIN + "images/" + path
-                    val bytes = fetchBytes(src, MAX_IMAGE_BYTES)
-                    val candidate = File(staging, path)
-                    candidate.parentFile?.mkdirs()
-                    candidate.writeBytes(bytes)
-                    val bounds = android.graphics.BitmapFactory.Options().apply {
-                        inJustDecodeBounds = true
-                    }
-                    android.graphics.BitmapFactory.decodeFile(candidate.absolutePath, bounds)
-                    require(bounds.outWidth > 0 && bounds.outHeight > 0) {
-                        "Неверное изображение рецепта"
-                    }
-                    val target = File(context.filesDir, "recipe-images/" + path)
-                    pendingFiles += candidate to target
-                }
-                withContext(Dispatchers.Main) { onProgress(i + 1, total) }
+                require(validAssetPath.matches(path)) { "Неверный адрес фотографии" }
+                val bytes = fetch(PublicHttp.ORIGIN + "images/" + path +
+                    recipe.imageSource.substringAfter('?', "").let { if (it.isEmpty()) "" else "?$it" }, 5_000_000)
+                val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+                require(bounds.outWidth > 0 && bounds.outHeight > 0) { "Неверное изображение рецепта" }
+                val target = File(staging, "recipe-images/$path")
+                check(target.parentFile!!.isDirectory || target.parentFile!!.mkdirs())
+                target.writeBytes(bytes)
+                progress("Загружаем фотографии", i + 1, changed.size)
             }
-            pendingFiles.forEach { (candidate, target) ->
-                target.parentFile?.mkdirs()
-                if (!candidate.renameTo(target)) {
-                    // Atomic replacement is supported on Android when both
-                    // files are on the same app-data volume; do not silently
-                    // declare an update successful otherwise.
-                    error("Не удалось переместить скачанное изображение")
-                }
-            }
+            progress("Сохраняем рецепты на устройстве")
+            File(staging, "recipes.json").writeText(merged.joinToString(",", "[", "]") { it.sourceJson })
+            check(staging.renameTo(installed))
+            coroutineContext.ensureActive()
+            val previous = RecipeCatalog.activeDirectory(context)
+            RecipeCatalog.activate(context, installed)
+            activated = true
+            // Keep the preceding generation for image readers already in flight;
+            // bound storage usage across repeated successful updates.
+            context.filesDir.listFiles().orEmpty().filter {
+                it.isDirectory && it.name.matches(Regex("catalog-[0-9]+")) &&
+                    it != installed && it != previous
+            }.forEach { it.deleteRecursively() }
+            withContext(Dispatchers.Main) { RecipeCatalog.refreshImages() }
+            merged
         } finally {
             staging.deleteRecursively()
-        }
-        RecipeCatalog.install(context, preview.json)
-        RecipeCatalog.load(context)
-    }
-
-    private fun fetchBytes(url: String, maxBytes: Int): ByteArray {
-        require(url.startsWith(ORIGIN))
-        val request = URL(url).openConnection() as HttpURLConnection
-        request.connectTimeout = 8_000
-        request.readTimeout = 15_000
-        request.instanceFollowRedirects = false
-        request.setRequestProperty("Accept", "application/json,image/webp")
-        try {
-            require(request.responseCode == 200) { "HTTP " + request.responseCode }
-            require(request.contentLengthLong < 0 || request.contentLengthLong <= maxBytes)
-            val buffer = ByteArray(8192)
-            val out = ByteArrayOutputStream()
-            request.inputStream.use { input ->
-                while (true) {
-                    val amount = input.read(buffer)
-                    if (amount < 0) break
-                    require(out.size() + amount <= maxBytes) { "Превышен размер файла" }
-                    out.write(buffer, 0, amount)
-                }
-            }
-            return out.toByteArray()
-        } finally {
-            request.disconnect()
+            if (!activated) installed.deleteRecursively()
         }
     }
 }

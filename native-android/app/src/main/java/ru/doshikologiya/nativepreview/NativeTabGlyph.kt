@@ -56,3 +56,13 @@ internal fun NativeTabGlyph(screen: Screen, color: Color) {
         }
     }
 }
+
+@Composable
+internal fun HeartGlyph(filled: Boolean, color: Color, modifier: Modifier = Modifier) {
+    Canvas(modifier) {
+        withTransform({ scale(size.width / 24f, size.height / 24f, pivot = Offset.Zero) }) {
+            drawPath(HeartPath, if (filled) color else Color.White.copy(alpha = .08f))
+            drawPath(HeartPath, color, style = Stroke(1.85f, cap = StrokeCap.Round, join = StrokeJoin.Round))
+        }
+    }
+}
