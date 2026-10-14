@@ -1,0 +1,32 @@
+name: Direct Capacitor test APK download
+
+on:
+  push:
+    branches: [codex/capacitor-apk-download]
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  publish-tested-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Download the already tested Capacitor APK
+        uses: actions/download-artifact@v4
+        with:
+          name: doshikologiya-debug-apk
+          run-id: 38575883637
+          github-token: ${{ github.token }}
+          repository: CrossDoomDev/doshikologiya
+          path: apk
+      - name: Publish a direct APK download
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: CrossDoomDev/doshikologiya
+        run: |
+          test -s apk/app-debug.apk
+          cp apk/app-debug.apk apk/doshikologiya-capacitor-ads-test.apk
+          sha256sum apk/doshikologiya-capacitor-ads-test.apk
+          gh release create capacitor-ads-preview-921f763 apk/doshikologiya-capacitor-ads-test.apk --target 921f763821cfd1e3acb8cfb2e13c5f050037caad --prerelease --latest=false --title "Capacitor: тестовая сборка с рекламой РСЯ" --notes "Проверенный debug APK из Actions run 38575883637, commit 921f763. Capacitor/WebView, рекламный блок R-M-20184115-1 под описанием шага готовки и над кнопками. Тестовая сборка, не релиз для RuStore."
