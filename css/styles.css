@@ -284,7 +284,7 @@
     .cook-overlay.open{display:flex}
     .cook-backdrop{position:absolute;inset:-5%;background-position:center;background-size:cover;filter:blur(16px) saturate(1.05);opacity:.38;pointer-events:none}
     .cook-backdrop::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at top,rgba(255,178,41,.18),transparent 32%),linear-gradient(180deg,rgba(15,11,8,.34),rgba(15,11,8,.92) 72%)}
-    .cook-box{position:relative;z-index:1;width:min(780px,100%);max-width:100%;margin-block:0 auto;text-align:center;background:linear-gradient(180deg,rgba(29,21,16,.88),rgba(18,13,9,.94));border:1px solid rgba(255,212,110,.14);box-shadow:0 22px 80px rgba(0,0,0,.44);border-radius:28px;padding:24px;backdrop-filter:blur(14px);touch-action:pan-y pinch-zoom}
+    .cook-box{--cook-panel-padding:24px;position:relative;z-index:1;width:min(780px,100%);max-width:100%;margin-block:0 auto;text-align:center;background:linear-gradient(180deg,rgba(29,21,16,.88),rgba(18,13,9,.94));border:1px solid rgba(255,212,110,.14);box-shadow:0 22px 80px rgba(0,0,0,.44);border-radius:28px;padding:24px;backdrop-filter:blur(14px);touch-action:pan-y pinch-zoom}
     .cook-top{position:fixed;top:0;left:0;right:0;z-index:170;display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0;padding:calc(10px + var(--safe-top)) max(20px,env(safe-area-inset-right)) 12px max(20px,env(safe-area-inset-left));color:var(--muted);font-size:13px;background:rgba(24,17,12,.985);border-bottom:1px solid rgba(255,212,110,.14);box-shadow:0 10px 28px rgba(0,0,0,.38);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
     .cook-exit-btn{flex:0 0 auto;min-width:96px;border-color:rgba(255,255,255,.14);background:rgba(10,8,6,.48);color:#f3e6d5}
     .cook-exit-btn:hover{border-color:rgba(255,178,41,.35);background:rgba(255,178,41,.08);color:var(--cream)}
@@ -309,6 +309,7 @@
     .cook-dots span.active{background:var(--amber);transform:scale(1.2);box-shadow:0 0 14px rgba(255,178,41,.45)}
     .cook-ad{margin-top:18px;padding:12px 0;border-block:1px solid var(--line);text-align:center}
     .cook-ad[hidden]{display:none}
+    .cook-ad.is-loading{position:absolute;left:var(--cook-panel-padding);right:var(--cook-panel-padding);visibility:hidden;pointer-events:none}
     .cook-ad-label{margin-bottom:8px;color:var(--muted);font-size:10px;letter-spacing:1px;text-transform:uppercase}
     .cook-ad-slot{width:100%;height:100px;contain:layout;pointer-events:none}
     .cook-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
@@ -402,7 +403,7 @@
       .recipe-donate-end{flex-direction:column;align-items:stretch}
       .recipe-donate-btn{width:100%}
       .cook-overlay{padding:calc(var(--cook-top-height) + 12px) 18px calc(18px + env(safe-area-inset-bottom))}
-      .cook-box{padding:18px;margin-block:0 auto}
+      .cook-box{--cook-panel-padding:18px;padding:18px;margin-block:0 auto}
       .cook-top{align-items:flex-start;padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right));padding-bottom:10px}
       .cook-exit-btn{min-width:auto;padding:10px 12px}
       .cook-stage{display:flex;flex-direction:column}

@@ -2,7 +2,7 @@ import { state } from "../core/state.js";
 import { closeRecipe } from "./recipe-modal.js";
 import { isFavorite } from "../core/favorites.js";
 import { unlockSuccessSound, playSuccessSound } from "./success-sound.js?v=20261010-oracle-mage1";
-import { openCookingAd, closeCookingAd } from "./cooking-ads.js?v=20261014-rsya1";
+import { openCookingAd, closeCookingAd } from "./cooking-ads.js?v=20261014-rsya2";
 
 let cookStepAnimating = false;
 let resizeObserver = null;

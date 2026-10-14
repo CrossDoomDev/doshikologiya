@@ -14,6 +14,7 @@ export function createCookingAdsController(win, doc) {
     doc.removeEventListener("visibilitychange", current.onVisibility);
     current.listener?.remove().catch(() => {});
     current.wrapper.hidden = true;
+    current.wrapper.classList.remove("is-loading");
     current.plugin.release({ session: current.id }).catch(() => {});
   }
 
@@ -36,6 +37,7 @@ export function createCookingAdsController(win, doc) {
     current.onVisibility = () => { current.lastPosition = ""; sendPosition(current, false); };
     overlay.addEventListener("scroll", current.onScroll, { passive: true });
     doc.addEventListener("visibilitychange", current.onVisibility);
+    wrapper.classList.add("is-loading");
     wrapper.hidden = false;
     slot.style.height = "100px";
     current.timeout = win.setTimeout(() => { if (active === current) close(); }, 15000);
@@ -45,6 +47,7 @@ export function createCookingAdsController(win, doc) {
         if (event.state === "failed") { close(); return; }
         if (event.state === "loaded") {
           current.loaded = true;
+          current.wrapper.classList.remove("is-loading");
           win.clearTimeout(current.timeout);
         }
         current.lastPosition = "";

@@ -12,7 +12,11 @@ function fixture({ native = true, prepare } = {}) {
   const rect = { left: 36, top: 400, width: 288, height: 100, right: 324, bottom: 500 };
   const overlay = { classList: { contains: () => true },
     addEventListener: (name, fn) => events.set(name, fn), removeEventListener: name => events.delete(name) };
-  const wrapper = { hidden: true };
+  const classes = new Set();
+  const wrapper = { hidden: true, classList: {
+    add: name => classes.add(name), remove: name => classes.delete(name),
+    contains: name => classes.has(name),
+  } };
   const slot = { style: {}, clientWidth: 288, getBoundingClientRect: () => rect };
   const nodes = { cookAd: wrapper, cookAdSlot: slot, cookOverlay: overlay,
     cookTop: { getBoundingClientRect: () => ({ bottom: 100 }) },
@@ -49,8 +53,10 @@ test("website does not initialize the mobile SDK or reserve an ad gap", async ()
 test("ad follows the slot, stays below the header, and does not reload for a step", async () => {
   const f = fixture();
   await f.controller.open();
+  assert.equal(f.wrapper.classList.contains("is-loading"), true);
   assert.equal(f.calls.position.at(-1).visible, false);
   f.emit("loaded"); f.frame();
+  assert.equal(f.wrapper.classList.contains("is-loading"), false);
   assert.equal(f.calls.position.at(-1).visible, true);
   f.rect.top = 450; f.rect.bottom = 550; f.frame();
   assert.equal(f.calls.position.at(-1).y, 450);
@@ -94,6 +100,7 @@ test("no fill and timeout collapse the gap without retries", async () => {
     if (failure === "failed") f.emit("failed");
     else [...f.timers.values()][0]();
     assert.equal(f.wrapper.hidden, true);
+    assert.equal(f.wrapper.classList.contains("is-loading"), false);
     assert.equal(f.calls.prepare.length, 1);
     assert.equal(f.frames.size, 0);
   }

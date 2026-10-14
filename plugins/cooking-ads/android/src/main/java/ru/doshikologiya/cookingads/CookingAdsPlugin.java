@@ -1,6 +1,9 @@
 package ru.doshikologiya.cookingads;
 
 import android.view.Gravity;
+import android.util.Log;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
@@ -22,6 +25,7 @@ import com.yandex.mobile.ads.banner.BannerAdView;
 
 @CapacitorPlugin(name = "CookingAds")
 public class CookingAdsPlugin extends Plugin {
+    private static final String LOG_TAG = "DoshikAds";
     private static final int MAX_HEIGHT_DP = 100;
     private String session;
     private FrameLayout host;
@@ -56,6 +60,13 @@ public class CookingAdsPlugin extends Plugin {
             result.put("height", MAX_HEIGHT_DP * density / scale);
             call.resolve(result);
 
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                if (requestedSession.equals(session) && !loaded) {
+                    Log.w(LOG_TAG, "Banner load timed out before an SDK result");
+                    emit(requestedSession, "failed");
+                }
+            }, 14_000);
+
             try {
               YandexAds.initialize(getContext(), () -> getActivity().runOnUiThread(() -> {
                 if (!requestedSession.equals(session) || host == null || getActivity().isDestroyed()) return;
@@ -75,6 +86,8 @@ public class CookingAdsPlugin extends Plugin {
                             if (banner != current) return;
                             loaded = false;
                             host.setVisibility(View.INVISIBLE);
+                            Log.w(LOG_TAG, "Banner load failed: code=" + error.getCode()
+                                    + ", description=" + error.getDescription());
                             emit(requestedSession, "failed");
                             // No retry loop: the next cooking session can make another request.
                         }
@@ -83,11 +96,13 @@ public class CookingAdsPlugin extends Plugin {
                     });
                     current.loadAd(new AdRequest.Builder(BuildConfig.BANNER_AD_UNIT_ID).build());
                 } catch (RuntimeException error) {
+                    Log.e(LOG_TAG, "Banner setup failed", error);
                     emit(requestedSession, "failed");
                     dispose();
                 }
               }));
             } catch (RuntimeException error) {
+                Log.e(LOG_TAG, "Ads SDK initialization failed", error);
                 emit(requestedSession, "failed");
                 dispose();
             }
