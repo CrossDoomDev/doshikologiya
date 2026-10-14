@@ -4,6 +4,9 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.activity.compose.setContent
 import androidx.core.view.WindowCompat
 import androidx.compose.animation.AnimatedVisibility
@@ -81,8 +84,13 @@ private fun DoshikNativeApp(adsReady: Boolean) {
     var query by remember { mutableStateOf("") }
     var onlyFavorites by remember { mutableStateOf(false) }
     var category by remember { mutableStateOf("Все") }
-    var layout by remember { mutableStateOf(RecipeLayout.LARGE) }
+    var layout by remember {
+        mutableStateOf(RecipeLayout.entries.find {
+            it.name.equals(prefs.getString("recipe_layout", "LARGE"), ignoreCase = true)
+        } ?: RecipeLayout.LARGE)
+    }
     var step by remember { mutableIntStateOf(0) }
+    var confirmExit by remember { mutableStateOf(false) }
     var showSplash by remember { mutableStateOf(true) }
     LaunchedEffect(Unit) {
         delay(1150)
@@ -103,7 +111,9 @@ private fun DoshikNativeApp(adsReady: Boolean) {
             else -> Screen.Home
         }
     }
-    BackHandler(enabled = screen !is Screen.Home && !showSplash) { goBack() }
+    BackHandler(enabled = !showSplash) {
+        if (screen == Screen.Home) confirmExit = true else goBack()
+    }
     val tab = when (val current = screen) {
         is Screen.Detail -> current.origin
         is Screen.Cooking -> current.origin
@@ -136,7 +146,11 @@ private fun DoshikNativeApp(adsReady: Boolean) {
                         recipes = recipes, query = query, onQuery = { query = it },
                         onlyFavorites = onlyFavorites, onFavorites = { onlyFavorites = !onlyFavorites },
                         category = category, onCategory = { category = it },
-                        layout = layout, onLayout = { layout = it },
+                        categoryOrder = content.categoryOrder,
+                        layout = layout, onLayout = {
+                            layout = it
+                            prefs.edit().putString("recipe_layout", it.name).apply()
+                        },
                         favorites = favorites.toSet(),
                         toggleFavorite = ::toggleFavorite,
                         open = { openDetail(it, Screen.Library) }
@@ -177,6 +191,22 @@ private fun DoshikNativeApp(adsReady: Boolean) {
             if (screen !is Screen.Detail && screen !is Screen.Cooking && screen !is Screen.Success) {
                 NativeTabs(selected = tab) { screen = it }
             }
+        }
+        if (confirmExit) {
+            AlertDialog(
+                onDismissRequest = { confirmExit = false },
+                title = { Text("Закрыть Дошикологию?") },
+                text = { Text("Лаборатория будет ждать твоего возвращения.") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        confirmExit = false
+                        (context as? android.app.Activity)?.finish()
+                    }) { Text("Да, выйти") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { confirmExit = false }) { Text("Остаться") }
+                }
+            )
         }
         AnimatedVisibility(
             visible = showSplash, enter = fadeIn(), exit = fadeOut(),

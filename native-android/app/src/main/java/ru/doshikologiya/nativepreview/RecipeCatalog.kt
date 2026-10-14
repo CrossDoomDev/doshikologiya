@@ -16,7 +16,10 @@ data class Recipe(
     val difficulty: String,
     val ingredients: List<String>,
     val steps: List<String>,
-    val story: String
+    val story: String,
+    val cost: String = "",
+    val categories: List<String> = emptyList(),
+    val publishedAt: String = ""
 )
 
 object RecipeCatalog {
@@ -38,7 +41,10 @@ object RecipeCatalog {
                 difficulty = item.optString("difficulty"),
                 ingredients = item.optJSONArray("ingredients").asStrings(),
                 steps = steps,
-                story = item.optString("story")
+                story = item.optString("story"),
+                cost = item.optString("cost"),
+                categories = item.optJSONArray("categories").asStrings(),
+                publishedAt = item.optString("publishedAt")
             )
         }
     }

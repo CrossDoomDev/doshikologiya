@@ -38,6 +38,15 @@ import com.yandex.mobile.ads.common.AdRequest
 import com.yandex.mobile.ads.common.AdRequestError
 import com.yandex.mobile.ads.common.ImpressionData
 import java.time.LocalDate
+import java.time.Instant
+import java.time.ZoneOffset
+import androidx.compose.animation.core.*
+import androidx.compose.ui.draw.graphicsLayer
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import android.media.AudioManager
+import android.media.ToneGenerator
+import androidx.compose.ui.platform.LocalInspectionMode
 
 internal enum class RecipeLayout { LARGE, LIST, GRID }
 
@@ -45,9 +54,20 @@ internal enum class RecipeLayout { LARGE, LIST, GRID }
 internal fun HomePage(recipes: List<Recipe>, content: ExtraCatalog,
     open: (Recipe) -> Unit, all: () -> Unit, oracle: () -> Unit, wall: () -> Unit
 ) {
-    val featured = remember(recipes) {
-        if (recipes.isEmpty()) null else recipes[LocalDate.now().dayOfYear % recipes.size]
+    // Match js/features/home.js: favorite editorial recipe every third UTC
+    // epoch day; otherwise rotate by epoch-day index.
+    val featured = remember(recipes, content.featuredRecipeId) {
+        if (recipes.isEmpty()) null else {
+            val days = System.currentTimeMillis() / 86_400_000L
+            val editorial = recipes.find { it.id == content.featuredRecipeId }
+            if (days % 3L == 0L && editorial != null) editorial
+            else recipes[(days % recipes.size).toInt()]
+        }
     }
+    val newest = remember(recipes) { recipes.sortedWith(
+        compareByDescending<Recipe> { it.publishedAt }
+            .thenByDescending { recipes.indexOf(it) }
+    ).take(5) }
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(10.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -82,7 +102,7 @@ internal fun HomePage(recipes: List<Recipe>, content: ExtraCatalog,
         }
         Row(Modifier.horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            recipes.takeLast(5).reversed().forEach { recipe ->
+            newest.forEach { recipe ->
                 Column(Modifier.width(175.dp).clip(RoundedCornerShape(18.dp))
                     .background(Surface).border(1.dp, Hairline, RoundedCornerShape(18.dp))
                     .clickable { open(recipe) }) {
@@ -144,6 +164,7 @@ private fun HeroCard(recipe: Recipe, onClick: () -> Unit) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 TinyTag("⏱ " + recipe.time)
                 TinyTag("🔥 " + recipe.difficulty)
+                TinyTag("💸 " + recipe.cost)
             }
             Spacer(Modifier.height(7.dp))
             GradientButton("📖 Открыть протокол", onClick, Modifier.fillMaxWidth(.88f))
@@ -156,19 +177,22 @@ internal fun LibraryPage(
     recipes: List<Recipe>, query: String, onQuery: (String) -> Unit,
     onlyFavorites: Boolean, onFavorites: () -> Unit,
     category: String, onCategory: (String) -> Unit,
+    categoryOrder: List<String>,
     layout: RecipeLayout, onLayout: (RecipeLayout) -> Unit,
     favorites: Set<String>, toggleFavorite: (String) -> Unit,
     open: (Recipe) -> Unit
 ) {
-    val categories = remember(recipes) {
-        listOf("Все") + recipes.map { it.category }.distinct().sorted()
+    val categories = remember(recipes, categoryOrder) {
+        (listOf("Все") + categoryOrder.filter { it != "Все" } +
+            recipes.flatMap { it.categories }).distinct()
     }
     val filtered = remember(recipes, query, category, onlyFavorites, favorites) {
         recipes.filter { recipe ->
-            (category == "Все" || recipe.category == category) &&
+            (category == "Все" || category in recipe.categories) &&
             (!onlyFavorites || recipe.id in favorites) &&
             (query.isBlank() ||
-                listOf(recipe.title,recipe.description,recipe.story,recipe.category)
+                listOf(recipe.title,recipe.description,recipe.story) +
+                    recipe.categories + recipe.ingredients
                     .any { it.contains(query, ignoreCase = true) })
         }
     }
@@ -321,7 +345,8 @@ internal fun DetailPage(recipe: Recipe, selected: Boolean, onFavorite: () -> Uni
                 LabBadge("Лабораторный протокол")
                 Text(recipe.title, color = Cream, fontSize = 30.sp, lineHeight = 32.sp,
                     fontWeight = FontWeight.Black)
-                TinyTag("⏱ " + recipe.time + "   🔥 " + recipe.difficulty)
+                TinyTag("⏱ " + recipe.time + "   🔥 " + recipe.difficulty +
+                    "   💸 " + recipe.cost)
             }
         }
         Column(Modifier.padding(17.dp),
@@ -334,7 +359,10 @@ internal fun DetailPage(recipe: Recipe, selected: Boolean, onFavorite: () -> Uni
                 val intent = Intent(Intent.ACTION_SEND).apply {
                     type = "text/plain"
                     putExtra(Intent.EXTRA_TEXT,
-                        recipe.title + "\nhttps://crossdoomdev.github.io/doshikologiya/")
+                        "🍜 Рассекречен лабораторный протокол «" + recipe.title +
+                        "»! Проверь, выдержит ли твоя кухня этот эксперимент.\n" +
+                        "https://crossdoomdev.github.io/doshikologiya/?recipe=" +
+                        recipe.id + "#recipes")
                 }
                 context.startActivity(Intent.createChooser(intent, "Поделиться рецептом"))
             }, Modifier.fillMaxWidth())
@@ -482,38 +510,134 @@ internal fun SuccessPage(recipe: Recipe, selected: Boolean,
 
 @Composable
 internal fun OraclePage(recipes: List<Recipe>, open: (Recipe) -> Unit) {
+    val context = LocalContext.current
     var chosen by remember { mutableStateOf<Recipe?>(null) }
+    var lastRecipeId by remember { mutableStateOf<String?>(null) }
+    var message by remember { mutableStateOf(
+        "Если холодильник смотрит на тебя так же растерянно, как ты на него — нажимай кнопку. Судьба сама выберет протокол."
+    ) }
+    var stage by remember { mutableStateOf("idle") }
+    var consultation by remember { mutableIntStateOf(0) }
+    var reason by remember { mutableStateOf("") }
+    val reasons = remember {
+        listOf(
+            "Звёзды, кипяток и остатки здравого смысла сошлись именно на этом варианте.",
+            "Оракул проверил все ветви будущего и решил, что эта хотя бы вкусная.",
+            "Вселенная намекает: сейчас лучше довериться лапше, чем продолжать переговоры с холодильником.",
+            "По расчётам Отдела вероятностей, этот выбор снижает риск ещё двадцать минут решать, что приготовить.",
+            "Кармический баланс требует именно этого протокола. Мы тоже не поняли почему, но печать уже поставлена.",
+            "Сегодня твоя внутренняя энергия подозрительно хорошо резонирует с этим блюдом.",
+            "Судьба выбрала это первой. Оракул категорически отрицает использование виртуального кубика.",
+            "Вероятность того, что ты будешь доволен этим решением, значительно выше вероятности придумать что-то лучше самостоятельно.",
+            "Твой кулинарный маршрут на сегодня рассчитан. Спорить можно, но Оракул уже ушёл на обед.",
+            "Именно этот протокол сейчас находится в идеальной точке между «хочу поесть» и «не хочу больше думать»."
+        )
+    }
+    LaunchedEffect(consultation) {
+        if (consultation == 0) return@LaunchedEffect
+        stage = "thinking"
+        chosen = null
+        message = "📜 Раскрываем запечатанные хроники Института…"
+        delay(1000)
+        message = "Сопоставляем древние пророчества с запасами лапши…"
+        delay(1000)
+        message = "Последняя проверка знаков судьбы…"
+        delay(1000)
+        val pool = recipes.filter { it.id != lastRecipeId }.ifEmpty { recipes }
+        val selected = pool.randomOrNull()
+        chosen = selected
+        lastRecipeId = selected?.id
+        reason = reasons.random()
+        stage = "success"
+        message = "Оракул постановил"
+        if (selected != null) {
+            runCatching {
+                ToneGenerator(AudioManager.STREAM_MUSIC, 32).apply {
+                    startTone(ToneGenerator.TONE_PROP_ACK, 180)
+                    android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(
+                        { release() }, 300
+                    )
+                }
+            }
+        }
+    }
+    val transition = rememberInfiniteTransition(label = "oracleFloat")
+    val floatY by transition.animateFloat(
+        initialValue = -5f, targetValue = 5f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(850, easing = EaseInOutSine),
+            repeatMode = RepeatMode.Reverse
+        ), label = "oracleBob"
+    )
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(15.dp)) {
         PageTitle("Отдел вероятностей", "Оракул лапши",
-            "Не знаешь, что приготовить? Доверь свою кулинарную судьбу Оракулу.")
+            "Не знаешь, что покушать? Доверься Оракулу. Он заглянет в твою кулинарную судьбу и выберет один рецепт из всего архива института.")
         RoundedPanel {
             LabBadge("Центральный оракул")
-            AssetPicture("oracle/mage-idle.webp",
-                Modifier.fillMaxWidth().height(229.dp), ContentScale.Fit)
-            RoundedPanel(padding = 13) {
-                Text(if (chosen == null)
-                    "Если холодильник смотрит на тебя растерянно — нажимай кнопку. Судьба сама выберет протокол."
-                    else "Судьба выбрала: «" + chosen!!.title + "».",
-                    color = Cream, fontSize = 15.sp, lineHeight = 22.sp)
+            val art = when (stage) {
+                "thinking" -> "oracle/mage-thinking.webp"
+                "success" -> "oracle/mage-success.webp"
+                else -> "oracle/mage-idle.webp"
             }
-            Spacer(Modifier.height(13.dp))
-            GradientButton("🔮 Узнать, что мне приготовить",
-                { chosen = recipes.randomOrNull() }, Modifier.fillMaxWidth())
-        }
-        chosen?.let { recipe ->
-            RoundedPanel {
-                Overline("Пророчество")
-                Text(recipe.title, color = Cream, fontSize = 22.sp,
-                    fontWeight = FontWeight.Black)
-                Spacer(Modifier.height(9.dp))
-                AssetPicture(recipe.imagePath,
-                    Modifier.fillMaxWidth().height(175.dp).clip(RoundedCornerShape(15.dp)))
-                Spacer(Modifier.height(9.dp))
-                GradientButton("📖 Открыть протокол", { open(recipe) },
-                    Modifier.fillMaxWidth())
+            AssetPicture(
+                art, Modifier.fillMaxWidth().height(233.dp)
+                    .graphicsLayer { translationY = if (stage == "thinking") floatY else 0f },
+                ContentScale.Fit, fallback = false
+            )
+            RoundedPanel(padding = 14) {
+                if (chosen == null) {
+                    Text(message, color = Cream, fontSize = 15.sp, lineHeight = 23.sp)
+                } else {
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(11.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        AssetPicture(chosen!!.imagePath,
+                            Modifier.size(92.dp).clip(RoundedCornerShape(15.dp)))
+                        Column(Modifier.weight(1f)) {
+                            Overline("Оракул постановил")
+                            Text(chosen!!.title, color = Cream, fontSize = 18.sp,
+                                fontWeight = FontWeight.Black)
+                            Text(reason, color = Muted, fontSize = 12.sp, lineHeight = 18.sp)
+                        }
+                    }
+                    Spacer(Modifier.height(12.dp))
+                    GradientButton("📖 Открыть протокол →",
+                        { chosen?.let(open) }, Modifier.fillMaxWidth())
+                }
             }
+            Spacer(Modifier.height(12.dp))
+            GradientButton(
+                if (stage == "thinking") "📜 Оракул изучает хроники…"
+                else if (stage == "success") "🔮 Спросить Оракула ещё раз"
+                else "🔮 Узнать, что мне есть",
+                { if (stage != "thinking" && recipes.isNotEmpty()) consultation++ },
+                Modifier.fillMaxWidth(), enabled = stage != "thinking" && recipes.isNotEmpty()
+            )
         }
+        NativeDailyIndex()
+    }
+}
+
+@Composable
+private fun NativeDailyIndex() {
+    val today = remember { java.time.LocalDate.now() }
+    val seed = today.year * 10000L + today.monthValue * 100L + today.dayOfMonth
+    val forecasts = listOf(
+        "Сегодня допустимы импровизации, но третий пакетик приправы лаборатория официально не одобряет.",
+        "Вероятность удачного эксперимента повышается после добавления яйца.",
+        "День благоприятен для дешёвых решений, которые выглядят неожиданно дорого.",
+        "Лаборатория рекомендует не спорить с человеком, у которого в руках кипяток."
+    )
+    val index = 55 + (seed * 17 % 41).toInt()
+    RoundedPanel(modifier = Modifier.fillMaxWidth()) {
+        Overline("Индекс кулинарной судьбы")
+        Text(index.toString(), color = Amber, fontWeight = FontWeight.Black,
+            fontSize = 48.sp)
+        Text(forecasts[(seed % forecasts.size).toInt()],
+            color = Cream, fontSize = 14.sp, lineHeight = 21.sp)
     }
 }
 
@@ -532,14 +656,20 @@ internal fun WallPage(content: ExtraCatalog, onSupport: () -> Unit) {
             Spacer(Modifier.height(12.dp))
             GradientButton("Поддержать и войти в историю", onSupport, Modifier.fillMaxWidth())
         }
-        content.patrons.forEach { patron ->
+        content.patrons.sortedWith(compareByDescending<PatronItem> {
+            val pieces = it.date.split(".")
+            if (pieces.size == 3) pieces[2] + pieces[1] + pieces[0] else ""
+        }).forEachIndexed { index, patron ->
             RoundedPanel {
                 Row(horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth()) {
-                    Text("🍜 " + patron.name, color = Cream, fontWeight = FontWeight.Black,
+                    Text(listOf("🍜","🥚","🔥","🥢","🧄")[index % 5] +
+                        " " + patron.name, color = Cream, fontWeight = FontWeight.Black,
                         fontSize = 15.sp, modifier = Modifier.weight(1f))
-                    Text(patron.date, color = Muted, fontSize = 10.sp)
+                    Text(patron.amount, color = AmberLight, fontSize = 12.sp,
+                        fontWeight = FontWeight.Black)
                 }
+                Text(patron.date, color = Muted, fontSize = 11.sp)
                 Spacer(Modifier.height(9.dp))
                 Text(patron.text, color = Muted, lineHeight = 20.sp, fontSize = 14.sp)
             }
@@ -559,10 +689,10 @@ internal fun MorePage(content: ExtraCatalog, onSupport: () -> Unit) {
             Overline("Архив института")
             Text("📚 Обновление рецептов", color = Cream, fontSize = 18.sp,
                 fontWeight = FontWeight.Black)
-            Text("Все 50 рецептов уже находятся внутри APK. Загрузка новых рецептов появится в следующих сборках.",
+            Text("Рецепты доступны без интернета. Проверка новых протоколов — только по твоему запросу. Перенос загрузки новых записей ещё выполняется.",
                 color = Muted, fontSize = 13.sp, lineHeight = 20.sp)
             Spacer(Modifier.height(10.dp))
-            OutlineButton("Версия Kotlin 0.2.0 · тестовая",
+            OutlineButton("Версия Kotlin 0.3.0 · тестовая",
                 {}, Modifier.fillMaxWidth(), enabled = false)
         }
         RoundedPanel {

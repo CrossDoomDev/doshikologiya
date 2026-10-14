@@ -5,12 +5,15 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 internal data class NewsItem(val title: String, val text: String, val date: String)
-internal data class PatronItem(val name: String, val text: String, val date: String)
+internal data class PatronItem(val name: String, val text: String, val date: String,
+    val amount: String)
 internal data class ExtraCatalog(
     val noteTitle: String = "Институт дошикологии докладывает",
     val noteText: String = "Архив лаборатории открыт для исследований.",
     val donateUrl: String = "",
     val supportEmail: String = "",
+    val featuredRecipeId: String = "",
+    val categoryOrder: List<String> = listOf("Все"),
     val news: List<NewsItem> = emptyList(),
     val patrons: List<PatronItem> = emptyList()
 ) {
@@ -32,7 +35,7 @@ internal data class ExtraCatalog(
                 val a = JSONArray(json("patrons.json"))
                 (0 until a.length()).map { i -> a.getJSONObject(i) }.map {
                     PatronItem(it.optString("name"), it.optString("text"),
-                        it.optString("date").take(10))
+                        it.optString("date").take(10), it.optString("amount"))
                 }
             }.getOrDefault(emptyList())
             return ExtraCatalog(
@@ -40,6 +43,10 @@ internal data class ExtraCatalog(
                 noteText = banner.optString("text", "Научные новости лаборатории."),
                 donateUrl = config.optString("donateUrl"),
                 supportEmail = config.optString("supportEmail"),
+                featuredRecipeId = config.optString("featuredRecipeId"),
+                categoryOrder = config.optJSONArray("categoryOrder")?.let { a ->
+                    (0 until a.length()).map { a.optString(it) }
+                } ?: listOf("Все"),
                 news = news, patrons = patrons
             )
         }
