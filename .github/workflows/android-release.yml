@@ -3,9 +3,20 @@ name: Дошикология — signed release APK
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, feature/yandex-cooking-banner]
     paths:
       - '.github/workflows/android-release.yml'
+      - 'privacy.html'
+      - 'terms.html'
+      - 'js/features/ads.js'
+      - 'scripts/install-yandex-ads.mjs'
+      - 'data/config.json'
+      - 'index.html'
+      - 'js/main.js'
+      - 'css/styles.css'
+      - 'css/legal.css'
+      - 'tests/ads-bridge.test.mjs'
+      - 'native/android/DoshikAdsPlugin.java'
 
 permissions:
   contents: read
@@ -44,6 +55,7 @@ jobs:
           npx cap add android
           npx cap sync android
           npm run android:icons
+          npm run android:ads
       - name: Restore signing keystore and configure release
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
@@ -87,6 +99,20 @@ jobs:
           APK=android/app/build/outputs/apk/release/app-release.apk
           test -s "$APK"
           "$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)/apksigner" verify --verbose "$APK"
+      - name: Confirm production ID and release package
+        run: |
+          python3 - <<'PY'
+          from zipfile import ZipFile
+          apk = 'android/app/build/outputs/apk/release/app-release.apk'
+          with ZipFile(apk) as z:
+              manifest = z.read('AndroidManifest.xml')
+              assert 'ru.doshikologiya.app'.encode('utf-16le') in manifest
+              assert 'ru.doshikologiya.app.demo'.encode('utf-16le') not in manifest
+              assert '1.1.9'.encode('utf-16le') in manifest
+              dex = b''.join(z.read(n) for n in z.namelist() if n.startswith('classes') and n.endswith('.dex'))
+              assert b'R-M-20184115-1' in dex
+          print("Signed production APK contains correct package, version, and live ad unit")
+          PY
       - name: Upload signed APK artifact
         uses: actions/upload-artifact@v4
         with:

@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.webmanifest?v=3">
   <meta name="application-name" content="Дошикология">
   <meta name="apple-mobile-web-app-title" content="Дошикология">
-  <link rel="stylesheet" href="css/styles.css?v=20261012-compact-centered-cta1">
+  <link rel="stylesheet" href="css/styles.css?v=20261014-no-selection1">
 </head>
 <body>
   <div class="app-splash" id="appSplash" role="status" aria-live="polite" aria-label="Дошикология загружается">
@@ -242,6 +242,23 @@
             </details>
           </section>
 
+          <section class="more-panel hidden" id="adsDiagnosticsSection" aria-labelledby="adsDiagnosticsTitle">
+            <div class="more-panel-heading">
+              <span class="more-panel-icon" aria-hidden="true">📡</span>
+              <div>
+                <div class="section-overline">Техническая проверка</div>
+                <h3 id="adsDiagnosticsTitle">Диагностика рекламы РСЯ</h3>
+              </div>
+            </div>
+            <p class="more-hint">Для проверки сначала открой любой рецепт и запусти режим готовки, затем вернись сюда. Кнопка «Проверить состояние» не запрашивает новую рекламу. Кнопка «Проверить демобаннер» отправит один запрос официальному тестовому блоку Яндекса. До перезапуска приложения будет использоваться тестовый блок без дохода.</p>
+            <div class="ad-diagnostics-controls">
+              <button class="btn secondary" type="button" id="adsDiagnosticsRefreshBtn">Проверить состояние</button>
+              <button class="btn secondary" type="button" id="adsDiagnosticsDemoBtn">Проверить демобаннер</button>
+              <button class="btn secondary" type="button" id="adsDiagnosticsCopyBtn">Скопировать отчёт</button>
+            </div>
+            <textarea id="adsDiagnosticsReport" class="ad-diagnostics-output" readonly rows="10" aria-label="Состояние рекламного SDK">Нажми «Проверить состояние».</textarea>
+          </section>
+
           <section class="more-panel" aria-labelledby="moreLegalTitle">
             <div class="more-panel-heading">
               <span class="more-panel-icon" aria-hidden="true">§</span>
@@ -432,6 +449,6 @@
       </div>
     </section>
   </div>
-  <script type="module" src="js/main.js?v=20261013-layout-fast2"></script>
+  <script type="module" src="js/main.js?v=20261014-frame-tracker1"></script>
 </body>
 </html>

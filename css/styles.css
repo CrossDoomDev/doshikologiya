@@ -814,3 +814,29 @@ button:focus-visible,
   }
   #view-recipes .recipe-media::after {height:24%;}
 }
+
+/* Native banner occupies the previously hidden cooking placeholder only after ad load. */
+.cook-ad.android-ad-slot{box-sizing:border-box;padding:0;border:0;background:none;box-shadow:none;overflow:visible;pointer-events:none;width:100%}
+.cook-ad.android-ad-slot::after,.cook-ad.android-ad-slot > *{display:none!important}
+
+
+/* Visible only in the installed Android app for troubleshooting native ad delivery. */
+.ad-diagnostics-controls{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+.ad-diagnostics-output{display:block;width:100%;padding:14px;min-height:195px;background:#130f0d;color:var(--cream);border:1px solid var(--line-hot);border-radius:14px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;line-height:1.6;resize:vertical;overflow:auto;user-select:text;-webkit-user-select:text}
+
+/* This HTML element reserves *exactly* the native banner's space in the flow.
+   On active scrolling, Android hides the overlay instead of letting it drift. */
+.cook-ad.android-ad-slot{margin-inline:0;max-width:100%;min-width:0;box-sizing:border-box;}
+
+/* Native-app touch UX: labels, captions, buttons and cards are not selectable.
+   Editable search fields preserve caret and selection for typing. */
+html,body,body *,body *::before,body *::after{
+  -webkit-user-select:none!important;
+  user-select:none!important;
+  -webkit-touch-callout:none!important;
+}
+input:not([readonly]),textarea:not([readonly]),[contenteditable="true"]{
+  -webkit-user-select:text!important;
+  user-select:text!important;
+}
+img,a,button{-webkit-user-drag:none;user-drag:none}

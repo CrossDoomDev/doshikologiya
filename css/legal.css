@@ -19,3 +19,16 @@ a{color:var(--amber);overflow-wrap:anywhere}
 a:focus-visible{outline:2px solid var(--amber);outline-offset:4px}
 .legal-footer{display:flex;flex-wrap:wrap;gap:24px;border-top:1px solid var(--line);margin-top:30px;padding-top:22px;font-size:14px}
 @media(max-width:620px){.legal-shell{padding-top:22px}section{padding:18px}h2{font-size:18px}}
+
+/* Native-app touch UX: labels, captions, buttons and cards are not selectable.
+   Editable search fields preserve caret and selection for typing. */
+html,body,body *,body *::before,body *::after{
+  -webkit-user-select:none!important;
+  user-select:none!important;
+  -webkit-touch-callout:none!important;
+}
+input:not([readonly]),textarea:not([readonly]),[contenteditable="true"]{
+  -webkit-user-select:text!important;
+  user-select:text!important;
+}
+img,a,button{-webkit-user-drag:none;user-drag:none}
