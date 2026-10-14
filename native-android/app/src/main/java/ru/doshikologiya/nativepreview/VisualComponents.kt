@@ -196,11 +196,11 @@ internal fun BrandSplash() {
 @Composable
 internal fun NativeTabs(selected: Screen, onSelect: (Screen) -> Unit) {
     val tabs = listOf(
-        Triple(Screen.Home, "Главная", Icons.Outlined.Home),
-        Triple(Screen.Library, "Рецепты", Icons.Outlined.MenuBook),
-        Triple(Screen.Oracle, "Оракул", Icons.Outlined.AutoAwesome),
-        Triple(Screen.Wall, "Стена", Icons.Outlined.FavoriteBorder),
-        Triple(Screen.More, "Ещё", Icons.Outlined.MoreHoriz)
+        Screen.Home to "Главная",
+        Screen.Library to "Рецепты",
+        Screen.Oracle to "Оракул",
+        Screen.Wall to "Стена",
+        Screen.More to "Ещё"
     )
     Row(
         Modifier.fillMaxWidth()
@@ -208,7 +208,7 @@ internal fun NativeTabs(selected: Screen, onSelect: (Screen) -> Unit) {
             .border(1.dp, Color(0x1BFFFFFF))
             .padding(start = 4.dp, end = 4.dp, top = 6.dp, bottom = 5.dp)
     ) {
-        tabs.forEach { (target, label, icon) ->
+        tabs.forEach { (target, label) ->
             val active = selected == target
             Column(
                 Modifier.weight(1f).clip(RoundedCornerShape(12.dp))
@@ -217,12 +217,12 @@ internal fun NativeTabs(selected: Screen, onSelect: (Screen) -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Icon(icon, contentDescription = label,
-                    tint = if (active) Amber else Muted,
-                    modifier = Modifier.size(25.dp))
+                // Trace the original HTML SVG paths instead of substituting
+                // similar-but-different Material icon silhouettes.
+                NativeTabGlyph(target, if (active) Amber else Muted)
                 Text(label, fontSize = 10.sp, fontWeight = FontWeight.Bold,
                     color = if (active) Amber else Muted)
-                Box(Modifier.width(24.dp).height(3.dp).clip(CircleShape)
+                Box(Modifier.width(23.dp).height(3.dp).clip(CircleShape)
                     .background(if (active) Amber else Color.Transparent))
             }
         }
