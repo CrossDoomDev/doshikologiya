@@ -65,6 +65,39 @@ jobs:
           assert 'sticker-chopsticks.webp' in screens
           print('Chime synthesis, cooking success and sticker layout present.')
           PY
+      - name: Verify five parity audit rounds
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          root=Path('native-android/app/src/main/java/ru/doshikologiya/nativepreview')
+          scripts=Path('js')
+          screens=(root/'Screens.kt').read_text()
+          chrono=(root/'NativeChronology.kt').read_text()
+          catalog=(root/'RecipeCatalog.kt').read_text()
+          updater=(root/'RemoteRecipeUpdater.kt').read_text()
+          visuals=(root/'VisualComponents.kt').read_text()
+          magic=(root/'MagicChime.kt').read_text()
+          gradle=Path('native-android/app/build.gradle.kts').read_text()
+          oracle=(scripts/'features/oracle.js').read_text()
+          cooking=(scripts/'features/cooking.js').read_text()
+          assert 'NativeChronology.latestRecipes' in screens
+          assert 'NativeChronology.latestNews' in screens
+          assert 'NativeChronology.newestPatrons' in screens
+          assert 'formatDate(patron.date)' in screens
+          assert 'AnimatedContent(' in screens and 'tween(170)' in screens and 'tween(240, delayMillis = 170)' in screens
+          assert 'Дальше →' in screens and 'cook-main' in cooking
+          assert 'aspectRatio(4f / 3f)' in screens and 'height(500.dp)' in screens
+          assert 'Лаборатория ничего не нашла' in screens
+          assert 'recipe-images-staging-' in updater
+          assert 'revision++' in catalog and 'key2 = revision' in visuals
+          assert 'Работают ли рецепты без интернета?' in screens
+          assert 'BuildConfig.VERSION_NAME' in screens
+          assert 'Mage' not in magic or '523.25' in magic
+          assert 'runOracle()' in oracle
+          assert 'applicationId = "ru.doshikologiya.nativepreview"' in gradle
+          print('All five native parity regression checks passed.')
+          PY
       - name: Compile Android Kotlin preview (no Capacitor)
         working-directory: native-android
         run: gradle :app:assembleDebug --no-daemon --stacktrace

@@ -11,8 +11,8 @@ android {
         applicationId = "ru.doshikologiya.nativepreview"
         minSdk = 26
         targetSdk = 35
-        versionCode = 10
-        versionName = "0.8.1-native-preview"
+        versionCode = 11
+        versionName = "0.9.0-native-preview"
     }
     buildTypes { release { isMinifyEnabled = false } }
     compileOptions {

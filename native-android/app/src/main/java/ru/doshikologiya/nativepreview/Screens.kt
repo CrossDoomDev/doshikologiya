@@ -810,6 +810,9 @@ private fun NativeDailyIndex() {
             fontSize = 48.sp)
         Text(forecasts[(seed % forecasts.size).toInt()],
             color = Cream, fontSize = 14.sp, lineHeight = 21.sp)
+        Spacer(Modifier.height(8.dp))
+        Text("Примечание: индекс не является медицинским, финансовым или вообще каким-либо советом. Это число, которое красиво смотрится крупным шрифтом.",
+            color = Muted, fontSize = 12.sp, lineHeight = 19.sp)
     }
 }
 
@@ -818,15 +821,33 @@ internal fun WallPage(content: ExtraCatalog, onSupport: () -> Unit) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)) {
         PageTitle("Фонд исследований", "Стена меценатов",
-            "Люди, благодаря которым в лаборатории не заканчиваются идеи и кипяток.")
+            "Люди, благодаря которым в лаборатории не заканчиваются идеи, кипяток и домен.")
         RoundedPanel {
-            Text("♥", color = Amber, fontSize = 50.sp)
+            AssetPicture("sticker-heart.webp", Modifier.size(100.dp),
+                ContentScale.Fit, fallback = false)
             Text("Поддержать НИИ лапши", color = Cream,
                 fontSize = 24.sp, fontWeight = FontWeight.Black)
-            Text("Иногда достаточно помочь сделать следующий рецепт чуть лучше.",
-                color = Muted, lineHeight = 20.sp)
+            Text("Не обязательно спасать мир. Иногда достаточно помочь сделать следующий рецепт, экран или эксперимент чуть лучше.",
+                color = Muted, lineHeight = 21.sp, fontSize = 14.sp)
+            Spacer(Modifier.height(10.dp))
+            RoundedPanel(modifier = Modifier.fillMaxWidth(), padding = 13) {
+                Text("🏛️ Оставь след в истории Дошикологии",
+                    color = Cream, fontWeight = FontWeight.Black, fontSize = 15.sp)
+                Spacer(Modifier.height(6.dp))
+                Text("Поддержи институт — и твоё сообщение после модерации может попасть на Стену меценатов. Через годы потомки спросят: «Кто этот человек?» — и мы с гордостью ответим: «Он верил в лапшу раньше всех».",
+                    color = Muted, fontSize = 13.sp, lineHeight = 20.sp)
+                Text("Публикация не гарантируется: сообщения проходят модерацию. Но шанс на цифровое бессмертие официально существует.",
+                    color = Muted, fontSize = 11.sp, lineHeight = 17.sp,
+                    modifier = Modifier.padding(top = 7.dp))
+            }
             Spacer(Modifier.height(12.dp))
-            GradientButton("Поддержать и войти в историю", onSupport, Modifier.fillMaxWidth())
+            PrimaryButton("Поддержать и войти в историю", onSupport, Modifier.fillMaxWidth())
+        }
+        if (content.patrons.isEmpty()) {
+            RoundedPanel {
+                Text("Стена пока пуста. Первый меценат получает почётное право сказать: «Я был здесь до хайпа».",
+                    color = Muted, lineHeight = 21.sp)
+            }
         }
         NativeChronology.newestPatrons(content.patrons).forEachIndexed { index, patron ->
             RoundedPanel {
@@ -919,9 +940,23 @@ internal fun MorePage(content: ExtraCatalog, recipes: List<Recipe>,
                 Spacer(Modifier.height(9.dp))
                 LinearProgressIndicator(progress = { updateProgress },
                     modifier = Modifier.fillMaxWidth(), color = Amber)
+                Text("Загружаем фотографии · " + (updateProgress * 100).toInt() + "%",
+                    color = Muted, fontSize = 12.sp)
             }
             Spacer(Modifier.height(10.dp))
-            Text("Kotlin 0.4.0 · тестовая версия", color = Muted, fontSize = 11.sp)
+            Row(Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically) {
+                Column {
+                    Text("Версия приложения", color = Cream,
+                        fontSize = 14.sp, fontWeight = FontWeight.Black)
+                    Text("Сейчас: " + BuildConfig.VERSION_NAME, color = Muted,
+                        fontSize = 12.sp)
+                }
+                Text("📱", fontSize = 29.sp)
+            }
+            Text("Новые рецепты загружаются здесь. После выпуска Android-версии обновления самого приложения будут доступны через RuStore.",
+                color = Muted, fontSize = 12.sp, lineHeight = 19.sp)
         }
         RoundedPanel {
             Overline("Связь с лабораторией")
@@ -938,8 +973,20 @@ internal fun MorePage(content: ExtraCatalog, recipes: List<Recipe>,
                 { faqExpanded = !faqExpanded }, Modifier.fillMaxWidth())
             if (faqExpanded) {
                 Spacer(Modifier.height(9.dp))
-                Text("Рецепты работают без интернета. Избранное хранится на устройстве. Перед публикацией перенос функций будет завершён.",
-                    color = Muted, fontSize = 13.sp, lineHeight = 20.sp)
+                Column(verticalArrangement = Arrangement.spacedBy(9.dp)) {
+                    Text("Работают ли рецепты без интернета?",
+                        color = Cream, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    Text("В Android — да, встроенный и сохранённый каталог. Для первой загрузки веб-сайта интернет нужен.",
+                        color = Muted, fontSize = 13.sp, lineHeight = 20.sp)
+                    Text("Как получить новые рецепты?",
+                        color = Cream, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    Text("Нажми «Проверить обновления» выше, затем подтверди загрузку.",
+                        color = Muted, fontSize = 13.sp, lineHeight = 20.sp)
+                    Text("Где хранится избранное?", color = Cream,
+                        fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    Text("На устройстве; удаление данных приложения может очистить избранное.",
+                        color = Muted, fontSize = 13.sp, lineHeight = 20.sp)
+                }
             }
         }
         RoundedPanel {
@@ -952,6 +999,11 @@ internal fun MorePage(content: ExtraCatalog, recipes: List<Recipe>,
             Spacer(Modifier.height(9.dp))
             OutlineButton("Пользовательское соглашение  ›",
                 onTerms, Modifier.fillMaxWidth())
+            Spacer(Modifier.height(16.dp))
+            Text("О Дошикологии", color = Cream, fontWeight = FontWeight.Black,
+                fontSize = 15.sp)
+            Text("Институт лапши быстрого приготовления: рецепты, немного магии и кухонные эксперименты. Приложение бесплатно и не требует регистрации.",
+                color = Muted, fontSize = 13.sp, lineHeight = 20.sp)
         }
     }
 }
