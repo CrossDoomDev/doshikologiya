@@ -1,0 +1,35 @@
+name: Direct APK downloads
+on:
+  push:
+    branches:
+      - codex/capacitor-ad-fix-download
+permissions:
+  actions: read
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: doshikologiya-debug-apk
+          run-id: 38586923372
+          github-token: ${{ github.token }}
+          repository: CrossDoomDev/doshikologiya
+          path: apk
+      - uses: actions/download-artifact@v4
+        with:
+          name: doshikologiya-demo-banner-apk
+          run-id: 38586923372
+          github-token: ${{ github.token }}
+          repository: CrossDoomDev/doshikologiya
+          path: demo
+      - name: Publish direct APK links
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp apk/app-debug.apk apk/doshikologiya-capacitor-ads-test.apk
+          cp demo/app-debug.apk demo/doshikologiya-capacitor-ads-demo.apk
+          test -s apk/doshikologiya-capacitor-ads-test.apk
+          test -s demo/doshikologiya-capacitor-ads-demo.apk
+          gh release create capacitor-ads-preview-df5c742 apk/doshikologiya-capacitor-ads-test.apk demo/doshikologiya-capacitor-ads-demo.apk --repo CrossDoomDev/doshikologiya --target df5c742e524360279c02107bef8f78b90cab8058 --title "Capacitor ads preview df5c742" --notes "Updated cooking banner behavior and diagnostic logging. Production APK uses R-M-20184115-1; demo APK uses Yandex demo-banner-yandex." --prerelease --latest=false
