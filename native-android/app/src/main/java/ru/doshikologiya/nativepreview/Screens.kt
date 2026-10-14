@@ -334,11 +334,11 @@ private fun GridCard(r: Recipe, fav: Boolean, toggle: () -> Unit, open: () -> Un
 
 @Composable
 internal fun DetailPage(recipe: Recipe, selected: Boolean, onFavorite: () -> Unit,
-    onCook: () -> Unit, onSupport: () -> Unit
+    onClose: () -> Unit, onCook: () -> Unit, onSupport: () -> Unit
 ) {
     val context = LocalContext.current
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        Box(Modifier.fillMaxWidth().height(310.dp)) {
+        Box(Modifier.fillMaxWidth().height(330.dp)) {
             AssetPicture(recipe.imagePath, Modifier.fillMaxSize())
             Box(Modifier.fillMaxSize().background(Brush.verticalGradient(
                 listOf(Color(0x10080604),Color(0x68080604), Color(0xF4080604)))))
@@ -350,11 +350,17 @@ internal fun DetailPage(recipe: Recipe, selected: Boolean, onFavorite: () -> Uni
                 TinyTag("⏱ " + recipe.time + "   🔥 " + recipe.difficulty +
                     "   💸 " + recipe.cost)
             }
+            Box(Modifier.align(Alignment.TopEnd).padding(14.dp).size(44.dp)
+                .clip(CircleShape).background(Color(0xD0160C08))
+                .border(1.dp, Color(0x33FFFFFF), CircleShape)
+                .clickable(onClick = onClose), contentAlignment = Alignment.Center) {
+                Text("×", color = Color.White, fontSize = 26.sp)
+            }
         }
         Column(Modifier.padding(17.dp),
             verticalArrangement = Arrangement.spacedBy(13.dp)) {
             Text(recipe.description, color = Muted, fontSize = 15.sp, lineHeight = 22.sp)
-            GradientButton("▶ Режим готовки", onCook, Modifier.fillMaxWidth())
+            PrimaryButton("▶ Режим готовки", onCook, Modifier.fillMaxWidth())
             GradientButton(if (selected) "♥ В избранном" else "♡ Добавить в избранное",
                 onFavorite, Modifier.fillMaxWidth())
             OutlineButton("📨 Поделиться протоколом", {
@@ -448,7 +454,7 @@ internal fun CookingPage(recipe: Recipe, step: Int, adsReady: Boolean,
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 OutlineButton("← Назад", previous, Modifier.weight(1f),
                     enabled = step > 0)
-                GradientButton(if (step + 1 == recipe.steps.size) "Готово ✓" else "Далее →",
+                PrimaryButton(if (step + 1 == recipe.steps.size) "Готово ✓" else "Далее →",
                     next, Modifier.weight(1f))
             }
         }
@@ -571,7 +577,7 @@ internal fun SuccessPage(
                 Row(Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(9.dp)) {
                     OutlineButton("Вернуться к рецепту", onReturn, Modifier.weight(1f))
-                    GradientButton("Отлично! ✨", onDone, Modifier.weight(1f))
+                    PrimaryButton("Отлично! ✨", onDone, Modifier.weight(1f))
                 }
             }
         }

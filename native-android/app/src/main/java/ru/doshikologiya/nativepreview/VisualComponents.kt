@@ -150,6 +150,21 @@ internal fun GradientButton(
 }
 
 @Composable
+internal fun PrimaryButton(label: String, onClick: () -> Unit,
+    modifier: Modifier = Modifier, enabled: Boolean = true
+) {
+    Box(modifier.clip(RoundedCornerShape(14.dp))
+        .background(if (enabled) Amber else Surface2)
+        .clickable(enabled = enabled, onClick = onClick)
+        .padding(horizontal = 16.dp, vertical = 14.dp),
+        contentAlignment = Alignment.Center) {
+        Text(label, color = if (enabled) Color(0xFF241607) else Muted,
+            fontWeight = FontWeight.Black, fontSize = 14.sp,
+            textAlign = TextAlign.Center)
+    }
+}
+
+@Composable
 internal fun OutlineButton(
     label: String, onClick: () -> Unit,
     modifier: Modifier = Modifier, selected: Boolean = false, enabled: Boolean = true
