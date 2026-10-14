@@ -487,25 +487,93 @@ private fun NarrowDemoBanner() {
 }
 
 @Composable
-internal fun SuccessPage(recipe: Recipe, selected: Boolean,
-    onFavorite: () -> Unit, onReturn: () -> Unit
+internal fun SuccessPage(
+    recipe: Recipe, selected: Boolean,
+    onFavorite: () -> Unit, onReturn: () -> Unit, onDone: () -> Unit
 ) {
-    Column(Modifier.fillMaxSize().padding(18.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center) {
-        RoundedPanel(modifier = Modifier.fillMaxWidth()) {
-            Text("🎉", fontSize = 70.sp,
-                modifier = Modifier.align(Alignment.CenterHorizontally))
-            Spacer(Modifier.height(12.dp))
-            Overline("Протокол выполнен")
-            Text("Эксперимент удался!", color = Cream, fontSize = 28.sp,
-                fontWeight = FontWeight.Black)
-            Text("Ты приготовил: " + recipe.title, color = Muted)
-            Spacer(Modifier.height(13.dp))
-            GradientButton(if (selected) "♥ В избранном" else "♡ Добавить в избранное",
-                onFavorite, Modifier.fillMaxWidth())
-            Spacer(Modifier.height(9.dp))
-            OutlineButton("Вернуться к рецепту", onReturn, Modifier.fillMaxWidth())
+    val falling = rememberInfiniteTransition(label = "confetti")
+    val progress by falling.animateFloat(
+        initialValue = 0f, targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 2600, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "fallingConfetti"
+    )
+    Box(
+        Modifier.fillMaxSize()
+            .background(Color(0xFF0F0B08)).padding(17.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Box(
+            Modifier.fillMaxWidth()
+                .clip(RoundedCornerShape(28.dp))
+                .background(Brush.verticalGradient(
+                    listOf(Color(0xFF281C12), Color(0xFF140E0A))))
+                .border(1.dp, Amber.copy(alpha = .28f), RoundedCornerShape(28.dp))
+        ) {
+            // The original splash has 28 deterministic falling particles.
+            // Keep the confetti behind the buttons so touch targets stay clear.
+            androidx.compose.foundation.Canvas(Modifier.matchParentSize()) {
+                val colors = listOf(Amber, Orange, AmberLight, Color.White, Color(0xFFD85B10))
+                repeat(28) { index ->
+                    val x = ((3 + (index * 37) % 94) / 100f) * size.width
+                    val t = (progress + (index % 9) * .035f) % 1f
+                    val y = (t * 1.3f - .12f) * size.height
+                    val drift = ((index * 53) % 140 - 70).toFloat() * t
+                    drawRoundRect(
+                        colors[index % colors.size].copy(alpha = (1f - t).coerceIn(0f,1f)),
+                        topLeft = androidx.compose.ui.geometry.Offset(x + drift, y),
+                        size = androidx.compose.ui.geometry.Size(7.dp.toPx(), 15.dp.toPx()),
+                        cornerRadius = androidx.compose.ui.geometry.CornerRadius(3.dp.toPx())
+                    )
+                }
+            }
+            Column(
+                Modifier.fillMaxWidth().padding(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Box(
+                    Modifier.size(104.dp).clip(CircleShape)
+                        .background(Brush.radialGradient(listOf(
+                            AmberLight, Amber, Orange, Color(0xFF9B3E08))))
+                        .border(5.dp, Color(0xC8FFE8B5), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    AssetPicture("sticker-party.webp", Modifier.size(88.dp),
+                        ContentScale.Fit, fallback = false)
+                }
+                LabBadge("Протокол выполнен")
+                Text("Эксперимент удался!", color = Cream, fontSize = 31.sp,
+                    fontWeight = FontWeight.Black, lineHeight = 33.sp,
+                    textAlign = TextAlign.Center)
+                Text(recipe.title, color = AmberLight, fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+                Text(
+                    "Лаборатория подтверждает: ты прошёл весь протокол до конца. " +
+                        "Можно сервировать результат и сделать вид, что всё именно так и планировалось.",
+                    color = Muted, fontSize = 14.sp, lineHeight = 21.sp,
+                    textAlign = TextAlign.Center
+                )
+                RoundedPanel(modifier = Modifier.fillMaxWidth(), padding = 13) {
+                    Text("✓ Статус: съедобно и официально завершено",
+                        color = Cream, fontSize = 13.sp, fontWeight = FontWeight.Black)
+                    Spacer(Modifier.height(4.dp))
+                    Text(recipe.steps.size.toString() + " из " + recipe.steps.size +
+                        " этапов завершены. Протокол закрыт.",
+                        color = Muted, fontSize = 12.sp)
+                }
+                GradientButton(
+                    if (selected) "♥ В избранном" else "♡ Добавить в избранное",
+                    onFavorite, Modifier.fillMaxWidth()
+                )
+                Row(Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(9.dp)) {
+                    OutlineButton("Вернуться к рецепту", onReturn, Modifier.weight(1f))
+                    GradientButton("Отлично! ✨", onDone, Modifier.weight(1f))
+                }
+            }
         }
     }
 }

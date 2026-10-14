@@ -135,7 +135,7 @@ private fun DoshikNativeApp(adsReady: Boolean) {
         Column(Modifier.fillMaxSize()) {
             if (screen is Screen.Cooking) {
                 CookingHeader((screen as Screen.Cooking).recipe.title, ::goBack)
-            } else if (screen is Screen.Detail || screen is Screen.Success) {
+            } else if (screen is Screen.Detail) {
                 NativeHeader("Лабораторный протокол", ::goBack)
             } else if (screen == Screen.LegalPrivacy || screen == Screen.LegalTerms) {
                 NativeHeader("Документы института", ::goBack)
@@ -196,7 +196,8 @@ private fun DoshikNativeApp(adsReady: Boolean) {
                         recipe = page.recipe,
                         selected = page.recipe.id in favorites,
                         onFavorite = { toggleFavorite(page.recipe.id) },
-                        onReturn = { screen = Screen.Detail(page.recipe, page.origin) }
+                        onReturn = { screen = Screen.Detail(page.recipe, page.origin) },
+                        onDone = { screen = page.origin }
                     )
                 }
             }
