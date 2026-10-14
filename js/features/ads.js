@@ -4,7 +4,6 @@ const SLOT_ID = "cookingAdSlot";
 let status = "idle";
 let bannerHeight = 0;
 let bannerWidth = 0;
-let lastLayoutNote = "not measured";
 let syncQueued = false;
 let lastPosition = "";
 let lastNativeVisible = false;
