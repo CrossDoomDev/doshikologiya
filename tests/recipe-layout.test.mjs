@@ -41,7 +41,13 @@ test("all three layouts keep favorite buttons, recipe opening, search and newest
     setAttribute(name, value) { this.attributes[name] = value; }
   }));
   const nodes = {
-    recipesGrid: { dataset: {}, innerHTML: "" },
+    recipesGrid: {
+      dataset: {}, innerHTML: "",
+      insertAdjacentHTML(position, html) {
+        assert.equal(position, "beforeend");
+        this.innerHTML += html;
+      }
+    },
     homeRecipes: { innerHTML: "" }
   };
   const storage = new Map();

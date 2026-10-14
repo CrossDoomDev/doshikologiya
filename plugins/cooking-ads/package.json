@@ -1,0 +1,6 @@
+{
+  "name": "@doshikologiya/cooking-ads",
+  "version": "1.0.0",
+  "private": true,
+  "capacitor": { "android": { "src": "android" } }
+}

@@ -11,7 +11,7 @@ import { renderPatrons } from "./features/support.js?v=20261011-home-feed1";
 import { renderNews } from "./features/news.js?v=20261012-dateonly1";
 import { openRecipe, closeRecipe, toggleFavorite } from "./features/recipe-modal.js?v=20261012-hidden-recipe-dates1";
 import { openDonation } from "./features/donations.js";
-import { initCookingLayout, openCookMode, closeCookMode, navigateCookStep, closeCookSuccess, updateCookSuccessFavorite } from "./features/cooking.js?v=20261012-android-back1";
+import { initCookingLayout, openCookMode, closeCookMode, navigateCookStep, closeCookSuccess, updateCookSuccessFavorite } from "./features/cooking.js?v=20261014-rsya2";
 import { renderDailyIndex, runOracle } from "./features/oracle.js?v=20261010-oracle-art2";
 import { initSplash, hideSplash } from "./features/splash.js?v=20261009-motion2";
 import { initPressFeedback } from "./features/press-feedback.js?v=20261009-motion2";

@@ -2,6 +2,9 @@ name: Дошикология — Android APK
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths: ['plugins/**', 'js/**', 'css/**', 'index.html', 'package*.json', '.github/workflows/android-apk.yml']
 
 permissions:
   contents: read
@@ -38,6 +41,7 @@ jobs:
       - name: Validate and package offline web assets
         run: |
           node scripts/validate-data.mjs
+          node --test tests/*.test.mjs
           npm run android:prepare
           test -f www/data/recipes.json
           test -f www/images/recipes/carbonara-2049.webp
@@ -62,7 +66,7 @@ jobs:
         working-directory: android
         run: |
           chmod +x ./gradlew
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew :doshikologiya-cooking-ads:testDebugUnitTest :app:lintDebug :app:assembleDebug --no-daemon
 
       - name: Upload installable APK
         uses: actions/upload-artifact@v4
@@ -70,4 +74,27 @@ jobs:
           name: doshikologiya-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
-          retention-days: 3
+          retention-days: 7
+
+      - name: Compile SDK demo-banner APK
+        working-directory: android
+        run: ./gradlew :app:assembleDebug -PdoshikAdsDemo=true --no-daemon
+
+      - name: Upload SDK demo-banner APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: doshikologiya-demo-banner-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload test and lint reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: capacitor-ad-reports
+          path: |
+            android/app/build/reports/
+            plugins/cooking-ads/android/build/reports/
+          if-no-files-found: warn
+          retention-days: 7
