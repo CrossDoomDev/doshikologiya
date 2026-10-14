@@ -8,8 +8,12 @@ let syncQueued = false;
 let lastPosition = "";
 let lastNativeVisible = false;
 let positionSerial = 0;
-let scrolling = false;
-let frameTrackingUntil = 0;
+let trackingActive = false;
+let trackingEpoch = 0;
+let positionSamples = 0;
+let positionCalls = 0;
+let lastSampleY = null;
+let lastScrollElement = "none";
 let lastLayoutNote = "not measured";
 let diagnosticError = "";
 let bridgeDiagnostics = "Не проверялся";
@@ -70,6 +74,7 @@ function sendPosition(visible, rect = null, clipTop = 0, force = false) {
   if (!force && key === lastPosition && visible === lastNativeVisible) return;
   lastPosition = key;
   lastNativeVisible = visible;
+  positionCalls++;
   const params = visible && rect
     ? { visible: true, left: rect.left, top: rect.top, width: rect.width,
         height: rect.height, clipTop, viewportWidth: window.innerWidth,
@@ -87,6 +92,8 @@ function syncPosition() {
     return;
   }
   const rect = slot.getBoundingClientRect();
+  positionSamples++;
+  lastSampleY = Math.round(rect.top);
   const headerBottom = document.getElementById("cookTop")?.getBoundingClientRect().bottom || 0;
   const visible = visibleAdIntersection(rect, window.innerWidth, window.innerHeight, headerBottom);
   lastLayoutNote = [
@@ -110,22 +117,28 @@ function schedulePosition() {
 export function didCookingScroll(before, after) {
   return Number.isFinite(before) && Number.isFinite(after) && Math.abs(after - before) >= 1;
 }
-// During kinetic scrolling, run visual updates on animation frames as well as
-// scroll events, allowing the Android view to track intermediate coordinates.
-function followScrollFrames() {
-  frameTrackingUntil = performance.now() + 180;
-  if (scrolling) return;
-  scrolling = true;
-  const tick = () => {
-    schedulePosition();
-    if (performance.now() < frameTrackingUntil && active()) {
-      requestAnimationFrame(tick);
-    } else {
-      scrolling = false;
-      schedulePosition();
+// Browser scrolling can be compositor-driven: scroll events are not a reliable
+// positioning clock for a separate Android View. While the cooking screen is
+// active, sample the actual DOM geometry once per rendered frame. Native
+// bridge calls are sent only when the rounded screen coordinates change.
+function updateFrameTracking() {
+  const shouldTrack = status === "loaded" && active();
+  if (!shouldTrack) {
+    if (trackingActive) {
+      trackingActive = false;
+      trackingEpoch++;
     }
+    return;
+  }
+  if (trackingActive) return;
+  trackingActive = true;
+  const epoch = ++trackingEpoch;
+  const frame = () => {
+    if (!trackingActive || epoch !== trackingEpoch) return;
+    syncPosition();
+    requestAnimationFrame(frame);
   };
-  requestAnimationFrame(tick);
+  requestAnimationFrame(frame);
 }
 function refresh() {
   const slot = document.getElementById(SLOT_ID);
@@ -154,6 +167,7 @@ function refresh() {
   slot.hidden = !show;
   if (show) slot.style.height = `${bannerHeight}px`;
   schedulePosition();
+  updateFrameTracking();
 }
 export function initCookingAds() {
   const plugin = nativePlugin();
@@ -181,21 +195,19 @@ export function initCookingAds() {
   const success = document.getElementById("cookSuccess");
   new MutationObserver(refresh).observe(overlay, { attributes: true, attributeFilter: ["class"] });
   new MutationObserver(refresh).observe(success, { attributes: true, attributeFilter: ["class"] });
-  // touchstart fires for taps and navigation buttons: do not hide the ad.
-  // wheel also fires without movement; the scroll event is authoritative.
-  lastOverlayScrollTop = overlay.scrollTop;
-  overlay.addEventListener("scroll", () => {
-    const nextScrollTop = overlay.scrollTop;
-    if (didCookingScroll(lastOverlayScrollTop, nextScrollTop)) {
-      schedulePosition();
-      followScrollFrames();
-    }
-    lastOverlayScrollTop = nextScrollTop;
-  }, { passive: true });
+  // Scroll events remain useful for immediate updates, but the RAF loop
+  // additionally tracks momentum scrolling and nested WebView scrollers.
+  overlay.addEventListener("scroll", event => {
+    lastScrollElement = event.target?.id || "cookOverlay";
+    schedulePosition();
+  }, { passive: true, capture: true });
+  document.addEventListener("scroll", event => {
+    lastScrollElement = event.target?.id || event.target?.tagName || "document";
+    schedulePosition();
+  }, { passive: true, capture: true });
+  window.addEventListener("scroll", schedulePosition, { passive: true });
   window.addEventListener("resize", schedulePosition, { passive: true });
   window.visualViewport?.addEventListener("resize", schedulePosition, { passive: true });
-  // Older Android WebViews may not expose ResizeObserver. Missing optional
-  // ad layout observers must never prevent the offline recipe catalog loading.
   if (typeof ResizeObserver === "function") {
     const adLayoutObserver = new ResizeObserver(schedulePosition);
     adLayoutObserver.observe(slot);
@@ -205,8 +217,10 @@ export function initCookingAds() {
   document.addEventListener("visibilitychange", refresh);
   window.addEventListener("pagehide", () => {
     slot.hidden = true;
+    updateFrameTracking();
     sendPosition(false, null, 0, true);
   });
+  window.addEventListener("pageshow", refresh);
   refresh();
 }
 
@@ -226,7 +240,7 @@ export async function getAdsDiagnostics() {
   const rect = slot?.getBoundingClientRect();
   return [
     "Дошикология — проверка рекламы РСЯ",
-    "Версия: 1.1.8",
+    "Версия: 1.1.9",
     "Рабочий рекламный блок: R-M-20184115-1",
     "Активный ID SDK: " + (nativeStatus?.adUnit || "нет"),
     "Android: " + (native ? "да" : "нет"),
@@ -240,7 +254,10 @@ export async function getAdsDiagnostics() {
     "Место на экране: " + (rect ? "Y=" + Math.round(rect.top) + ".." + Math.round(rect.bottom) : "—"),
     "Размер баннера (dp): " + bannerWidth + "x" + bannerHeight,
     "Проверка геометрии: " + lastLayoutNote,
-    "Отслеживание прокрутки: " + (scrolling ? "да" : "нет"),
+    "Кадровое отслеживание: " + (trackingActive ? "включено" : "выключено"),
+    "Образцы/позиции: " + positionSamples + " / " + positionCalls,
+    "Последний Y рекламного места: " + (lastSampleY ?? "нет"),
+    "Последний scroll-источник: " + lastScrollElement,
     "Native layer: " + (lastNativeVisible ? "привязан к месту" : "скрыт"),
     "Нативный статус: " + (nativeStatus ? JSON.stringify(nativeStatus, null, 2) : "нет ответа"),
     "Ошибка вызова статуса: " + (nativeError || "нет")

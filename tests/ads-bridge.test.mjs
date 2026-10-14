@@ -125,3 +125,16 @@ test("optional ad layout observers do not block offline recipe startup", () => {
   assert.match(js, /if \(typeof ResizeObserver === "function"\)/);
   assert.doesNotMatch(js, /new ResizeObserver\(schedulePosition\)\.observe/);
 });
+
+test("native cooking ad tracks DOM position every frame without hiding on scroll", () => {
+  const ad = readFileSync(new URL("../js/features/ads.js", import.meta.url), "utf8");
+  const android = readFileSync(new URL("../native/android/DoshikAdsPlugin.java", import.meta.url), "utf8");
+  assert.match(ad, /const shouldTrack = status === "loaded" && active\(\)/);
+  assert.match(ad, /syncPosition\(\);\s+requestAnimationFrame\(frame\)/);
+  assert.match(ad, /positionSamples\+\+/);
+  assert.match(ad, /document\.addEventListener\("scroll"/);
+  assert.doesNotMatch(ad, /hideWhileMoving|followScrollFrames|SCROLL_SETTLE_MS/);
+  assert.match(android, /bannerHost\.setX\(lastHostX\)/);
+  assert.match(android, /bannerHost\.setY\(lastHostY\)/);
+  assert.match(android, /banner\.setY\(\(float\) \(adY - clipTop\)\)/);
+});

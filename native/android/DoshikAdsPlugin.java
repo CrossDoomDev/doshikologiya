@@ -44,6 +44,9 @@ public class DoshikAdsPlugin extends Plugin {
     private int lastAdWidthDp = 0;
     private int lastAdHeightDp = 0;
     private int lastPositionSequence = 0;
+    private int lastPositionCallCount = 0;
+    private float lastHostX = 0f;
+    private float lastHostY = 0f;
     private int slotWidthPx = 0;
     private int slotHeightPx = 0;
     private String hideReason = "not requested";
@@ -73,6 +76,9 @@ public class DoshikAdsPlugin extends Plugin {
             result.put("heightDp", lastAdHeightDp);
             result.put("error", nativeError);
             result.put("lastPositionSequence", lastPositionSequence);
+            result.put("positionCalls", lastPositionCallCount);
+            result.put("actualHostX", lastHostX);
+            result.put("actualHostY", lastHostY);
             result.put("slotWidthPx", slotWidthPx);
             result.put("slotHeightPx", slotHeightPx);
             result.put("bannerWidthPx", bannerWidth);
@@ -219,6 +225,7 @@ public class DoshikAdsPlugin extends Plugin {
                 return;
             }
             lastPositionSequence = incomingSequence;
+            lastPositionCallCount++;
             wantsVisible = call.getBoolean("visible", false);
             if (wantsVisible) {
                 View web = getBridge().getWebView();
@@ -276,18 +283,24 @@ public class DoshikAdsPlugin extends Plugin {
             bannerHost.setVisibility(View.INVISIBLE);
             return;
         }
+        // Moving margins every frame schedules costly Android layout passes.
+        // The host is anchored at root (0,0) and translated using View
+        // properties; only the clipped height needs a layout update.
         FrameLayout.LayoutParams outer = (FrameLayout.LayoutParams) bannerHost.getLayoutParams();
-        outer.width = bannerWidth;
-        outer.height = lastVisibleHeightPx;
-        outer.leftMargin = adX;
-        outer.topMargin = clipTop;
-        bannerHost.setLayoutParams(outer);
-        FrameLayout.LayoutParams inner = (FrameLayout.LayoutParams) banner.getLayoutParams();
-        inner.width = bannerWidth;
-        inner.height = bannerHeight;
-        inner.leftMargin = 0;
-        inner.topMargin = adY - clipTop;
-        banner.setLayoutParams(inner);
+        if (outer.width != bannerWidth || outer.height != lastVisibleHeightPx
+                || outer.leftMargin != 0 || outer.topMargin != 0) {
+            outer.width = bannerWidth;
+            outer.height = lastVisibleHeightPx;
+            outer.leftMargin = 0;
+            outer.topMargin = 0;
+            bannerHost.setLayoutParams(outer);
+        }
+        lastHostX = (float) adX;
+        lastHostY = (float) clipTop;
+        bannerHost.setX(lastHostX);
+        bannerHost.setY(lastHostY);
+        // The child remains full height and moves only within the clip.
+        banner.setY((float) (adY - clipTop));
         bannerHost.setVisibility(View.VISIBLE);
     }
 
