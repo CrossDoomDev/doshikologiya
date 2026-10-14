@@ -2,6 +2,7 @@ import { state } from "../core/state.js";
 import { closeRecipe } from "./recipe-modal.js";
 import { isFavorite } from "../core/favorites.js";
 import { unlockSuccessSound, playSuccessSound } from "./success-sound.js?v=20261010-oracle-mage1";
+import { openCookingAd, closeCookingAd } from "./cooking-ads.js?v=20261014-rsya1";
 
 let cookStepAnimating = false;
 let resizeObserver = null;
@@ -43,6 +44,7 @@ export function openCookMode() {
   overlay.setAttribute("aria-hidden", "false");
   renderCookStep();
   requestAnimationFrame(syncCookTopHeight);
+  void openCookingAd();
 }
 
 export function syncCookTopHeight() {
@@ -53,6 +55,7 @@ export function syncCookTopHeight() {
 }
 
 export function closeCookMode() {
+  closeCookingAd();
   const overlay = document.getElementById("cookOverlay");
   overlay.classList.remove("open");
   overlay.setAttribute("aria-hidden", "true");
@@ -145,6 +148,7 @@ export function updateCookSuccessFavorite() {
 function showCookSuccess() {
   const recipe = state.currentRecipe;
   if (!recipe) return;
+  closeCookingAd();
 
   document.getElementById("successRecipeTitle").textContent = recipe.title;
   document.getElementById("successBadgeText").textContent = `${recipe.steps.length} из ${recipe.steps.length} этапов завершены. Протокол закрыт.`;
