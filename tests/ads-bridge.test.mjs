@@ -108,7 +108,7 @@ test("Android banner host clips the creative instead of hiding it on partial scr
   const native = readFileSync(new URL("../native/android/DoshikAdsPlugin.java", import.meta.url), "utf8");
   const js = readFileSync(new URL("../js/features/ads.js", import.meta.url), "utf8");
   assert.match(native, /bannerHost\.setClipChildren\(true\)/);
-  assert.match(native, /inner\.topMargin = adY - clipTop/);
+  assert.match(native, /banner\.setY\(\(float\) \(adY - clipTop\)\)/);
   assert.match(native, /lastVisibleHeightPx = Math\.max\(0, clipBottom - clipTop\)/);
   assert.doesNotMatch(js, /SCROLL_SETTLE_MS|hideWhileMoving|sendPosition\(false\).*scroll/);
 });
