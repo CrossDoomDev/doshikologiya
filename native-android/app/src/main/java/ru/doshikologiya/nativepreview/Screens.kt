@@ -582,11 +582,17 @@ internal fun CookingPage(recipe: Recipe, step: Int,
                     }
                 }
             }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                OutlineButton("← Назад", { moveStep(previous) }, Modifier.weight(1f),
-                    enabled = step > 0 && !stepLocked)
-                PrimaryButton(if (step + 1 == recipe.steps.size) "Готово ✓" else "Дальше →",
-                    { moveStep(next) }, Modifier.weight(1f))
+            // The banner belongs to the original cook-ad slot: within scrolling
+            // content, after the instruction, before the step controls.
+            // Moving to another step must not recreate or reload this banner.
+            Column(Modifier.fillMaxWidth()) {
+                CookingAdBanner()
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    OutlineButton("← Назад", { moveStep(previous) }, Modifier.weight(1f),
+                        enabled = step > 0 && !stepLocked)
+                    PrimaryButton(if (step + 1 == recipe.steps.size) "Готово ✓" else "Дальше →",
+                        { moveStep(next) }, Modifier.weight(1f))
+                }
             }
         }
         Spacer(Modifier.height(25.dp))
