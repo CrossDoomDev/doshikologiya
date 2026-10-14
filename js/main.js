@@ -13,7 +13,7 @@ import { openRecipe, closeRecipe, toggleFavorite } from "./features/recipe-modal
 import { openDonation } from "./features/donations.js";
 import { initCookingLayout, openCookMode, closeCookMode, navigateCookStep, closeCookSuccess, updateCookSuccessFavorite } from "./features/cooking.js?v=20261012-android-back1";
 import { renderDailyIndex, runOracle } from "./features/oracle.js?v=20261010-oracle-art2";
-import { initCookingAds, initAdsDiagnostics } from "./features/ads.js?v=20261014-smooth-scroll1";
+import { initCookingAds, initAdsDiagnostics } from "./features/ads.js?v=20261014-offline-catalog1";
 import { initSplash, hideSplash } from "./features/splash.js?v=20261009-motion2";
 import { initPressFeedback } from "./features/press-feedback.js?v=20261009-motion2";
 
@@ -176,10 +176,10 @@ async function boot() {
   bindEvents();
   initBackNavigation({ closeCookSuccess, closeCookMode, closeRecipe, goTo });
   initCookingLayout();
-  initCookingAds();
-  initAdsDiagnostics();
   goTo(location.hash.replace("#", "") || "home");
 
+  // The recipe catalog is the core product. Never make offline cooking depend
+  // on an optional ad bridge or a newer Android WebView API.
   const catalog = await loadCatalog();
   applyCatalog(catalog);
   if (nativeAndroid()) {
@@ -190,6 +190,16 @@ async function boot() {
   if (!document.getElementById("view-recipes")?.classList.contains("hidden")) resumeRecipePagination();
   initRecipeUpdates(catalog);
   hideSplash();
+  try {
+    initCookingAds();
+  } catch (error) {
+    console.error("Реклама отключена: ошибка инициализации не влияет на рецепты", error);
+  }
+  try {
+    initAdsDiagnostics();
+  } catch (error) {
+    console.warn("Диагностика рекламы недоступна", error);
+  }
   // Sync the support address and donation link independently of recipe updates.
   void refreshServiceContacts();
 

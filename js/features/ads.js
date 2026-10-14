@@ -194,8 +194,14 @@ export function initCookingAds() {
   }, { passive: true });
   window.addEventListener("resize", schedulePosition, { passive: true });
   window.visualViewport?.addEventListener("resize", schedulePosition, { passive: true });
-  new ResizeObserver(schedulePosition).observe(slot);
-  new ResizeObserver(schedulePosition).observe(document.getElementById("cookTop"));
+  // Older Android WebViews may not expose ResizeObserver. Missing optional
+  // ad layout observers must never prevent the offline recipe catalog loading.
+  if (typeof ResizeObserver === "function") {
+    const adLayoutObserver = new ResizeObserver(schedulePosition);
+    adLayoutObserver.observe(slot);
+    const cookHeader = document.getElementById("cookTop");
+    if (cookHeader) adLayoutObserver.observe(cookHeader);
+  }
   document.addEventListener("visibilitychange", refresh);
   window.addEventListener("pagehide", () => {
     slot.hidden = true;
@@ -220,7 +226,7 @@ export async function getAdsDiagnostics() {
   const rect = slot?.getBoundingClientRect();
   return [
     "Дошикология — проверка рекламы РСЯ",
-    "Версия: 1.1.7",
+    "Версия: 1.1.8",
     "Рабочий рекламный блок: R-M-20184115-1",
     "Активный ID SDK: " + (nativeStatus?.adUnit || "нет"),
     "Android: " + (native ? "да" : "нет"),

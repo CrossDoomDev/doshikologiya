@@ -112,3 +112,16 @@ test("Android banner host clips the creative instead of hiding it on partial scr
   assert.match(native, /lastVisibleHeightPx = Math\.max\(0, clipBottom - clipTop\)/);
   assert.doesNotMatch(js, /SCROLL_SETTLE_MS|hideWhileMoving|sendPosition\(false\).*scroll/);
 });
+
+test("optional ad layout observers do not block offline recipe startup", () => {
+  const main = readFileSync(new URL("../js/main.js", import.meta.url), "utf8");
+  const js = readFileSync(new URL("../js/features/ads.js", import.meta.url), "utf8");
+  const dataStart = main.indexOf("const catalog = await loadCatalog();");
+  const renderStart = main.indexOf("renderAll();", dataStart);
+  const adsStart = main.indexOf("initCookingAds();", dataStart);
+  assert.ok(dataStart > 0 && renderStart > dataStart && adsStart > renderStart,
+    "Recipe data must render before optional ad integration starts");
+  assert.match(main, /try \{\s+initCookingAds\(\);\s+\} catch/);
+  assert.match(js, /if \(typeof ResizeObserver === "function"\)/);
+  assert.doesNotMatch(js, /new ResizeObserver\(schedulePosition\)\.observe/);
+});
