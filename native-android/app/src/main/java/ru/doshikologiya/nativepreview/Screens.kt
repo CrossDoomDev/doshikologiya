@@ -45,15 +45,13 @@ import androidx.compose.animation.core.*
 import androidx.compose.ui.graphics.graphicsLayer
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
-import android.media.AudioManager
-import android.media.ToneGenerator
-import androidx.compose.ui.platform.LocalInspectionMode
+ import androidx.compose.ui.platform.LocalInspectionMode
 
 internal enum class RecipeLayout { LARGE, LIST, GRID }
 
 @Composable
 internal fun HomePage(recipes: List<Recipe>, content: ExtraCatalog,
-    open: (Recipe) -> Unit, all: () -> Unit, oracle: () -> Unit, wall: () -> Unit
+    open: (Recipe) -> Unit, all: () -> Unit, oracle: () -> Unit, donate: () -> Unit
 ) {
     // Match js/features/home.js: favorite editorial recipe every third UTC
     // epoch day; otherwise rotate by epoch-day index.
@@ -118,6 +116,10 @@ internal fun HomePage(recipes: List<Recipe>, content: ExtraCatalog,
             Overline("Лента института")
             Text("Новости лаборатории", fontSize = 21.sp, fontWeight = FontWeight.Black,
                 color = Cream)
+            if (content.news.isEmpty()) {
+                Text("Здесь скоро появятся новости института. Пока мы готовим первую сводку. 🍜",
+                    color = Muted, fontSize = 13.sp)
+            }
             content.news.take(3).forEach {
                 Spacer(Modifier.height(9.dp))
                 HorizontalDivider(color = Hairline)
@@ -128,18 +130,28 @@ internal fun HomePage(recipes: List<Recipe>, content: ExtraCatalog,
             }
         }
         RoundedPanel {
-            Text("🔮", fontSize = 35.sp)
+            Text("🔮", fontSize = 38.sp)
+            Spacer(Modifier.height(8.dp))
             Overline("Отдел вероятностей")
-            Text("Оракул лапши", color = Cream, fontWeight = FontWeight.Black, fontSize = 22.sp)
-            Text("Не можешь выбрать? Доверь решение Оракулу.", color = Muted)
-            Spacer(Modifier.height(12.dp))
-            GradientButton("🔮 Спросить Оракула", oracle, Modifier.fillMaxWidth())
+            Text("Оракул лапши", color = Cream, fontWeight = FontWeight.Black,
+                fontSize = 21.sp)
+            Text("Не знаешь, что съесть? Передай решение в Отдел вероятностей — Оракул выберет один протокол из всего архива.",
+                color = Muted, fontSize = 14.sp, lineHeight = 21.sp)
+            Spacer(Modifier.height(17.dp))
+            GradientButton("🔮 Довериться Оракулу", oracle, Modifier.fillMaxWidth())
         }
         RoundedPanel {
-            Text("♥ Стена меценатов", color = Cream, fontWeight = FontWeight.Black,
-                fontSize = 20.sp)
+            // The web version has a second feature card with a direct donation
+            // action, not a navigation shortcut to the patrons tab.
+            Text("❤️", fontSize = 38.sp)
             Spacer(Modifier.height(8.dp))
-            OutlineButton("Перейти на Стену →", wall, Modifier.fillMaxWidth())
+            Overline("Фонд исследований")
+            Text("Поддержать лабораторию", color = Cream, fontWeight = FontWeight.Black,
+                fontSize = 21.sp)
+            Text("Донаты идут на развитие приложения, новые рецепты и моральную компенсацию испытуемым. А удачное сообщение после модерации может поселиться на Стене меценатов.",
+                color = Muted, fontSize = 14.sp, lineHeight = 21.sp)
+            Spacer(Modifier.height(17.dp))
+            GradientButton("♥ Поддержать проект", donate, Modifier.fillMaxWidth())
         }
     }
 }
@@ -152,10 +164,7 @@ private fun HeroCard(recipe: Recipe, onClick: () -> Unit) {
         AssetPicture(recipe.imagePath, Modifier.fillMaxSize())
         Box(Modifier.fillMaxSize().background(Brush.verticalGradient(
             listOf(Color(0x20080604), Color(0x90080604), Color(0xF9080604)))))
-        AssetPicture("sticker-wave.webp",
-            Modifier.align(Alignment.BottomEnd).padding(end = 9.dp, bottom = 13.dp)
-                .size(76.dp), ContentScale.Fit, fallback = false)
-        Column(Modifier.align(Alignment.BottomStart).padding(19.dp),
+        Column(Modifier.align(Alignment.BottomStart).fillMaxWidth().padding(19.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)) {
             LabBadge("Эксперимент дня")
             Text(recipe.title, color = Cream, fontSize = 31.sp, lineHeight = 33.sp,
@@ -168,7 +177,17 @@ private fun HeroCard(recipe: Recipe, onClick: () -> Unit) {
                 TinyTag("💸 " + recipe.cost)
             }
             Spacer(Modifier.height(7.dp))
-            GradientButton("📖 Открыть протокол", onClick, Modifier.fillMaxWidth(.88f))
+            // Unlike the old overlapping Box, allocate a real side-by-side
+            // slot so the mascot can never disappear underneath the button.
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(7.dp)
+            ) {
+                GradientButton("📖 Открыть протокол", onClick, Modifier.weight(1f))
+                AssetPicture("sticker-wave.webp",
+                    Modifier.size(72.dp), ContentScale.Fit, fallback = false)
+            }
         }
     }
 }
@@ -201,8 +220,15 @@ internal fun LibraryPage(
     Column(Modifier.fillMaxSize()) {
         Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            PageTitle("Архив института", "Лабораторные протоколы",
-                "Ищи по названию или выбирай кафедру.")
+            Box(Modifier.fillMaxWidth()) {
+                Column(Modifier.fillMaxWidth().padding(end = 82.dp)) {
+                    PageTitle("Архив института", "Лабораторные протоколы",
+                        "Ищи по названию или выбирай кафедру. Избранные рецепты сохраняются прямо на устройстве.")
+                }
+                AssetPicture("sticker-chopsticks.webp",
+                    Modifier.align(Alignment.TopEnd).size(79.dp),
+                    ContentScale.Fit, fallback = false)
+            }
             OutlinedTextField(value = query, onValueChange = onQuery,
                 singleLine = true, modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(15.dp),
@@ -626,16 +652,7 @@ internal fun OraclePage(recipes: List<Recipe>, open: (Recipe) -> Unit) {
         reason = reasons.random()
         stage = "success"
         message = "Оракул постановил"
-        if (selected != null) {
-            runCatching {
-                ToneGenerator(AudioManager.STREAM_MUSIC, 32).apply {
-                    startTone(ToneGenerator.TONE_PROP_ACK, 180)
-                    android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(
-                        { release() }, 300
-                    )
-                }
-            }
-        }
+        if (selected != null) MagicChime.play()
     }
     val transition = rememberInfiniteTransition(label = "oracleFloat")
     val floatY by transition.animateFloat(
@@ -709,7 +726,9 @@ private fun NativeDailyIndex() {
     )
     val index = 55 + (seed * 17 % 41).toInt()
     RoundedPanel(modifier = Modifier.fillMaxWidth()) {
-        Overline("Индекс кулинарной судьбы")
+        Overline("Показатель дня")
+        Text("Индекс дошикологии", color = Cream, fontWeight = FontWeight.Black,
+            fontSize = 19.sp)
         Text(index.toString(), color = Amber, fontWeight = FontWeight.Black,
             fontSize = 48.sp)
         Text(forecasts[(seed % forecasts.size).toInt()],

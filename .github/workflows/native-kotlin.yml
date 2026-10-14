@@ -50,6 +50,21 @@ jobs:
           assert 'WindowManager.LayoutParams.FLAG_FULLSCREEN' not in source
           print('System status/navigation bars and IME are handled by Compose insets.')
           PY
+      - name: Check Oracle sound and mascot parity
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          native=Path('native-android/app/src/main/java/ru/doshikologiya/nativepreview')
+          sound=(native/'MagicChime.kt').read_text()
+          screens=(native/'Screens.kt').read_text()
+          main=(native/'MainActivity.kt').read_text()
+          assert all(note in sound for note in ('523.25','659.25','783.99','1046.5','2.02','.115','.015'))
+          assert 'ToneGenerator(' not in screens
+          assert 'MagicChime.play()' in screens and 'MagicChime.play()' in main
+          assert 'Modifier.weight(1f)' in screens and 'sticker-wave.webp' in screens
+          assert 'sticker-chopsticks.webp' in screens
+          print('Chime synthesis, cooking success and sticker layout present.')
+          PY
       - name: Compile Android Kotlin preview (no Capacitor)
         working-directory: native-android
         run: gradle :app:assembleDebug --no-daemon --stacktrace

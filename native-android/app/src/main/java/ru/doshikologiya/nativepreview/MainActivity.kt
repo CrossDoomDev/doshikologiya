@@ -144,7 +144,7 @@ private fun DoshikNativeApp(adsReady: Boolean) {
                         open = { openDetail(it, Screen.Home) },
                         all = { screen = Screen.Library },
                         oracle = { screen = Screen.Oracle },
-                        wall = { screen = Screen.Wall })
+                        donate = { openExternal(context, content.donateUrl) })
                     Screen.Library -> LibraryPage(
                         recipes = recipes, query = query, onQuery = { query = it },
                         onlyFavorites = onlyFavorites, onFavorites = { onlyFavorites = !onlyFavorites },
@@ -191,13 +191,16 @@ private fun DoshikNativeApp(adsReady: Boolean) {
                         },
                         onExit = ::goBack
                     )
-                    is Screen.Success -> SuccessPage(
+                    is Screen.Success -> {
+                        LaunchedEffect(page.recipe.id) { MagicChime.play() }
+                        SuccessPage(
                         recipe = page.recipe,
                         selected = page.recipe.id in favorites,
                         onFavorite = { toggleFavorite(page.recipe.id) },
                         onReturn = { screen = Screen.Detail(page.recipe, page.origin) },
                         onDone = { screen = page.origin }
-                    )
+                        )
+                    }
                 }
             }
             if (screen !is Screen.Detail && screen !is Screen.Cooking &&
