@@ -60,6 +60,8 @@ internal sealed interface Screen {
     data object Oracle : Screen
     data object Wall : Screen
     data object More : Screen
+    data object LegalPrivacy : Screen
+    data object LegalTerms : Screen
     data class Detail(val recipe: Recipe, val origin: Screen) : Screen
     data class Cooking(val recipe: Recipe, val origin: Screen) : Screen
     data class Success(val recipe: Recipe, val origin: Screen) : Screen
@@ -108,6 +110,7 @@ private fun DoshikNativeApp(adsReady: Boolean) {
             is Screen.Cooking -> Screen.Detail(current.recipe, current.origin)
             is Screen.Success -> Screen.Detail(current.recipe, current.origin)
             is Screen.Detail -> current.origin
+            Screen.LegalPrivacy, Screen.LegalTerms -> Screen.More
             else -> Screen.Home
         }
     }
@@ -134,6 +137,8 @@ private fun DoshikNativeApp(adsReady: Boolean) {
                 CookingHeader((screen as Screen.Cooking).recipe.title, ::goBack)
             } else if (screen is Screen.Detail || screen is Screen.Success) {
                 NativeHeader("Лабораторный протокол", ::goBack)
+            } else if (screen == Screen.LegalPrivacy || screen == Screen.LegalTerms) {
+                NativeHeader("Документы института", ::goBack)
             }
             Box(Modifier.weight(1f)) {
                 when (val page = screen) {
@@ -157,9 +162,13 @@ private fun DoshikNativeApp(adsReady: Boolean) {
                     )
                     Screen.Oracle -> OraclePage(recipes) { openDetail(it, Screen.Oracle) }
                     Screen.Wall -> WallPage(content, onSupport = { openExternal(context, content.donateUrl) })
+                    Screen.LegalPrivacy -> LegalPage("privacy")
+                    Screen.LegalTerms -> LegalPage("terms")
                     Screen.More -> MorePage(
                         content = content, recipes = recipes,
                         onCatalogUpdated = { recipes = it },
+                        onPrivacy = { screen = Screen.LegalPrivacy },
+                        onTerms = { screen = Screen.LegalTerms },
                         onSupport = {
                         if (content.supportEmail.isNotBlank()) {
                             openExternal(context, "mailto:" + content.supportEmail)
@@ -191,7 +200,9 @@ private fun DoshikNativeApp(adsReady: Boolean) {
                     )
                 }
             }
-            if (screen !is Screen.Detail && screen !is Screen.Cooking && screen !is Screen.Success) {
+            if (screen !is Screen.Detail && screen !is Screen.Cooking &&
+                screen !is Screen.Success && screen != Screen.LegalPrivacy &&
+                screen != Screen.LegalTerms) {
                 NativeTabs(selected = tab) { screen = it }
             }
         }

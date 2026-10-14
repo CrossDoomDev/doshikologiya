@@ -681,7 +681,8 @@ internal fun WallPage(content: ExtraCatalog, onSupport: () -> Unit) {
 
 @Composable
 internal fun MorePage(content: ExtraCatalog, recipes: List<Recipe>,
-    onCatalogUpdated: (List<Recipe>) -> Unit, onSupport: () -> Unit
+    onCatalogUpdated: (List<Recipe>) -> Unit,
+    onPrivacy: () -> Unit, onTerms: () -> Unit, onSupport: () -> Unit
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -779,12 +780,10 @@ internal fun MorePage(content: ExtraCatalog, recipes: List<Recipe>,
                 fontWeight = FontWeight.Black)
             Spacer(Modifier.height(9.dp))
             OutlineButton("Политика конфиденциальности  ›",
-                { openExternal(context, "https://crossdoomdev.github.io/doshikologiya/privacy.html") },
-                Modifier.fillMaxWidth())
+                onPrivacy, Modifier.fillMaxWidth())
             Spacer(Modifier.height(9.dp))
             OutlineButton("Пользовательское соглашение  ›",
-                { openExternal(context, "https://crossdoomdev.github.io/doshikologiya/terms.html") },
-                Modifier.fillMaxWidth())
+                onTerms, Modifier.fillMaxWidth())
         }
     }
 }
