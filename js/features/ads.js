@@ -113,10 +113,6 @@ export function didCookingScroll(before, after) {
 }
 // During kinetic scrolling, run visual updates on animation frames as well as
 // scroll events, allowing the Android view to track intermediate coordinates.
-export function didCookingScroll(before, after) {
-  return Number.isFinite(before) && Number.isFinite(after)
-    && Math.abs(after - before) >= 1;
-}
 function followScrollFrames() {
   frameTrackingUntil = performance.now() + 180;
   if (scrolling) return;
