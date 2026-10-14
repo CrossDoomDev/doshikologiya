@@ -107,9 +107,11 @@ internal fun HomePage(recipes: List<Recipe>, content: ExtraCatalog,
                 Text("Последние пять рецептов", fontWeight = FontWeight.Black,
                     color = Cream, fontSize = 21.sp)
             }
-            Text("Все →", color = Amber, fontSize = 13.sp,
+            Text("Все протоколы →", color = Amber, fontSize = 13.sp,
                 modifier = Modifier.clickable(onClick = all).padding(4.dp))
         }
+        Text("Пять последних рецептов лаборатории. Листай ленту в сторону.",
+            color = Muted, fontSize = 12.sp, lineHeight = 17.sp)
         Row(Modifier.horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             newest.forEach { recipe ->
@@ -171,7 +173,7 @@ internal fun HomePage(recipes: List<Recipe>, content: ExtraCatalog,
 
 @Composable
 private fun HeroCard(recipe: Recipe, onClick: () -> Unit) {
-    Box(Modifier.fillMaxWidth().height(482.dp)
+    Box(Modifier.fillMaxWidth().height(500.dp)
         .clip(RoundedCornerShape(25.dp)).background(Surface)
         .border(1.dp, Hairline, RoundedCornerShape(25.dp))) {
         AssetPicture(recipe.imagePath, Modifier.fillMaxSize())
@@ -180,7 +182,7 @@ private fun HeroCard(recipe: Recipe, onClick: () -> Unit) {
         Column(Modifier.align(Alignment.BottomStart).fillMaxWidth().padding(19.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)) {
             LabBadge("Эксперимент дня")
-            Text(recipe.title, color = Cream, fontSize = 31.sp, lineHeight = 33.sp,
+            Text(recipe.title, color = Cream, fontSize = 38.sp, lineHeight = 36.sp,
                 fontWeight = FontWeight.Black, maxLines = 4)
             Text(recipe.description, color = Color(0xFFE9DCC9), fontSize = 14.sp,
                 lineHeight = 20.sp, maxLines = 4, overflow = TextOverflow.Ellipsis)
@@ -246,8 +248,11 @@ internal fun LibraryPage(
                 singleLine = true, modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(15.dp),
                 placeholder = { Text("🔎 Найти протокол…", color = Muted) })
-            OutlineButton("♡ Только избранное", onFavorites,
-                modifier = Modifier.fillMaxWidth(), selected = onlyFavorites)
+            OutlineButton(
+                if (onlyFavorites) "♥ Показываем избранное" else "♡ Только избранное",
+                onFavorites, modifier = Modifier.fillMaxWidth(),
+                selected = onlyFavorites
+            )
             Row(Modifier.horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(7.dp)) {
                 categories.forEach { name ->
@@ -282,7 +287,19 @@ internal fun LibraryPage(
                 }
             }
         }
-        if (layout == RecipeLayout.GRID) {
+        if (filtered.isEmpty()) {
+            Box(
+                Modifier.fillMaxWidth().padding(12.dp)
+                    .border(1.dp, Hairline, RoundedCornerShape(18.dp))
+                    .background(Color(0x07FFFFFF), RoundedCornerShape(18.dp))
+                    .padding(horizontal = 20.dp, vertical = 36.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Лаборатория ничего не нашла. Возможно, рецепт засекречен.",
+                    color = Muted, fontSize = 14.sp, textAlign = TextAlign.Center,
+                    lineHeight = 22.sp)
+            }
+        } else if (layout == RecipeLayout.GRID) {
             LazyVerticalGrid(columns = GridCells.Fixed(2),
                 contentPadding = PaddingValues(10.dp),
                 horizontalArrangement = Arrangement.spacedBy(9.dp),
@@ -320,7 +337,7 @@ private fun Heart(selected: Boolean, onClick: () -> Unit) {
 private fun LargeCard(r: Recipe, fav: Boolean, toggle: () -> Unit, open: () -> Unit) {
     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp))
         .background(Surface).border(1.dp, Hairline, RoundedCornerShape(22.dp))) {
-        Box(Modifier.fillMaxWidth().height(216.dp)) {
+        Box(Modifier.fillMaxWidth().aspectRatio(4f / 3f)) {
             AssetPicture(r.imagePath, Modifier.fillMaxSize())
             Box(Modifier.fillMaxSize().background(Brush.verticalGradient(
                 listOf(Color.Transparent, Color.Transparent, Color(0xD00B0805)))))
@@ -328,7 +345,7 @@ private fun LargeCard(r: Recipe, fav: Boolean, toggle: () -> Unit, open: () -> U
             Box(Modifier.align(Alignment.BottomStart).padding(10.dp)) { TinyTag(r.category) }
         }
         Column(Modifier.padding(15.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
-            Text(r.title, color = Cream, fontSize = 21.sp, fontWeight = FontWeight.Black)
+            Text(r.title, color = Cream, fontSize = 19.sp, fontWeight = FontWeight.Black)
             Text(r.description, color = Muted, fontSize = 13.sp, maxLines = 3,
                 lineHeight = 19.sp, overflow = TextOverflow.Ellipsis)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
