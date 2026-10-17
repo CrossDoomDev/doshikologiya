@@ -32,6 +32,11 @@ jobs:
           chmod +x ./gradlew
           ./gradlew assembleDebug --no-daemon
           test -s app/build/outputs/apk/debug/app-debug.apk
+      - name: Enable KVM acceleration on GitHub runner
+        run: |
+          if [ ! -e /dev/kvm ]; then echo "::error::KVM not available"; exit 1; fi
+          sudo chmod 666 /dev/kvm
+          ls -l /dev/kvm
       - name: Capture on native Android emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -43,7 +48,7 @@ jobs:
           heap-size: 512M
           disk-size: 4096M
           disable-animations: true
-          emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -camera-back none -camera-front none
+          emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -camera-back none -camera-front none -no-snapshot
           script: |
             set -euxo pipefail
             adb shell wm size 1080x1920
