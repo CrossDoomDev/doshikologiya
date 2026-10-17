@@ -55,7 +55,10 @@ try {
   await snap('01_home','#view-home:not(.hidden)');
   await nav('recipes');
   await snap('02_recipes','#recipesGrid .recipe-card');
-  await page.locator('#recipesGrid [data-open-recipe]').first().click();
+  // Pick a visually rich recipe already present in the real bundled catalog.
+  await page.locator('#recipeSearch').fill('Карбонара');
+  await page.locator('#recipesGrid [data-open-recipe="carbonara-2049"]').waitFor({state:'visible',timeout:10000});
+  await page.locator('#recipesGrid [data-open-recipe="carbonara-2049"]').click();
   await snap('03_recipe_details','#recipeModal.open #modalTitle');
   await page.locator('#cookStartBtn').click();
   await snap('04_cooking_mode','#cookOverlay.open #cookStepText');
