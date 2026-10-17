@@ -1,0 +1,114 @@
+name: RuStore Android screenshots 9x16
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/rustore-screenshots.yml']
+permissions:
+  contents: write
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Build Android debug APK from current app
+        run: |
+          npm install --no-audit --no-fund
+          npm install --no-save --no-audit --no-fund playwright-core
+          node scripts/validate-data.mjs
+          npm run android:prepare
+          npx cap add android
+          npx cap sync android
+          npm run android:icons
+          cd android
+          chmod +x ./gradlew
+          ./gradlew assembleDebug --no-daemon
+          test -s app/build/outputs/apk/debug/app-debug.apk
+      - name: Capture on native Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          ram-size: 3072M
+          heap-size: 512M
+          disk-size: 4096M
+          disable-animations: true
+          emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -camera-back none -camera-front none
+          script: |
+            set -euxo pipefail
+            adb shell wm size 1080x1920
+            adb shell wm density 420
+            adb shell settings put system screen_off_timeout 1800000
+            adb shell input keyevent KEYCODE_WAKEUP
+            adb shell wm dismiss-keyguard || true
+            adb install -r android/app/build/outputs/apk/debug/app-debug.apk
+            adb shell am start -n ru.doshikologiya.app/.MainActivity
+            sleep 10
+            pid="$(adb shell pidof ru.doshikologiya.app | tr -d '\r' | awk '{print $1}')"
+            echo "App PID=$pid"
+            socket=""
+            for attempt in $(seq 1 30); do
+              socket="$(adb shell cat /proc/net/unix | tr -d '\r' | grep -oE "webview_devtools_remote_$pid" | head -n 1 || true)"
+              if [ -n "$socket" ]; then break; fi
+              sleep 2
+            done
+            echo "WebView debugging socket=$socket"
+            if [ -z "$socket" ]; then
+              echo "::error::Debug Android WebView socket not found"
+              adb logcat -d -t 300 | tail -120 || true
+              exit 1
+            fi
+            adb forward tcp:9222 "localabstract:$socket"
+            curl -fsS http://127.0.0.1:9222/json/list | head -c 3000 || true
+            node scripts/capture-rustore.mjs
+      - name: Verify and package screenshots
+        run: |
+          python3 -m pip -q install Pillow
+          python3 - <<'PY'
+          from PIL import Image, ImageStat
+          from pathlib import Path
+          paths=sorted(Path('store/rustore/screenshots').glob('*.png'))
+          assert len(paths)==6, f'Expected 6 screenshots, got {len(paths)}'
+          for p in paths:
+              im=Image.open(p).convert('RGB')
+              assert im.size==(1080,1920), f'Wrong size for {p}: {im.size}'
+              assert max(ImageStat.Stat(im).stddev)>15, f'Screenshot appears blank: {p}'
+              print(p, im.size)
+          PY
+          cat > store/rustore/README.md <<'EOF'
+          # RuStore screenshots for Doshikologiya
+
+          Captured from an actual Android emulator using adb screencap,
+          running the current Capacitor APK built from this repository.
+          All images are exactly 1080x1920 (9:16), without promotional overlays.
+
+          Screens: main page, recipes, recipe details, cooking mode,
+          Oracle result, patrons wall.
+          EOF
+          cd store/rustore
+          zip -q -9 -r doshikologiya-rustore-screenshots-1080x1920.zip screenshots README.md
+          unzip -t doshikologiya-rustore-screenshots-1080x1920.zip | tail -2
+      - uses: actions/upload-artifact@v4
+        with:
+          name: doshikologiya-rustore-1080x1920
+          path: store/rustore/doshikologiya-rustore-screenshots-1080x1920.zip
+          if-no-files-found: error
+          retention-days: 30
+      - name: Commit screenshots for permanent download
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add store/rustore/screenshots store/rustore/README.md store/rustore/doshikologiya-rustore-screenshots-1080x1920.zip
+          if git diff --cached --quiet; then echo 'No changes'; exit 0; fi
+          git commit -m 'Add native 1080x1920 Android screenshots for RuStore'
+          git push
