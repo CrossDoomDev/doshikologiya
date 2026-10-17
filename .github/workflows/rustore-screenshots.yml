@@ -50,7 +50,7 @@ jobs:
           disable-animations: true
           emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -camera-back none -camera-front none -no-snapshot
           script: |
-            set -euxo pipefail
+            set -eu
             adb shell wm size 1080x1920
             adb shell wm density 420
             adb shell settings put system screen_off_timeout 1800000
