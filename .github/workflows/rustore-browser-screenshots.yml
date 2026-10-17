@@ -1,0 +1,62 @@
+name: RuStore mobile webview screenshots fallback
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/rustore-browser-screenshots.yml']
+permissions:
+  contents: write
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build local mobile webview from current Capacitor source
+        run: |
+          npm install --no-audit --no-fund
+          npm install --no-save --no-audit --no-fund playwright
+          npx playwright install chromium
+          npm run android:prepare
+          python3 -m http.server 8765 --directory www >/tmp/doshikologiya-http.log 2>&1 &
+          sleep 2
+          node scripts/capture-rustore-browser.mjs
+      - name: Validate and archive exact 9:16 PNG screenshots
+        run: |
+          python3 -m pip -q install Pillow
+          python3 - <<'PY'
+          from PIL import Image, ImageStat
+          from pathlib import Path
+          images=sorted(Path('store/rustore-browser/screenshots').glob('*.png'))
+          assert len(images)==6, f'Expected 6 images, found {len(images)}'
+          for p in images:
+            im=Image.open(p).convert('RGB')
+            assert im.size==(1080,1920), (str(p),im.size)
+            assert max(ImageStat.Stat(im).stddev)>15, 'Blank image '+str(p)
+            print(p, im.size, p.stat().st_size)
+          PY
+          cat > store/rustore-browser/README.md <<'EOF'
+          Source: latest offline Capacitor HTML/CSS/JS/images from this repo.
+          Captured with mobile Chromium rendering of the same app content.
+          These are WebView-style images, not native Android emulator screenshots.
+          Size: 1080x1920 pixels exactly (9:16), no advertising overlays.
+          EOF
+          cd store/rustore-browser
+          zip -q -9 -r doshikologiya-mobile-screenshots-1080x1920.zip screenshots README.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: doshikologiya-mobile-screenshots-backup
+          path: store/rustore-browser/doshikologiya-mobile-screenshots-1080x1920.zip
+          retention-days: 30
+          if-no-files-found: error
+      - name: Commit archive and screenshots
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add store/rustore-browser
+          git commit -m 'Save 1080x1920 mobile screenshots from app interface'
+          git pull --rebase origin main
+          git push origin HEAD:main
