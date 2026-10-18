@@ -70,6 +70,7 @@ async function capture(name,selector){
   if(png.subarray(0,8).toString('hex')!=='89504e470d0a1a0a')throw new Error('Not a PNG: '+name);
   const w=png.readUInt32BE(16),h=png.readUInt32BE(20);
   if(w!==1080||h!==1920)throw new Error('Wrong size for '+name+': '+w+'x'+h);
+  if(png.length<180000)throw new Error('Screenshot unexpectedly small / not fully rendered: '+name+' ('+png.length+' bytes)');
   await fs.writeFile(path.join(out,name+'.png'),png);
   console.log('[CAPTURE]',name,w+'x'+h,png.length,'bytes');
 }
@@ -85,6 +86,9 @@ try{
   await evalJS("document.querySelector('#recipesGrid [data-open-recipe=\"carbonara-2049\"]').click();true");
   await capture('03_recipe_details','#recipeModal.open #modalPhoto');
   await evalJS("document.querySelector('#cookStartBtn').click();true");
+  await waitFor("!!document.querySelector('#cookOverlay.open #cookImage')?.naturalWidth",'cooking photo loaded');
+  // Android WebView needs extra frames to compose the full-screen cooking overlay.
+  await sleep(2600);
   await capture('04_cooking_mode','#cookOverlay.open #cookStepText');
   await evalJS("document.querySelector('#cookCloseBtn').click();document.querySelector('#closeModal').click();true");
   await navigate('oracle');
