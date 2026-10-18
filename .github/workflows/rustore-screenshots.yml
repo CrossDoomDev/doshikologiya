@@ -3,7 +3,10 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['.github/workflows/rustore-screenshots.yml']
+    paths:
+      - '.github/workflows/rustore-screenshots.yml'
+      - 'scripts/capture-rustore.mjs'
+      - 'scripts/run-rustore-emulator-capture.sh'
 permissions:
   contents: write
 jobs:
