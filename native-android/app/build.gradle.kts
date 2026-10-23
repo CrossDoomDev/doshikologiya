@@ -7,12 +7,12 @@ android {
     namespace = "ru.doshikologiya.nativepreview"
     compileSdk = 35
     defaultConfig {
-        // Preview remains independent of the published app.
-        applicationId = "ru.doshikologiya.nativepreview"
+        // Production package ID must match the existing RuStore installation.
+        applicationId = "ru.doshikologiya.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 12
-        versionName = "0.10.0-native-preview"
+        versionCode = 100
+        versionName = "1.1.0"
     }
     buildTypes { release { isMinifyEnabled = false } }
     compileOptions {
