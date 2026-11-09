@@ -70,11 +70,12 @@ const cupExtension = Buffer.from(String.raw`<svg xmlns="http://www.w3.org/2000/s
         stroke="#130c10" stroke-width="10" stroke-linecap="round" fill="none"/>
 </svg>`);
 
-const result = await sharp({
+const composed = await sharp({
   create: { width: SIZE, height: SIZE, channels: 4,
     background: { r: 0, g: 0, b: 0, alpha: 0 } }
 }).composite([{ input: cupExtension, left: 0, top: 0 },
-              { input: upper, left: 0, top: 0 }])
+              { input: upper, left: 0, top: 0 }]).png().toBuffer();
+const result = await sharp(composed)
   .resize(512, 512, { kernel: sharp.kernel.lanczos3 })
   .png({ compressionLevel: 9, palette: true, quality: 100 })
   .toBuffer();
