@@ -1,0 +1,42 @@
+name: Export AppGallery PNG icon
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/export-huawei-icon.mjs'
+      - '.github/workflows/huawei-icon.yml'
+      - 'images/ui/doshikologiya-app-icon.svg'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-store-icon:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Sharp
+        run: npm install --no-audit --no-fund
+      - name: Render icon from original SVG artwork
+        run: node scripts/export-huawei-icon.mjs
+      - name: Validate output
+        run: |
+          file images/ui/doshikologiya-app-icon-huawei.png
+          test -s images/ui/doshikologiya-app-icon-huawei.png
+      - name: Commit the PNG into images/ui
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add images/ui/doshikologiya-app-icon-huawei.png
+          if ! git diff --cached --quiet; then
+            git commit -m "Add Huawei AppGallery 512x512 PNG store icon"
+            git push
+          fi
