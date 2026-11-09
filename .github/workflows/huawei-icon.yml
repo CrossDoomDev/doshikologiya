@@ -29,14 +29,17 @@ jobs:
         run: node scripts/export-huawei-icon.mjs
       - name: Validate output
         run: |
-          file images/ui/doshikologiya-app-icon-huawei.png
-          test -s images/ui/doshikologiya-app-icon-huawei.png
+          file images/ui/doshikologiya-app-icon.png
+          test -s images/ui/doshikologiya-app-icon.png
       - name: Commit the PNG into images/ui
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add images/ui/doshikologiya-app-icon-huawei.png
+          git add images/ui/doshikologiya-app-icon.png
+          if test -f images/ui/doshikologiya-app-icon-huawei.png; then
+            git rm -f images/ui/doshikologiya-app-icon-huawei.png
+          fi
           if ! git diff --cached --quiet; then
-            git commit -m "Add Huawei AppGallery 512x512 PNG store icon"
+            git commit -m "Add exact SVG-to-PNG conversion and remove old altered icon"
             git push
           fi
