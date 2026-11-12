@@ -74,14 +74,12 @@ test("invalid remote data and restricted storage do not corrupt cached contacts"
   await assert.rejects(fetchRemoteServiceContacts("http://example.com/config.json"), /безопасный адрес/);
 });
 
-test("Android starts from cached contact details and refreshes without updating recipes", () => {
+test("веб-версия использует актуальные данные поддержки", () => {
   const main = fs.readFileSync(new URL("../js/main.js", import.meta.url), "utf8");
-  const bundled = JSON.parse(fs.readFileSync(new URL("../data/config.json", import.meta.url), "utf8"));
-  const index = fs.readFileSync(new URL("../index.html", import.meta.url), "utf8");
-  assert.equal(bundled.remoteConfigUrl, "https://crossdoomdev.github.io/doshikologiya/data/config.json");
-  assert.match(main, /readCachedServiceContacts\(\)/);
-  assert.match(main, /fetchRemoteServiceContacts\(state\.config\.remoteConfigUrl\)/);
-  assert.match(main, /refreshServiceContacts\(\)/);
+  const config = JSON.parse(fs.readFileSync(new URL("../data/config.json", import.meta.url), "utf8"));
+  const html = fs.readFileSync(new URL("../index.html", import.meta.url), "utf8");
+  assert.equal(validSupportEmail(config.supportEmail), true);
   assert.match(main, /renderServiceInfo\(\)/);
-  assert.match(index, /id="supportEmailLink"/);
+  assert.doesNotMatch(main, /Capacitor|nativeAndroid|refreshServiceContacts/);
+  assert.match(html, /id="supportEmailLink"/);
 });

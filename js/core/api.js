@@ -1,6 +1,6 @@
 import { DATA_URLS, DEFAULT_CONFIG } from "./config.js";
 import { publicationTime } from "./chronology.js";
-import { loadCachedRecipes, saveCachedRecipes, mergeRecipes, hydrateRecipeImages, cacheRemoteImages } from "./offline-catalog.js?v=20261011-progress1";
+import { saveCachedRecipes, mergeRecipes, hydrateRecipeImages, cacheRemoteImages } from "./offline-catalog.js?v=20261011-progress1";
 
 async function fetchJson(url) {
   const signal = typeof AbortSignal.timeout === "function" ? AbortSignal.timeout(30000) : undefined;
@@ -62,29 +62,23 @@ function normalizeNews(value) {
 }
 
 export async function loadCatalog() {
-  // Android starts entirely offline. No remote check is made without pressing the button.
+  // The published JSON files are the browser source of truth.
   const results = await Promise.allSettled([
     fetchJson(DATA_URLS.config), fetchJson(DATA_URLS.recipes),
-    fetchJson(DATA_URLS.patrons), fetchJson(DATA_URLS.news), loadCachedRecipes()
+    fetchJson(DATA_URLS.patrons), fetchJson(DATA_URLS.news)
   ]);
-  const bundledRecipes = normalizeRecipes(results[1].status === "fulfilled" ? results[1].value : []);
-  // On GitHub Pages, published JSON and images are the source of truth.
-  // IndexedDB is used only by the Android app, so stale downloads cannot hide web assets.
-  const nativeApp = globalThis.Capacitor?.isNativePlatform?.() === true;
-  const cachedRecipes = nativeApp
-    ? normalizeRecipes(results[4].status === "fulfilled" ? results[4].value : [])
-    : [];
+  const recipes = normalizeRecipes(results[1].status === "fulfilled" ? results[1].value : []);
   const config = normalizeConfig(results[0].status === "fulfilled" ? results[0].value : null);
-  const knownRecipes = mergeRecipes(bundledRecipes, cachedRecipes);
-  const recipes = await hydrateRecipeImages(knownRecipes, bundledRecipes, config.remoteRecipesUrl);
   if (results[0].status === "rejected") console.warn("Конфигурация не загружена", results[0].reason);
-  if (results[1].status === "rejected") console.warn("Встроенный каталог не загружен", results[1].reason);
+  if (results[1].status === "rejected") console.warn("Каталог не загружен", results[1].reason);
   if (results[2].status === "rejected") console.warn("Стена меценатов не загружена", results[2].reason);
   if (results[3].status === "rejected") console.warn("Новости института не загружены", results[3].reason);
-  return { config, recipes,
+  return {
+    config, recipes,
     patrons: normalizePatrons(results[2].status === "fulfilled" ? results[2].value : []),
     news: normalizeNews(results[3].status === "fulfilled" ? results[3].value : []),
-    bundledRecipes, knownRecipes };
+    bundledRecipes: recipes, knownRecipes: recipes
+  };
 }
 
 // Deterministic non-cryptographic content fingerprint; matched by the catalog validator.
@@ -137,7 +131,7 @@ export function diffOnlineRecipeIndex(knownRecipes, index) {
 }
 
 export async function checkOnlineRecipes(config, knownRecipes) {
-  // New APKs fetch only a tiny index; old APKs retain their existing catalog endpoint.
+  // Prefer the compact index and fall back to the full catalog endpoint.
   if (config.remoteRecipeIndexUrl) {
     const index = await fetchJson(config.remoteRecipeIndexUrl);
     const result = diffOnlineRecipeIndex(knownRecipes, index);

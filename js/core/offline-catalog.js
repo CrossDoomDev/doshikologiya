@@ -1,4 +1,4 @@
-// IndexedDB stores a downloaded catalog and its images for future Android packaging.
+// IndexedDB stores explicitly downloaded recipe snapshots and images for browser preview.
 const DB_NAME = "doshikologiya-offline";
 const DB_VERSION = 1;
 let databasePromise;
@@ -69,8 +69,7 @@ function remoteImageUrl(image, catalogUrl) {
 }
 
 export async function hydrateRecipeImages(recipes, bundledRecipes, catalogUrl) {
-  // Browser: use current same-origin images directly. Android: prefer saved offline blobs.
-  if (globalThis.Capacitor?.isNativePlatform?.() !== true) return recipes;
+  // Resolve previously downloaded images after an explicit user update.
   const bundledById = new Map(bundledRecipes.map(recipe => [recipe.id, recipe]));
   return Promise.all(recipes.map(async recipe => {
     // Old downloaded SVG art must not override the newer bundled WebP photo.
@@ -86,9 +85,9 @@ export async function hydrateRecipeImages(recipes, bundledRecipes, catalogUrl) {
       return { ...recipe, image: objectUrls.get(remoteUrl) };
     }
     // An older downloaded catalog can still reference deleted SVGs.
-    // Prefer the current packaged photograph for known IDs, not that stale URL.
+    // Prefer the current published photograph for known IDs, not that stale URL.
     if (bundled?.image) return { ...recipe, image: bundled.image };
-    // A new recipe whose image was not saved yet remains usable offline.
+    // A new recipe without a saved photo remains visible with a fallback.
     return { ...recipe, image: "images/ui/doshikologiya-mark.svg" };
   }));
 }

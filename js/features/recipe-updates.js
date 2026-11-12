@@ -121,7 +121,7 @@ export function initRecipeUpdates(catalog) {
       resetDownload();
       showProgress("Обновление установлено", 1, 1);
       progressCount.textContent = "Готово";
-      setStatus("✓ Архив обновлён. Загруженные рецепты доступны без интернета.");
+      setStatus("✓ Каталог на странице обновлён. Для нового открытия сайта по-прежнему нужен интернет.");
     } catch (error) {
       console.warn("Не удалось сохранить обновления рецептов:", error);
       hideProgress();

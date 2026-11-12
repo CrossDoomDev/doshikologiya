@@ -191,7 +191,7 @@
         <section class="catalog-update" aria-label="Обновление рецептов">
           <div class="catalog-update-copy">
             <strong>📚 Обновление рецептов</strong>
-            <p id="recipeUpdateStatus" role="status" aria-live="polite" aria-atomic="true">Рецепты доступны без интернета. Проверка новых протоколов — только по твоему запросу.</p>
+            <p id="recipeUpdateStatus" role="status" aria-live="polite" aria-atomic="true">Каталог доступен на сайте. Проверка новых протоколов — только по твоему запросу.</p>
           </div>
           <div class="catalog-update-actions">
             <button class="btn secondary" id="recipeUpdateCheckBtn" type="button" disabled>↻ Проверить обновления</button>
@@ -215,7 +215,7 @@
               </div>
               <span class="more-version-icon" aria-hidden="true">📱</span>
             </div>
-            <p class="more-hint">Новые рецепты загружаются здесь. После выпуска Android-версии обновления самого приложения будут доступны через RuStore.</p>
+            <p class="more-hint">Обновления сайта публикуются через GitHub Pages. Нативная Android-версия развивается отдельно на Kotlin.</p>
           </section>
 
           <section class="more-panel" aria-labelledby="moreSupportTitle">
@@ -235,9 +235,9 @@
             <details class="more-faq">
               <summary>Частые вопросы <span aria-hidden="true">⌄</span></summary>
               <div class="more-faq-content">
-                <p><strong>Работают ли рецепты без интернета?</strong> В Android — да, встроенный и сохранённый каталог. Для первой загрузки веб-сайта интернет нужен.</p>
+                <p><strong>Работают ли рецепты без интернета?</strong> Для открытия веб-сайта нужен интернет. Избранное сохраняется в браузере, но офлайн-запуск всей страницы пока не поддерживается.</p>
                 <p><strong>Как получить новые рецепты?</strong> Нажми «Проверить обновления» выше, затем подтверди загрузку.</p>
-                <p><strong>Где хранится избранное?</strong> На устройстве; удаление данных приложения может очистить избранное.</p>
+                <p><strong>Где хранится избранное?</strong> В браузере; очистка данных сайта может удалить избранное.</p>
               </div>
             </details>
           </section>
@@ -419,18 +419,6 @@
         <button class="btn primary" id="successDoneBtn">Отлично! ✨</button>
       </div>
     </div>
-  </div>
-  <div class="exit-confirm" id="exitConfirm" aria-hidden="true">
-    <section class="exit-confirm-card" role="alertdialog" aria-modal="true"
-             aria-labelledby="exitConfirmTitle" aria-describedby="exitConfirmText">
-      <div class="exit-confirm-icon" aria-hidden="true">🍜</div>
-      <h2 id="exitConfirmTitle">Вы действительно хотите выйти?</h2>
-      <p id="exitConfirmText">Лаборатория подождёт тебя. Продолжить изучать рецепты или закрыть Дошикологию?</p>
-      <div class="exit-confirm-actions">
-        <button class="btn primary" id="exitStayBtn" type="button">Остаться</button>
-        <button class="btn secondary" id="exitYesBtn" type="button">Да, выйти</button>
-      </div>
-    </section>
   </div>
   <script type="module" src="js/main.js?v=20261013-layout-fast2"></script>
 </body>

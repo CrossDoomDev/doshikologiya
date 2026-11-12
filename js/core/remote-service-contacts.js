@@ -1,5 +1,4 @@
-// Public, non-secret contact settings. The Android build has its own fallback config,
-// while GitHub Pages can update these fields without publishing another APK.
+// Public contact helpers for the browser; current values come from data/config.json.
 const CACHE_KEY = "doshikologiya:service-contacts";
 
 export function validSupportEmail(email) {

@@ -1,6 +1,5 @@
 import { loadCatalog } from "./core/api.js?v=20261011-progress1";
-import { readCachedServiceContacts, applyServiceContacts, fetchRemoteServiceContacts, validSupportEmail } from "./core/remote-service-contacts.js?v=20261012-remote-settings1";
-import { initBackNavigation } from "./core/android-back.js?v=20261012-exitconfirm1";
+import { validSupportEmail } from "./core/remote-service-contacts.js?v=20261012-remote-settings1";
 import { initRecipeUpdates } from "./features/recipe-updates.js?v=20261012-hidden-recipe-dates1";
 import { applyCatalog, state } from "./core/state.js";
 import { shareRecipe, incomingRecipeId } from "./features/sharing.js?v=20261010-offline-share1";
@@ -11,7 +10,7 @@ import { renderPatrons } from "./features/support.js?v=20261011-home-feed1";
 import { renderNews } from "./features/news.js?v=20261012-dateonly1";
 import { openRecipe, closeRecipe, toggleFavorite } from "./features/recipe-modal.js?v=20261012-hidden-recipe-dates1";
 import { openDonation } from "./features/donations.js";
-import { initCookingLayout, openCookMode, closeCookMode, navigateCookStep, closeCookSuccess, updateCookSuccessFavorite } from "./features/cooking.js?v=20261012-android-back1";
+import { initCookingLayout, openCookMode, closeCookMode, navigateCookStep, closeCookSuccess, updateCookSuccessFavorite } from "./features/cooking.js?v=20261112-web1";
 import { renderDailyIndex, runOracle } from "./features/oracle.js?v=20261010-oracle-art2";
 import { initSplash, hideSplash } from "./features/splash.js?v=20261009-motion2";
 import { initPressFeedback } from "./features/press-feedback.js?v=20261009-motion2";
@@ -33,25 +32,6 @@ function renderServiceInfo() {
   }
 }
 
-function nativeAndroid() {
-  return globalThis.Capacitor?.isNativePlatform?.() === true;
-}
-
-// Online contact refresh runs in the background. The offline recipe catalog is unchanged.
-let serviceContactsRequest = null;
-function refreshServiceContacts() {
-  if (!nativeAndroid() || !state.config.remoteConfigUrl) return Promise.resolve();
-  if (serviceContactsRequest) return serviceContactsRequest;
-  serviceContactsRequest = fetchRemoteServiceContacts(state.config.remoteConfigUrl)
-    .then(contacts => {
-      state.config = applyServiceContacts(state.config, contacts);
-      renderServiceInfo();
-    })
-    .catch(error => console.warn("Контактные данные не обновлены; используем сохранённые:", error))
-    .finally(() => { serviceContactsRequest = null; });
-  return serviceContactsRequest;
-}
-
 function renderAll() {
   renderBanner();
   renderFeatured();
@@ -70,7 +50,6 @@ function bindEvents() {
       event.preventDefault();
       goTo(route.dataset.route);
       if (route.dataset.route === "recipes") resumeRecipePagination();
-      if (route.dataset.route === "more") void refreshServiceContacts();
       return;
     }
 
@@ -132,6 +111,18 @@ function bindEvents() {
   document.getElementById("cookSuccess").addEventListener("click", event => {
     if (event.target.id === "cookSuccess") closeCookSuccess({ returnToRecipe: true });
   });
+  // Standard keyboard navigation for the browser.
+  document.addEventListener("keydown", event => {
+    if (event.key !== "Escape") return;
+    if (document.getElementById("cookSuccess")?.classList.contains("open")) {
+      closeCookSuccess({ returnToRecipe: true });
+    } else if (document.getElementById("cookOverlay")?.classList.contains("open")) {
+      closeCookMode();
+    } else if (document.getElementById("recipeModal")?.classList.contains("open")) {
+      closeRecipe();
+    } else return;
+    event.preventDefault();
+  });
 
   // A previously saved recipe may point to a deleted legacy image.
   // Use one known local asset instead of leaving a broken picture on screen.
@@ -159,23 +150,15 @@ async function boot() {
   initSplash();
   initPressFeedback();
   bindEvents();
-  initBackNavigation({ closeCookSuccess, closeCookMode, closeRecipe, goTo });
   initCookingLayout();
   goTo(location.hash.replace("#", "") || "home");
 
   const catalog = await loadCatalog();
   applyCatalog(catalog);
-  if (nativeAndroid()) {
-    const savedContacts = readCachedServiceContacts();
-    if (Object.keys(savedContacts).length) state.config = applyServiceContacts(state.config, savedContacts);
-  }
   renderAll();
   if (!document.getElementById("view-recipes")?.classList.contains("hidden")) resumeRecipePagination();
   initRecipeUpdates(catalog);
   hideSplash();
-  // Sync the support address and donation link independently of recipe updates.
-  void refreshServiceContacts();
-
   // Shared links open a specific recipe, including a newly downloaded recipe.
   const sharedId = incomingRecipeId();
   let sharedOpened = false;
