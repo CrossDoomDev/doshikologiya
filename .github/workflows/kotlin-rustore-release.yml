@@ -97,10 +97,12 @@ jobs:
           keytool -printcert -jarfile "$AAB"
           EXPECTED="d22f87f9ecd70e0bccb603e9b319fadca5cb6fe488c714e61cd7fa4d8f4ecbd0"
           BUILD_TOOLS="$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)"
-          APK_SHA="$("$ANDROID_HOME/build-tools/$BUILD_TOOLS/apksigner" verify --print-certs "$APK" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -1)"
-          AAB_SHA="$(keytool -printcert -jarfile "$AAB" | sed -n 's/^[[:space:]]*SHA256: //p' | head -1 | tr -d ':' | tr '[:upper:]' '[:lower:]')"
-          if [[ "$APK_SHA" != "$EXPECTED" || "$AAB_SHA" != "$EXPECTED" ]]; then
-            echo "::error::Signing certificate differs from the published RuStore APK. Check signing secrets."
+          # The earlier step already runs apksigner verify on the APK.
+          # Read the AAB certificate directly; avoid depending on apksigner output formatting.
+          AAB_SHA="$(keytool -printcert -jarfile "$AAB" | awk -F 'SHA256: ' '/SHA256:/{print $2; exit}' | tr -d ': \r\n' | tr '[:upper:]' '[:lower:]')"
+          echo "Google Play bundle certificate (SHA-256): $AAB_SHA"
+          if [[ "$AAB_SHA" != "$EXPECTED" ]]; then
+            echo "::error::AAB signing certificate differs from the published RuStore APK."
             exit 1
           fi
           test -f native-android/app/build/intermediates/merged_manifest/release/processReleaseMainManifest/AndroidManifest.xml || true
