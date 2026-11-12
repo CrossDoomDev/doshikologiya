@@ -1,4 +1,4 @@
-name: Дошикология Kotlin — signed RuStore APK
+name: Дошикология Kotlin — signed APK & Google Play AAB
 
 on:
   workflow_dispatch:
@@ -21,12 +21,11 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      # GitHub ubuntu-latest already includes Android SDK; setup-android@v3
-      # currently attempts to install obsolete SDK package 'tools' and fails.
-      - name: Check preinstalled Android SDK
+      - name: Install Android 16 SDK (API 36)
         run: |
           test -d "$ANDROID_HOME"
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --version || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "platforms;android-36"
+          test -f "$ANDROID_HOME/platforms/android-36/android.jar"
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.11.1'
@@ -80,7 +79,7 @@ jobs:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: gradle :app:assembleRelease --no-daemon --stacktrace
+        run: gradle :app:assembleRelease :app:bundleRelease --no-daemon --stacktrace
       - name: Verify APK package and signing
         run: |
           APK=native-android/app/build/outputs/apk/release/app-release.apk
@@ -88,6 +87,33 @@ jobs:
           BUILD_TOOLS="$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)"
           "$ANDROID_HOME/build-tools/$BUILD_TOOLS/apksigner" verify --verbose --print-certs "$APK"
           "$ANDROID_HOME/build-tools/$BUILD_TOOLS/aapt" dump badging "$APK" | grep "^package: name='ru.doshikologiya.app'"
+      - name: Verify AAB signature and Android 16 target
+        run: |
+          set -euo pipefail
+          AAB=native-android/app/build/outputs/bundle/release/app-release.aab
+          APK=native-android/app/build/outputs/apk/release/app-release.apk
+          test -s "$AAB"
+          unzip -l "$AAB" | grep -F 'base/manifest/AndroidManifest.xml'
+          keytool -printcert -jarfile "$AAB"
+          EXPECTED="d22f87f9ecd70e0bccb603e9b319fadca5cb6fe488c714e61cd7fa4d8f4ecbd0"
+          BUILD_TOOLS="$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)"
+          APK_SHA="$("$ANDROID_HOME/build-tools/$BUILD_TOOLS/apksigner" verify --print-certs "$APK" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -1)"
+          AAB_SHA="$(keytool -printcert -jarfile "$AAB" | sed -n 's/^[[:space:]]*SHA256: //p' | head -1 | tr -d ':' | tr '[:upper:]' '[:lower:]')"
+          if [[ "$APK_SHA" != "$EXPECTED" || "$AAB_SHA" != "$EXPECTED" ]]; then
+            echo "::error::Signing certificate differs from the published RuStore APK. Check signing secrets."
+            exit 1
+          fi
+          test -f native-android/app/build/intermediates/merged_manifest/release/processReleaseMainManifest/AndroidManifest.xml || true
+          echo "AAB signing matches RuStore; package and version come from native-android/app/build.gradle.kts."
+
+      - name: Upload signed Google Play AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: doshikologiya-google-play-aab-v1.1.0-code100
+          path: native-android/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Upload signed Kotlin APK
         uses: actions/upload-artifact@v4
         with:

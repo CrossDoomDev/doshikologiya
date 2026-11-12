@@ -42,3 +42,15 @@ node native-android/scripts/generate-icons.mjs
 `CookingAdBanner.kt` использует `mobileads` + `mobileads-compose` 8.5.0. Отладочный APK запрашивает демоблок `demo-banner-yandex`; release — согласованный рекламный блок `R-M-20184115-1`. Для боевой монетизации приложение с релизным `applicationId` должно быть зарегистрировано в кабинете РСЯ; у текущего preview отдельный пакет, поэтому в нём боевые объявления могут не показываться. Никакой WebView-рекламы нет.
 
 Баннер запрашивается однократно на сеанс готовки, остаётся в прокручиваемом контенте и исчезает без зазора при неудачной загрузке. Прежде чем выпускать рекламу, проверьте загрузку и отсутствие наложения на физическом телефоне, а также соответствие настроек конфиденциальности магазина.
+
+## Google Play — AAB
+
+GitHub Actions `.github/workflows/kotlin-rustore-release.yml` в этой ветке собирает **APK** для RuStore и подписанный **AAB** для Google Play из одного Kotlin-проекта. Для сборки используются существующие секреты `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`. Не публикуйте ключи и пароли.
+
+После успешной сборки откройте GitHub → Actions → «Дошикология Kotlin — signed APK & Google Play AAB» → последний успешный запуск → Artifacts → `doshikologiya-google-play-aab-v1.1.0-code100`. Скачайте ZIP и извлеките `app-release.aab`; ZIP целиком Google Play не принимает.
+
+Для новых обычных приложений Google Play требуется `targetSdk >= 36` (с августа 2026). Данные для первой загрузки: `applicationId=ru.doshikologiya.app`, `versionName=1.1.0`, `versionCode=100`. Подпись AAB проверяется по сертификату APK, опубликованного в RuStore.
+
+**До отправки первого релиза** выберите в настройках Play App Signing собственный существующий ключ подписи приложения, если хотите единый сертификат для RuStore, Google Play и AppGallery. Обычная загрузка AAB не гарантирует, что Google подпишет распространяемые APK тем же ключом.
+
+После перехода на Android API 36 обязательно проверьте поведение интерфейса на Android 16 (системные отступы, edge-to-edge, навигация) и соответствие деклараций Google Play рекламному SDK Яндекса.

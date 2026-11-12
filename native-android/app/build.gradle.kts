@@ -5,12 +5,12 @@ plugins {
 }
 android {
     namespace = "ru.doshikologiya.nativepreview"
-    compileSdk = 35
+    compileSdk = 36
     defaultConfig {
         // Production package ID must match the existing RuStore installation.
         applicationId = "ru.doshikologiya.app"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 100
         versionName = "1.1.0"
     }
