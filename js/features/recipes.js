@@ -33,7 +33,7 @@ function recentRecipeCard(recipe) {
     </span>
   </button>`;
 }
-// Keep the DOM small: Android WebView only paints the first page of the archive.
+// Keep the DOM small: browsers initially paint only the first page of the archive.
 const PAGE_SIZE = 18;
 let visibleRecipes = [];
 let renderedCount = 0;

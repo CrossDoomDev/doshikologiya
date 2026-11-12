@@ -53,15 +53,12 @@ test("Звуковой сигнал генерируется без сети и 
   } finally { delete globalThis.window; }
 });
 
-test("Разметка и сборка Android подключают новые ресурсы", () => {
+test("Разметка веб-версии подключает ресурсы Оракула", () => {
   const html = file("index.html");
   const main = file("js/main.js");
-  const prep = file("scripts/prepare-android.mjs");
   const css = file("css/styles.css");
   assert.match(html, /id="oracleMascot" src="images\/oracle\/mage-idle\.webp"/);
   assert.match(main, /oracle-art2/);
-  assert.match(prep, /"images"/);
-  assert.match(prep, /"js"/);
   assert.match(css, /prefers-reduced-motion:reduce/);
   assert.doesNotMatch(html, /oraclePhaseLabel|images\/oracle\/mage-idle\.svg/);
 });
